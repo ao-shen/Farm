@@ -12,6 +12,7 @@ export class Entity {
         this.name = name;
 
         this.path = null;
+        this.goal = new Vector3();
 
         this.parentBuilding = null;
 
@@ -28,20 +29,49 @@ export class Entity {
     onSchedule() {
 
         if (this.path == null) {
-            this.path = this.pathFind({ x: 0, z: 0 });
+            this.path = this.pathFind(this.goal);
+            if (this.path != null) {
+                return false;
+            }
         }
 
         return true;
     }
 
+    navigateHome() {
+
+        this.goal = this.parentBuilding.pos;
+
+        let thisEntity = this;
+        this.Farm.scheduler.addToSchedule(1000, function() {
+            return thisEntity.onSchedule();
+        });
+
+    }
+
+    findTarget() {
+
+        this.goal = new Vector3();
+
+        let thisEntity = this;
+        this.Farm.scheduler.addToSchedule(1000, function() {
+            return thisEntity.onSchedule();
+        });
+
+    }
+
     update() {
         if (this.path != null) {
-            let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
-
             if (Math.pow(this.path[0].x * Farm.blockSize - this.pos.x, 2) + Math.pow(this.path[0].z * Farm.blockSize - this.pos.z, 2) < 1) {
                 this.path.shift();
                 if (this.path.length == 0) {
                     this.path = null;
+                    let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
+                    if (curBlockPos.x == this.parentBuilding.pos.x && curBlockPos.z == this.parentBuilding.pos.z) {
+                        this.findTarget();
+                    } else {
+                        this.navigateHome();
+                    }
                     return;
                 }
             }
@@ -120,21 +150,20 @@ export class Entity {
                     if (this.isCollidingAt(cur.x + direction.blocking[1].x, cur.z + direction.blocking[1].z)) continue;
                 }
 
-                if (!((newX + ',' + newZ) in vis) && !this.isCollidingAt(newX, newZ) && cur.pathLength + direction.length < 20) {
+                if (newX == goal.x && newZ == goal.z) {
 
-                    if (newX == goal.x && newZ == goal.z) {
+                    let path = [{ x: newX, z: newZ }];
 
-                        let path = [{ x: newX, z: newZ }];
+                    while (cur != null) {
+                        path.unshift({ x: cur.x, z: cur.z });
 
-                        while (cur != null) {
-                            path.unshift({ x: cur.x, z: cur.z });
-
-                            cur = cur.parent;
-                        }
-
-                        return path;
+                        cur = cur.parent;
                     }
 
+                    return path;
+                }
+
+                if (!((newX + ',' + newZ) in vis) && !this.isCollidingAt(newX, newZ) && cur.pathLength + direction.length < 20) {
                     pq.push({ x: newX, z: newZ, pathLength: cur.pathLength + direction.length, parent: cur, heuristic: heuristic(newX, newZ, cur.pathLength + 1) });
                     vis[newX + ',' + newZ] = 1;
                 }
