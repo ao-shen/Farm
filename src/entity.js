@@ -38,7 +38,7 @@ export class Entity {
         if (this.path != null) {
             let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
 
-            if (this.path[0].x == curBlockPos.x && this.path[0].z == curBlockPos.z) {
+            if (Math.pow(this.path[0].x * Farm.blockSize - this.pos.x, 2) + Math.pow(this.path[0].z * Farm.blockSize - this.pos.z, 2) < 1) {
                 this.path.shift();
                 if (this.path.length == 0) {
                     this.path = null;
@@ -115,7 +115,12 @@ export class Entity {
                 let newX = cur.x + direction.x;
                 let newZ = cur.z + direction.z;
 
-                if (!((newX + ',' + newZ) in vis) && !this.isCollidingAt(newX, newZ)) {
+                if (direction.blocking.length == 2) {
+                    if (this.isCollidingAt(cur.x + direction.blocking[0].x, cur.z + direction.blocking[0].z)) continue;
+                    if (this.isCollidingAt(cur.x + direction.blocking[1].x, cur.z + direction.blocking[1].z)) continue;
+                }
+
+                if (!((newX + ',' + newZ) in vis) && !this.isCollidingAt(newX, newZ) && cur.pathLength + direction.length < 20) {
 
                     if (newX == goal.x && newZ == goal.z) {
 
@@ -130,7 +135,7 @@ export class Entity {
                         return path;
                     }
 
-                    pq.push({ x: newX, z: newZ, pathLength: cur.pathLength + 1, parent: cur, heuristic: heuristic(newX, newZ, cur.pathLength + 1) });
+                    pq.push({ x: newX, z: newZ, pathLength: cur.pathLength + direction.length, parent: cur, heuristic: heuristic(newX, newZ, cur.pathLength + 1) });
                     vis[newX + ',' + newZ] = 1;
                 }
             }
@@ -141,12 +146,12 @@ export class Entity {
 }
 
 const DIRECTIONS = [
-    { x: 0, z: 1 },
-    { x: 1, z: 1 },
-    { x: 1, z: 0 },
-    { x: 1, z: -1 },
-    { x: 0, z: -1 },
-    { x: -1, z: -1 },
-    { x: -1, z: 0 },
-    { x: -1, z: 1 },
+    { x: 0, z: 1, length: 1, blocking: [] },
+    { x: 1, z: 1, length: 1.414, blocking: [{ x: 0, z: 1 }, { x: 1, z: 0 }] },
+    { x: 1, z: 0, length: 1, blocking: [] },
+    { x: 1, z: -1, length: 1.414, blocking: [{ x: 0, z: -1 }, { x: 1, z: 0 }] },
+    { x: 0, z: -1, length: 1, blocking: [] },
+    { x: -1, z: -1, length: 1.414, blocking: [{ x: 0, z: -1 }, { x: -1, z: 0 }] },
+    { x: -1, z: 0, length: 1, blocking: [] },
+    { x: -1, z: 1, length: 1.414, blocking: [{ x: 0, z: 1 }, { x: -1, z: 0 }] },
 ];
