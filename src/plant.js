@@ -8,7 +8,11 @@ export class Plant {
 
         this.stage = 0;
 
+        this.harvestClaimer = null;
+
         this.meshIdx = 0;
+
+        this.actionCategory = "harvest";
 
         let thisPlant = this;
         this.Farm.scheduler.addToSchedule(this.Farm.BUILDINGS[this.type].matureTime, function() {
@@ -22,9 +26,33 @@ export class Plant {
 
         this.updateMesh();
 
-        this.Farm.plantTypeAwaitingMeshUpdate.add(this.type);
-
         return this.stage + 1 < this.Farm.BUILDINGS[this.type].numStages;
+    }
+
+    isMature() {
+        return this.stage == this.Farm.BUILDINGS[this.type].numStages - 1;
+    }
+
+    isHarvestClaimed() {
+        return this.harvestClaimer != null;
+    }
+
+    harvestClaim(entity) {
+        this.harvestClaimer = entity;
+    }
+
+    harvest() {
+
+        this.stage = 0;
+
+        let thisPlant = this;
+        this.Farm.scheduler.addToSchedule(this.Farm.BUILDINGS[this.type].matureTime, function() {
+            return thisPlant.onGrowth();
+        });
+
+        this.harvestClaimer = null;
+
+        this.updateMesh();
     }
 
     updateMesh() {
@@ -68,6 +96,8 @@ export class Plant {
                 curMesh.setMatrixAt(this.meshIdx * 4 + j, matrix);
             }
         }
+
+        this.Farm.plantTypeAwaitingMeshUpdate.add(this.type);
     }
 };
 

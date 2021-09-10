@@ -3,6 +3,7 @@ import { Farm } from './farm';
 import { PriorityQueue } from './priority_queue';
 import { BLOCK, Block } from './block.js';
 import { Vector3 } from 'three';
+import { Plant } from './plant';
 
 export class Entity {
     constructor(Farm, x, z, type, name = null) {
@@ -12,7 +13,7 @@ export class Entity {
         this.name = name;
 
         this.path = null;
-        this.goal = new Vector3();
+        this.goal = null;
 
         this.parentBuilding = null;
 
@@ -22,42 +23,80 @@ export class Entity {
 
         let thisEntity = this;
         this.Farm.scheduler.addToSchedule(1000, function() {
-            return thisEntity.onSchedule();
+            return thisEntity.navigateToTarget();
         });
     }
 
     onSchedule() {
 
-        if (this.path == null) {
-            this.path = this.pathFind(this.goal);
-            if (this.path != null) {
-                return false;
-            }
-        }
-
-        return true;
+        return false;
     }
 
     navigateHome() {
 
-        this.goal = this.parentBuilding.pos;
+        this.goal = null;
 
-        let thisEntity = this;
-        this.Farm.scheduler.addToSchedule(1000, function() {
-            return thisEntity.onSchedule();
-        });
+        this.path = this.pathFind(this.parentBuilding.pos);
+        if (this.path != null) {
+            this.goal = this.parentBuilding;
+            return false;
+        }
+        return true;
 
     }
 
-    findTarget() {
+    navigateToTarget() {
 
-        this.goal = new Vector3();
+        this.goal = null;
+
+        switch (this.Farm.ENTITIES[this.type].name) {
+            case "Worker":
+                let goalPlant = this.findMaturePlant();
+                if (goalPlant != null) {
+                    this.goal = goalPlant;
+                    this.path = this.pathFind(goalPlant.block);
+                    if (this.path != null) {
+                        goalPlant.harvestClaim(this);
+                        return false;
+                    }
+                }
+                break;
+        }
+        return true;
+    }
+
+    findMaturePlant() {
+
+        let rangeRadius = 10;
+        let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
+
+        for (let x = curBlockPos.x - rangeRadius; x <= curBlockPos.x + rangeRadius; x++) {
+            for (let z = curBlockPos.z - rangeRadius; z <= curBlockPos.z + rangeRadius; z++) {
+
+                let curBlock = Farm.blocks[x + ',' + z];
+                if (typeof curBlock === 'undefined') continue;
+
+                for (let plant of curBlock.plants) {
+
+                    if (plant.isMature() && !plant.isHarvestClaimed()) {
+                        return plant;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    performActionAtTarget() {
+
+        if (this.goal.actionCategory == "harvest") {
+            this.goal.harvest();
+        }
 
         let thisEntity = this;
-        this.Farm.scheduler.addToSchedule(1000, function() {
-            return thisEntity.onSchedule();
+        this.Farm.scheduler.addToSchedule(100, function() {
+            return thisEntity.navigateHome();
         });
-
     }
 
     update() {
@@ -67,10 +106,19 @@ export class Entity {
                 if (this.path.length == 0) {
                     this.path = null;
                     let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
-                    if (curBlockPos.x == this.parentBuilding.pos.x && curBlockPos.z == this.parentBuilding.pos.z) {
-                        this.findTarget();
+                    let thisEntity = this;
+                    if (this.goal == this.parentBuilding) {
+                        this.Farm.scheduler.addToSchedule(1000, function() {
+                            return thisEntity.navigateToTarget();
+                        });
                     } else {
-                        this.navigateHome();
+                        switch (this.Farm.ENTITIES[this.type].name) {
+                            case "Worker":
+                                this.Farm.scheduler.addToSchedule(1000, function() {
+                                    return thisEntity.performActionAtTarget();
+                                });
+                                break;
+                        }
                     }
                     return;
                 }
@@ -98,9 +146,9 @@ export class Entity {
 
         let curBlock = this.Farm.blocks[x + ',' + z];
 
-        if (curBlock.type == BLOCK.SOIL) {
+        /*if (curBlock.type == BLOCK.SOIL) {
             return true;
-        }
+        }*/
 
         if (curBlock.buildings.length == 0) {
             return false;
