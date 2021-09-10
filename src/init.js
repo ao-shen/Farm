@@ -25,6 +25,34 @@ export function init(Farm) {
     let modelLoader = new GLTFLoader();
     let texture, material, geometry;
 
+    // Tnit 3D Scene
+    initScene(Farm);
+
+    // Tnit 2D Scene
+    initHudScene(Farm);
+
+    // Load Buildings
+    loadBuildingAssets(Farm);
+
+    // Load Entities
+    loadEntitiesAssets(Farm);
+
+    // Init World
+    initWorld(Farm);
+
+    // Init Overlays
+    initOverlays(Farm);
+
+    // Init Events
+    initEvents(Farm);
+
+    return Farm;
+}
+
+function initScene(Farm) {
+
+    let texture, material, geometry;
+
     // init 3D Scene
 
     Farm.scene = new THREE.Scene();
@@ -67,12 +95,40 @@ export function init(Farm) {
     Farm.controls.target.set(500, 0, 500);
     Farm.controls.update();
 
-    // init 2D Scene
+    // Lights
+
+    let dirLight1 = new THREE.DirectionalLight(0xaaaaaa);
+    dirLight1.position.set(1, 1, 1);
+    Farm.scene.add(dirLight1);
+
+    let dirLight2 = new THREE.DirectionalLight(0x002288);
+    dirLight2.position.set(-1, -1, -1);
+    Farm.scene.add(dirLight2);
+
+    let ambientLight = new THREE.AmbientLight(0x222222);
+    Farm.scene.add(ambientLight);
+
+    const light = new THREE.AmbientLight(0x202020); // soft white light
+    Farm.scene.add(light);
+
+    geometry = new THREE.SphereGeometry(2, 32, 16);
+    material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(0, 0, 0);
+    Farm.scene.add(sphere);
+}
+
+function initHudScene(Farm) {
+    const textureLoader = new THREE.TextureLoader();
+    let texture, material, geometry;
 
     Farm.hudScene = new THREE.Scene();
 
     Farm.hudCamera = new THREE.OrthographicCamera(-window.innerWidth * 0.5, window.innerWidth * 0.5, window.innerHeight * 0.5, -window.innerHeight * 0.5, 1, 100);
     Farm.hudCamera.position.set(0, 0, 10);
+
+    /*let hudAmbientLight = new THREE.AmbientLight(0x222222);
+    Farm.hudScene.add(hudAmbientLight);*/
 
     // HUD
 
@@ -146,8 +202,29 @@ export function init(Farm) {
         Farm.spriteBuildPaletteSelect.name = "BuildPaletteSelect";
     });
 
-    // Load Models
 
+    for (let i = 0; i < Farm.BUILDINGS.length; i++) {
+
+        let curBuilding = Farm.BUILDINGS[i];
+        textureLoader.load(curBuilding.thumbnail, function(texture) {
+
+            material = new THREE.SpriteMaterial({ map: texture });
+
+            curBuilding.spriteThumbnail = new THREE.Sprite(material);
+            curBuilding.spriteThumbnail.center.set(0.5, 0.5);
+            curBuilding.spriteThumbnail.scale.set(thumbnailSize, thumbnailSize, 1);
+            Farm.groupBuildPalette.add(curBuilding.spriteThumbnail);
+            curBuilding.spriteThumbnail.position.set(-window.innerWidth * 0.5 + 20 + (i + 0.5) * (thumbnailSize + 20), thumbnailY, 2);
+            curBuilding.spriteThumbnail.name = "BuildPalette_" + curBuilding.name;
+        });
+    }
+}
+
+function loadBuildingAssets(Farm) {
+
+    let modelLoader = new GLTFLoader();
+
+    // Load Models
     const defaultTransform = new THREE.Matrix4()
         .makeRotationX(Math.PI)
         .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
@@ -216,21 +293,14 @@ export function init(Farm) {
             }
         }
 
-        textureLoader.load(curBuilding.thumbnail, function(texture) {
-
-            material = new THREE.SpriteMaterial({ map: texture });
-
-            curBuilding.spriteThumbnail = new THREE.Sprite(material);
-            curBuilding.spriteThumbnail.center.set(0.5, 0.5);
-            curBuilding.spriteThumbnail.scale.set(thumbnailSize, thumbnailSize, 1);
-            Farm.groupBuildPalette.add(curBuilding.spriteThumbnail);
-            curBuilding.spriteThumbnail.position.set(-window.innerWidth * 0.5 + 20 + (i + 0.5) * (thumbnailSize + 20), thumbnailY, 2);
-            curBuilding.spriteThumbnail.name = "BuildPalette_" + curBuilding.name;
-        });
-
     }
+}
 
-    // Entities
+function loadEntitiesAssets(Farm) {
+    let modelLoader = new GLTFLoader();
+    const defaultEntityTransform = new THREE.Matrix4()
+        .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
+
     for (let i = 0; i < Farm.ENTITIES.length; i++) {
         let curEntity = Farm.ENTITIES[i];
 
@@ -243,7 +313,7 @@ export function init(Farm) {
             modelLoader.load(curEntity.models[j], function(gltf) {
                 let mesh = gltf.scene.children[0];
 
-                mesh.geometry.applyMatrix4(defaultBuildingTransform);
+                mesh.geometry.applyMatrix4(defaultEntityTransform);
 
                 curEntity.geometries[j] = mesh.geometry.clone();
 
@@ -253,11 +323,13 @@ export function init(Farm) {
             });
         }
     }
+}
 
-    // world
+function initWorld(Farm) {
+
+    const textureLoader = new THREE.TextureLoader();
 
     // ground
-
     let matrix = new THREE.Matrix4();
 
     let blockGeometry = new THREE.PlaneGeometry(Farm.blockSize, Farm.blockSize);
@@ -292,6 +364,13 @@ export function init(Farm) {
 
     Farm.blockMesh = new THREE.Mesh(groundGeometry, new THREE.MeshLambertMaterial({ map: Farm.texGrassBlock, side: THREE.DoubleSide }));
     Farm.scene.add(Farm.blockMesh);
+}
+
+function initOverlays(Farm) {
+
+    let texture, material, geometry;
+
+    const textureLoader = new THREE.TextureLoader();
 
     // Ground Raycaster
 
@@ -308,31 +387,9 @@ export function init(Farm) {
 
     Farm.buildAreaRect = new THREE.Line(geometry, material);
     Farm.hudScene.add(Farm.buildAreaRect);
+}
 
-    // Lights
-
-    let dirLight1 = new THREE.DirectionalLight(0xaaaaaa);
-    dirLight1.position.set(1, 1, 1);
-    Farm.scene.add(dirLight1);
-
-    let dirLight2 = new THREE.DirectionalLight(0x002288);
-    dirLight2.position.set(-1, -1, -1);
-    Farm.scene.add(dirLight2);
-
-    let ambientLight = new THREE.AmbientLight(0x222222);
-    Farm.scene.add(ambientLight);
-
-    const light = new THREE.AmbientLight(0x202020); // soft white light
-    Farm.scene.add(light);
-
-    /*let hudAmbientLight = new THREE.AmbientLight(0x222222);
-    Farm.hudScene.add(hudAmbientLight);*/
-
-    geometry = new THREE.SphereGeometry(2, 32, 16);
-    material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-    const sphere = new THREE.Mesh(geometry, material);
-    sphere.position.set(0, 0, 0);
-    Farm.scene.add(sphere);
+function initEvents(Farm) {
 
     // Events
 
@@ -351,8 +408,6 @@ export function init(Farm) {
     window.addEventListener('mousedown', function(event) {
         onMouseDown(Farm, event);
     });
-
-    return Farm;
 }
 
 function createOverlayMesh(texture) {
