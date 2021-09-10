@@ -63,7 +63,7 @@ export function init(Farm) {
 
     Farm.controls.zoomSpeed = 2;
 
-    Farm.camera.position.set(600, 50, 500);
+    Farm.camera.position.set(550, 50, 500);
     Farm.controls.target.set(500, 0, 500);
     Farm.controls.update();
 
@@ -243,9 +243,9 @@ export function init(Farm) {
             modelLoader.load(curEntity.models[j], function(gltf) {
                 let mesh = gltf.scene.children[0];
 
-                curEntity.geometries[j] = mesh.geometry.clone();
+                mesh.geometry.applyMatrix4(defaultTransform);
 
-                curEntity.geometries[j].applyMatrix4(defaultTransform);
+                curEntity.geometries[j] = mesh.geometry.clone();
 
                 curEntity.materials[j] = mesh.material;
 
@@ -282,7 +282,6 @@ export function init(Farm) {
             Farm.blocks[x + ',' + z] = new Block(x, z);
 
         }
-
     }
 
     let groundGeometry = BufferGeometryUtils.mergeBufferGeometries(geometries);

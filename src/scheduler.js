@@ -48,5 +48,6 @@ const SCHEDULES = [
     { interval: 500, instances: 10 },
     { interval: 1000, instances: 10 },
     { interval: 5000, instances: 20 },
+    { interval: 10000, instances: 20 },
     { interval: 30000, instances: 30 },
 ]

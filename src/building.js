@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Entity } from './entity';
 
 export class Building {
     constructor(Farm, x, z, type, name = null) {
@@ -9,6 +10,8 @@ export class Building {
 
         this.mesh = this.Farm.BUILDINGS[this.type].meshes[0].clone();
         Farm.scene.add(this.mesh);
+
+        this.childEntities = [];
     }
 
     update() {
@@ -25,6 +28,13 @@ export class Building {
 export class BuildingWorkersHouse extends Building {
     constructor(Farm, x, z, type, name = null) {
         super(Farm, x, z, type, name);
+
+        for (let entityType of this.Farm.BUILDINGS[this.type].entities) {
+            let workerEntity = new Entity(Farm, x, z, entityType);
+            workerEntity.parentBuilding = this;
+            this.childEntities.push(workerEntity);
+            this.Farm.entities.push(workerEntity);
+        }
     }
 
     update() {

@@ -26,6 +26,10 @@ export function animate(Farm) {
         building.update();
     }
 
+    for (const entity of Farm.entities) {
+        entity.update();
+    }
+
     render(Farm);
 
     Farm.stats.end();
@@ -38,6 +42,10 @@ function render(Farm) {
 
     for (const building of Farm.buildings) {
         building.render();
+    }
+
+    for (const entity of Farm.entities) {
+        entity.render();
     }
 
     Farm.renderer.clear();

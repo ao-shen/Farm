@@ -80,6 +80,7 @@ export let Farm = {
 
     // Buildings
     buildings: [],
+    entities: [],
 
     // GUI -----------------------------------------------
 
@@ -157,7 +158,7 @@ export let Farm = {
         name: "Potato",
         category: "plants",
         price: 5,
-        matureTime: 30000,
+        matureTime: 5000,
         thumbnail: 'assets/textures/potato_thumbnail.png',
         models: [
             'assets/models/potato0.glb',
@@ -174,6 +175,9 @@ export let Farm = {
             x: 1,
             z: 1,
         },
+        entities: [
+            0
+        ],
         thumbnail: 'assets/textures/workers_house_thumbnail.png',
         models: [
             'assets/models/workers_house0.glb',
