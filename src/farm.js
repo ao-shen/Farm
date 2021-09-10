@@ -114,9 +114,9 @@ export let Farm = {
 
     posToBlocks: function(x, z) {
         return new Vector3(
-            Math.floor(x / this.blockSize),
+            (Math.floor(x / this.blockSize + 0.5)),
             0,
-            Math.floor(z / this.blockSize)
+            (Math.floor(z / this.blockSize + 0.5))
         );
     },
 

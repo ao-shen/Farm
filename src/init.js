@@ -243,7 +243,7 @@ export function init(Farm) {
             modelLoader.load(curEntity.models[j], function(gltf) {
                 let mesh = gltf.scene.children[0];
 
-                mesh.geometry.applyMatrix4(defaultTransform);
+                mesh.geometry.applyMatrix4(defaultBuildingTransform);
 
                 curEntity.geometries[j] = mesh.geometry.clone();
 
@@ -327,6 +327,12 @@ export function init(Farm) {
 
     /*let hudAmbientLight = new THREE.AmbientLight(0x222222);
     Farm.hudScene.add(hudAmbientLight);*/
+
+    geometry = new THREE.SphereGeometry(2, 32, 16);
+    material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(0, 0, 0);
+    Farm.scene.add(sphere);
 
     // Events
 

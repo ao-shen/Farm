@@ -101,8 +101,8 @@ function renderOverlays(Farm) {
             let rectX2 = Math.max(point.x, Farm.buildAreaCorner.x) + Farm.blockSize;
             let rectZ2 = Math.max(point.z, Farm.buildAreaCorner.z) + Farm.blockSize;
 
-            Farm.buildAreaPoint1 = Farm.posToBlocks(rectX1 + Farm.blockSize, rectZ1 + Farm.blockSize);
-            Farm.buildAreaPoint2 = Farm.posToBlocks(rectX2, rectZ2);
+            Farm.buildAreaPoint1 = Farm.posToBlocks(rectX1, rectZ1);
+            Farm.buildAreaPoint2 = Farm.posToBlocks(rectX2 - Farm.blockSize, rectZ2 - Farm.blockSize);
 
             rectScreenPoint1 = Farm.posToScreenPos(new Vector3(rectX1, 0, rectZ1), Farm.camera);
             rectScreenPoint2 = Farm.posToScreenPos(new Vector3(rectX1, 0, rectZ2), Farm.camera);
@@ -129,8 +129,8 @@ function renderOverlays(Farm) {
             let rectX2 = (buildingCenterX + Math.ceil(curSizeX * 0.5)) * Farm.blockSize;
             let rectZ2 = (buildingCenterZ + Math.ceil(curSizeZ * 0.5)) * Farm.blockSize;
 
-            Farm.buildAreaPoint1 = Farm.posToBlocks(rectX1 + Farm.blockSize, rectZ1 + Farm.blockSize);
-            Farm.buildAreaPoint2 = Farm.posToBlocks(rectX2, rectZ2);
+            Farm.buildAreaPoint1 = Farm.posToBlocks(rectX1, rectZ1);
+            Farm.buildAreaPoint2 = Farm.posToBlocks(rectX2 - Farm.blockSize, rectZ2 - Farm.blockSize);
 
             rectScreenPoint1 = Farm.posToScreenPos(new Vector3(rectX1, 0, rectZ1), Farm.camera);
             rectScreenPoint2 = Farm.posToScreenPos(new Vector3(rectX1, 0, rectZ2), Farm.camera);
