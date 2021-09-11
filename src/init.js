@@ -57,9 +57,9 @@ function initScene(Farm) {
 
     Farm.scene = new THREE.Scene();
     Farm.scene.background = new THREE.Color(0xcccccc);
-    Farm.scene.fog = new THREE.FogExp2(0xcccccc, 0.0005);
+    Farm.scene.fog = new THREE.FogExp2(0xcccccc, 0.0001);
 
-    Farm.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    Farm.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, logarithmicDepthBuffer: true });
     Farm.renderer.setPixelRatio(window.devicePixelRatio);
     Farm.renderer.setSize(window.innerWidth, window.innerHeight);
     Farm.renderer.setClearColor(0x000000, 0);
@@ -91,8 +91,8 @@ function initScene(Farm) {
 
     Farm.controls.zoomSpeed = 2;
 
-    Farm.camera.position.set(550, 50, 500);
-    Farm.controls.target.set(500, 0, 500);
+    Farm.camera.position.set(15, 70, 35);
+    Farm.controls.target.set(20, 0, 35);
     Farm.controls.update();
 
     // Lights
@@ -389,7 +389,15 @@ function initWorld(Farm) {
     Farm.groundGeometry.setIndex(new THREE.BufferAttribute(new Uint32Array(groundIndices), 1));
 
     Farm.texGroundBlock = textureLoader.load('assets/textures/ground.png');
+    Farm.texGroundBlock.anisotropy = 1;
+    Farm.texGroundBlock.magFilter = THREE.NearestFilter;
+    Farm.texGroundBlock.minFilter = THREE.NearestFilter;
+
     Farm.texSoilBlock = textureLoader.load('assets/textures/soil.png');
+    Farm.texSoilBlock.anisotropy = 1;
+    Farm.texSoilBlock.magFilter = THREE.NearestFilter;
+    Farm.texSoilBlock.minFilter = THREE.NearestFilter;
+
 
     let groundMaterial = new THREE.MeshLambertMaterial({
         map: Farm.texGroundBlock,
@@ -399,6 +407,52 @@ function initWorld(Farm) {
     Farm.groundMesh = new THREE.Mesh(Farm.groundGeometry, groundMaterial);
 
     Farm.scene.add(Farm.groundMesh);
+
+    // Farm Sides
+
+    let blocksPerSize = 16;
+    let numSides = Math.floor(Farm.numBlocks.x / blocksPerSize);
+    let geometry, texture, material, mesh;
+    const matrix = new THREE.Matrix4();
+
+    // Road
+    geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
+    geometry.rotateX(Math.PI / 2);
+    geometry.rotateY(-Math.PI / 2);
+    texture = textureLoader.load('assets/textures/road.png');
+    material = new THREE.MeshLambertMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+    });
+    mesh = new THREE.InstancedMesh(geometry, material, numSides);
+    for (let i = 0; i < numSides; i++) {
+        matrix.makeTranslation(
+            ((i + 0.5) * blocksPerSize - 0.5) * Farm.blockSize,
+            0,
+            ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize
+        );
+        mesh.setMatrixAt(i, matrix);
+    }
+    Farm.scene.add(mesh);
+
+    // River
+    geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
+    geometry.rotateX(Math.PI / 2);
+    texture = textureLoader.load('assets/textures/river.png');
+    material = new THREE.MeshLambertMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+    });
+    mesh = new THREE.InstancedMesh(geometry, material, numSides);
+    for (let i = 0; i < numSides; i++) {
+        matrix.makeTranslation(
+            ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize,
+            0,
+            ((i + 0.5) * blocksPerSize - 0.5) * Farm.blockSize
+        );
+        mesh.setMatrixAt(i, matrix);
+    }
+    Farm.scene.add(mesh);
 
     // Waiting Lists
 

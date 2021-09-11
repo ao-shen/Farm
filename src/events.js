@@ -175,7 +175,7 @@ export function onKeyDown(Farm, event) {
 
                 let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
                 for (let i = 0; i < 8; i++) {
-                    Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
+                    Farm.groundUVs[curIdx + i] = instanced[i];
                 }
                 Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
             }
@@ -299,6 +299,8 @@ function createNewBuilding(Farm) {
     let buildingType = Farm.buildPaletteSelect;
 
     let foundationBlocks = [];
+
+    if (Farm.buildAreaPoint1 == null || Farm.buildAreaPoint2 == null) return;
 
     for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x && newBuilding; x++) {
         for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z && newBuilding; z++) {
