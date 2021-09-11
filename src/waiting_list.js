@@ -43,11 +43,11 @@ export class WaitingList {
         let nearest = null;
         let gettingCloser = true;
 
-        while (gettingCloser && l >= 0 && r < this.chunks.length) {
+        while (gettingCloser && (l >= 0 || r < this.chunks.length)) {
 
             gettingCloser = false;
 
-            if (nearest == null || nearest.dist > r - pos.x || limit == -1 || limit >= r - pos.x) {
+            if ((nearest == null || nearest.dist > r - pos.x) && (limit == -1 || limit >= r - pos.x)) {
                 gettingCloser = true;
                 if (r < this.chunks.length) {
                     curIdx = sortedIndex(this.chunks[r], pos);
@@ -68,7 +68,7 @@ export class WaitingList {
                 }
                 r++;
             }
-            if (nearest == null || nearest.dist > pos.x - l || limit == -1 || limit >= pos.x - l) {
+            if ((nearest == null || nearest.dist > pos.x - l) && (limit == -1 || limit >= pos.x - l)) {
                 gettingCloser = true;
                 if (l >= 0) {
                     curIdx = sortedIndex(this.chunks[l], pos);
