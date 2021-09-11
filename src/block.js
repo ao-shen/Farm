@@ -5,6 +5,8 @@ export class Block {
         this.x = x;
         this.z = z;
 
+        this.groundState = 0;
+
         this.type = type;
         this.plants = [];
         this.buildings = [];

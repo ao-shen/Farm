@@ -58,14 +58,15 @@ function render(Farm) {
 function renderOverlays(Farm) {
     Farm.mouseRaycaster.setFromCamera(Farm.mousePos, Farm.camera);
 
-    const intersects = Farm.mouseRaycaster.intersectObject(Farm.blockMesh);
+    const intersects = Farm.mouseRaycaster.intersectObject(Farm.groundMesh);
 
+    Farm.hoveringBlock = null;
     if (intersects.length > 0) {
 
         const intersect = intersects[0];
         const face = intersect.face;
 
-        const meshPosition = Farm.blockMesh.geometry.attributes.position;
+        const meshPosition = Farm.groundMesh.geometry.attributes.position;
 
         let point = new THREE.Vector3();
 
@@ -75,6 +76,8 @@ function renderOverlays(Farm) {
         point.divideScalar(3);
 
         point = Farm.magnetToBlocks(point);
+        let blockPos = Farm.posToBlocks(point.x, point.z);
+        Farm.hoveringBlock = Farm.blocks[blockPos.x + ',' + blockPos.z];
 
         let rectScreenPoint1 = Farm.posToScreenPos(new Vector3(point.x, 0, point.z), Farm.camera);
         let rectScreenPoint2 = Farm.posToScreenPos(new Vector3(point.x + Farm.blockSize, 0, point.z), Farm.camera);
@@ -88,9 +91,9 @@ function renderOverlays(Farm) {
             rectScreenPoint4.x, rectScreenPoint4.y, 0,
         ]), 3));
 
-        Farm.blockMesh.updateMatrix();
+        Farm.groundMesh.updateMatrix();
 
-        Farm.blockLine.geometry.applyMatrix4(Farm.blockMesh.matrix);
+        Farm.blockLine.geometry.applyMatrix4(Farm.groundMesh.matrix);
 
         Farm.blockLine.visible = true;
 

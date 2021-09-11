@@ -8,7 +8,7 @@ import * as BufferGeometryUtils from './THREE/BufferGeometryUtils.js';
 import { OrbitControls } from './THREE/OrbitControls.js';
 import { GLTFLoader } from './THREE/GLTFLoader.js';
 
-import { onWindowResize, onMouseUp, onMouseMove, onMouseDown } from './events.js';
+import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown } from './events.js';
 import { BLOCK, Block } from './block.js';
 
 export function init(Farm) {
@@ -330,40 +330,75 @@ function initWorld(Farm) {
     const textureLoader = new THREE.TextureLoader();
 
     // ground
-    let matrix = new THREE.Matrix4();
 
-    let blockGeometry = new THREE.PlaneGeometry(Farm.blockSize, Farm.blockSize);
-    //blockGeometry.attributes.uv.array[5] = 0.5;
-    //blockGeometry.attributes.uv.array[7] = 0.5;
-    blockGeometry.rotateX(-Math.PI / 2);
-    blockGeometry.translate(0, 0, 0);
+    for (let state of Farm.GROUND_STATES) {
+        state.uv[0] += 0.01;
+        state.uv[1] += 0.01;
+        state.uv[2] -= 0.01;
+        state.uv[3] += 0.01;
+        state.uv[4] -= 0.01;
+        state.uv[5] -= 0.01;
+        state.uv[6] += 0.01;
+        state.uv[7] -= 0.01;
+    }
 
-    let geometries = [];
+    var quad_normals = [
+        0, 1, 0
+    ];
 
-    for (let z = 0; z < Farm.numBlocks.z; z++) {
-        for (let x = 0; x < Farm.numBlocks.x; x++) {
-
-            matrix.makeTranslation(
-                x * Farm.blockSize,
-                0,
-                z * Farm.blockSize
-            );
-
-            geometries.push(blockGeometry.clone().applyMatrix4(matrix));
+    let groundVertices = [];
+    let groundNormals = [];
+    Farm.groundUVs = [];
+    let groundIndices = [];
+    for (let x = 0; x < Farm.numBlocks.x; x++) {
+        for (let z = 0; z < Farm.numBlocks.z; z++) {
 
             Farm.blocks[x + ',' + z] = new Block(x, z);
 
+            groundVertices.push((x - 0.5) * Farm.blockSize);
+            groundVertices.push(0);
+            groundVertices.push((z - 0.5) * Farm.blockSize);
+            groundVertices.push((x + 0.5) * Farm.blockSize);
+            groundVertices.push(0);
+            groundVertices.push((z - 0.5) * Farm.blockSize);
+            groundVertices.push((x + 0.5) * Farm.blockSize);
+            groundVertices.push(0);
+            groundVertices.push((z + 0.5) * Farm.blockSize);
+            groundVertices.push((x - 0.5) * Farm.blockSize);
+            groundVertices.push(0);
+            groundVertices.push((z + 0.5) * Farm.blockSize);
+            groundNormals.push(...quad_normals);
+            groundNormals.push(...quad_normals);
+            groundNormals.push(...quad_normals);
+            groundNormals.push(...quad_normals);
+            Farm.groundUVs.push(...Farm.GROUND_STATES[0].uv);
+            let curIdx = (x * Farm.numBlocks.z + z) * 4;
+            groundIndices.push(curIdx + 0);
+            groundIndices.push(curIdx + 2);
+            groundIndices.push(curIdx + 1);
+            groundIndices.push(curIdx + 0);
+            groundIndices.push(curIdx + 3);
+            groundIndices.push(curIdx + 2);
         }
     }
 
-    let groundGeometry = BufferGeometryUtils.mergeBufferGeometries(geometries);
-    groundGeometry.computeBoundingSphere();
+    Farm.groundGeometry = new THREE.BufferGeometry();
+    Farm.groundGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(groundVertices), 3));
+    Farm.groundGeometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(groundNormals), 3));
+    Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
+    Farm.groundGeometry.setIndex(new THREE.BufferAttribute(new Uint32Array(groundIndices), 1));
 
-    Farm.texGrassBlock = textureLoader.load('assets/textures/grass.png');
+    Farm.texGroundBlock = textureLoader.load('assets/textures/ground.png');
     Farm.texSoilBlock = textureLoader.load('assets/textures/soil.png');
 
-    Farm.blockMesh = new THREE.Mesh(groundGeometry, new THREE.MeshLambertMaterial({ map: Farm.texGrassBlock, side: THREE.DoubleSide }));
-    Farm.scene.add(Farm.blockMesh);
+    let groundMaterial = new THREE.MeshLambertMaterial({
+        map: Farm.texGroundBlock,
+        side: THREE.DoubleSide,
+    });
+
+    Farm.groundMesh = new THREE.Mesh(Farm.groundGeometry, groundMaterial);
+
+    Farm.scene.add(Farm.groundMesh);
 
     // Waiting Lists
 
@@ -411,6 +446,10 @@ function initEvents(Farm) {
 
     window.addEventListener('mousedown', function(event) {
         onMouseDown(Farm, event);
+    });
+
+    window.addEventListener('keydown', function(event) {
+        onKeyDown(Farm, event);
     });
 }
 

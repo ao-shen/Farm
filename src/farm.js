@@ -47,6 +47,8 @@ export let Farm = {
     mouseRaycaster: new THREE.Raycaster(),
     mousePos: new THREE.Vector2(),
 
+    hoveringBlock: null,
+
     // Blocks -----------------------------------------------
 
     numBlocks: {
@@ -56,10 +58,13 @@ export let Farm = {
 
     blockSize: 10,
 
-    blockMesh: null,
+    groundMesh: null,
+    groundGeometry: null,
+    groundUVs: null,
+
     blockLine: null,
 
-    texGrassBlock: null,
+    texGroundBlock: null,
     texSoilBlock: null,
 
     // Building Area
@@ -142,6 +147,44 @@ export let Farm = {
     },
 
     // CONFIGS -----------------------------------------------
+
+    // Ground States
+    GROUND_STATES: [{
+        uv: [
+            0.0, 0.75,
+            0.5, 0.75,
+            0.5, 1.0,
+            0.0, 1.0
+        ],
+    }, {
+        uv: [
+            0.0, 0.5,
+            0.5, 0.5,
+            0.5, 0.75,
+            0.0, 0.75
+        ],
+    }, {
+        uv: [
+            0.0, 0.25,
+            0.5, 0.25,
+            0.5, 0.5,
+            0.0, 0.5
+        ],
+    }, {
+        uv: [
+            0.0, 0.0,
+            0.5, 0.0,
+            0.5, 0.25,
+            0.0, 0.25
+        ],
+    }, {
+        uv: [
+            0.5, 0.75,
+            1.0, 0.75,
+            1.0, 1.0,
+            0.5, 1.0
+        ],
+    }],
 
     // Build Palette
     BUILDINGS: [{

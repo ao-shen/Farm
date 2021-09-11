@@ -119,14 +119,14 @@ export function onMouseDown(Farm, event) {
             if (Farm.lens == Farm.LENS.BUILD) {
                 Farm.mouseRaycaster.setFromCamera(Farm.mousePos, Farm.camera);
 
-                intersects = Farm.mouseRaycaster.intersectObject(Farm.blockMesh);
+                intersects = Farm.mouseRaycaster.intersectObject(Farm.groundMesh);
 
                 if (intersects.length > 0) {
 
                     const intersect = intersects[0];
                     const face = intersect.face;
 
-                    const meshPosition = Farm.blockMesh.geometry.attributes.position;
+                    const meshPosition = Farm.groundMesh.geometry.attributes.position;
 
                     let point = new THREE.Vector3();
 
@@ -157,6 +157,31 @@ export function onMouseDown(Farm, event) {
         case 2:
             break;
     }
+}
+
+export function onKeyDown(Farm, event) {
+
+    switch (event.key) {
+        case ']':
+        case '[':
+            let curBlock = Farm.hoveringBlock;
+            if (curBlock) {
+                if (event.key == ']') {
+                    curBlock.groundState += 1;
+                } else {
+                    curBlock.groundState -= 1;
+                }
+                curBlock.groundState = (curBlock.groundState + Farm.GROUND_STATES.length) % Farm.GROUND_STATES.length;
+
+                let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
+                for (let i = 0; i < 8; i++) {
+                    Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
+                }
+                Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
+            }
+            break;
+    }
+
 }
 
 function createNewSoil(Farm) {
