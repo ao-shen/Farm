@@ -101,7 +101,7 @@ function initScene(Farm) {
     dirLight1.position.set(1, 1, 1);
     Farm.scene.add(dirLight1);
 
-    let dirLight2 = new THREE.DirectionalLight(0x002288);
+    let dirLight2 = new THREE.DirectionalLight(0x886622);
     dirLight2.position.set(-1, -1, -1);
     Farm.scene.add(dirLight2);
 
