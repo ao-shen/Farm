@@ -53,6 +53,7 @@ export class Entity {
             case "Worker":
                 let goalPlant = this.findMaturePlant();
                 if (goalPlant != null) {
+                    goalPlant = goalPlant.element.obj;
                     this.goal = goalPlant;
                     this.path = this.pathFind(goalPlant.block);
                     if (this.path != null) {
@@ -70,21 +71,9 @@ export class Entity {
         let rangeRadius = 10;
         let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
 
-        for (let x = curBlockPos.x - rangeRadius; x <= curBlockPos.x + rangeRadius; x++) {
-            for (let z = curBlockPos.z - rangeRadius; z <= curBlockPos.z + rangeRadius; z++) {
+        let nearest = this.Farm.plantsAwaitingHarvest.findNearest(curBlockPos, rangeRadius);
 
-                let curBlock = Farm.blocks[x + ',' + z];
-                if (typeof curBlock === 'undefined') continue;
-
-                for (let plant of curBlock.plants) {
-
-                    if (plant.isMature() && !plant.isHarvestClaimed()) {
-                        return plant;
-                    }
-                }
-            }
-        }
-        return null;
+        return nearest;
     }
 
     performActionAtTarget() {
@@ -211,7 +200,7 @@ export class Entity {
                     return path;
                 }
 
-                if (!((newX + ',' + newZ) in vis) && !this.isCollidingAt(newX, newZ) && cur.pathLength + direction.length < 20) {
+                if (!((newX + ',' + newZ) in vis) && !this.isCollidingAt(newX, newZ) && cur.pathLength + direction.length < 30) {
                     pq.push({ x: newX, z: newZ, pathLength: cur.pathLength + direction.length, parent: cur, heuristic: heuristic(newX, newZ, cur.pathLength + 1) });
                     vis[newX + ',' + newZ] = 1;
                 }

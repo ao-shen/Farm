@@ -364,6 +364,10 @@ function initWorld(Farm) {
 
     Farm.blockMesh = new THREE.Mesh(groundGeometry, new THREE.MeshLambertMaterial({ map: Farm.texGrassBlock, side: THREE.DoubleSide }));
     Farm.scene.add(Farm.blockMesh);
+
+    // Waiting Lists
+
+    Farm.plantsAwaitingHarvest.init(Farm);
 }
 
 function initOverlays(Farm) {

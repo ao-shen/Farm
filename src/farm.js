@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { Vector3, Vector2 } from "three";
 
 import { Scheduler } from './scheduler.js';
+import { WaitingList } from "./waiting_list.js";
 
 export let Farm = {
 
@@ -73,8 +74,6 @@ export let Farm = {
     geometrySoil: null,
     materialSoil: null,
 
-    plantTypeAwaitingMeshUpdate: new Set(),
-
     // Ground
     blocks: {},
 
@@ -101,6 +100,12 @@ export let Farm = {
 
     buildPaletteSelect: 0,
     buildPaletteMap: {},
+
+    // Waiting Lists
+
+    plantTypeAwaitingMeshUpdate: new Set(),
+
+    plantsAwaitingHarvest: new WaitingList(),
 
     // UTILS -----------------------------------------------
 

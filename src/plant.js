@@ -26,7 +26,16 @@ export class Plant {
 
         this.updateMesh();
 
-        return this.stage + 1 < this.Farm.BUILDINGS[this.type].numStages;
+        if (this.isMature()) {
+
+            if (!this.isHarvestClaimed()) {
+                this.Farm.plantsAwaitingHarvest.add({ x: this.block.x, z: this.block.z }, this);
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     isMature() {
@@ -38,6 +47,7 @@ export class Plant {
     }
 
     harvestClaim(entity) {
+        this.Farm.plantsAwaitingHarvest.remove({ x: this.block.x, z: this.block.z }, this);
         this.harvestClaimer = entity;
     }
 
