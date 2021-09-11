@@ -8,6 +8,9 @@ import { WaitingList } from "./waiting_list.js";
 
 export let Farm = {
 
+    // FLAGS
+    flagRenderPaths: true,
+
     // STATS
     stats: null,
 

@@ -13,6 +13,7 @@ export class Entity {
         this.name = name;
 
         this.path = null;
+        this.pathMesh = null;
         this.goal = null;
 
         this.parentBuilding = null;
@@ -39,6 +40,7 @@ export class Entity {
         this.path = this.pathFind(this.parentBuilding.pos);
         if (this.path != null) {
             this.goal = this.parentBuilding;
+            this.renderPath();
             return false;
         }
         return true;
@@ -58,12 +60,35 @@ export class Entity {
                     this.path = this.pathFind(goalPlant.block);
                     if (this.path != null) {
                         goalPlant.harvestClaim(this);
+                        this.renderPath();
                         return false;
                     }
                 }
                 break;
         }
         return true;
+    }
+
+    renderPath() {
+        if (this.Farm.flagRenderPaths) {
+
+            let geometry = new THREE.BufferGeometry();
+
+            let pathVertices = [];
+
+            for (let vertex of this.path) {
+                pathVertices.push(vertex.x * this.Farm.blockSize);
+                pathVertices.push(5);
+                pathVertices.push(vertex.z * this.Farm.blockSize);
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pathVertices), 3));
+
+            let material = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, linewidth: 3 });
+
+            this.pathMesh = new THREE.Line(geometry, material);
+            this.Farm.scene.add(this.pathMesh);
+        }
     }
 
     findMaturePlant() {
@@ -94,6 +119,12 @@ export class Entity {
                 this.path.shift();
                 if (this.path.length == 0) {
                     this.path = null;
+                    if (this.pathMesh != null) {
+                        this.Farm.scene.remove(this.pathMesh);
+                        this.pathMesh.geometry.dispose();
+                        this.pathMesh.material.dispose();
+                        this.pathMesh = null;
+                    }
                     let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
                     let thisEntity = this;
                     if (this.goal == this.parentBuilding) {
