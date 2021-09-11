@@ -179,6 +179,44 @@ function initHudScene(Farm) {
         Farm.groupBuildPalette.visible = false;
     });
 
+    // Build Palette Category Tabs
+    let texTab = textureLoader.load("assets/textures/palette_tab.png");
+    let texTabInactive = textureLoader.load("assets/textures/palette_tab_inactive.png");
+
+    // Init Building Palette Categories
+    let mapCategoryNameToIdx = {};
+    for (let i = 0; i < Farm.buildingPaletteCategories.length; i++) {
+        mapCategoryNameToIdx[Farm.buildingPaletteCategories[i].name] = i;
+        Farm.buildingPaletteCategories[i].buildingTypes = [];
+        Farm.buildingPaletteCategories[i].group = new THREE.Group();;
+        Farm.groupBuildPalette.add(Farm.buildingPaletteCategories[i].group);
+        Farm.buildingPaletteCategories[i].group.visible = false;
+
+        material = new THREE.SpriteMaterial({ map: texTab });
+        let spriteTab = Farm.buildingPaletteCategories[i].spriteTab = new THREE.Sprite(material);
+        material = new THREE.SpriteMaterial({ map: texTabInactive });
+        let spriteTabInactive = Farm.buildingPaletteCategories[i].spriteTabInactive = new THREE.Sprite(material);
+
+        spriteTab.center.set(0.5, 0.5);
+        spriteTab.scale.set(calculatedBuildPaletteHeight * 0.5, calculatedBuildPaletteHeight / 256 * 90, 1);
+        spriteTab.position.set(-window.innerWidth * 0.5 + 100 + i * calculatedBuildPaletteHeight * 0.5, -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 1.04, 2);
+        spriteTab.name = "BuildPaletteTabCur";
+        Farm.buildingPaletteCategories[i].group.add(spriteTab);
+        spriteTabInactive.center.set(0.5, 0.5);
+        spriteTabInactive.scale.set(calculatedBuildPaletteHeight * 0.5, calculatedBuildPaletteHeight / 256 * 90, 1);
+        spriteTabInactive.position.set(-window.innerWidth * 0.5 + 100 + i * calculatedBuildPaletteHeight * 0.5, -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 1.04, -2);
+        spriteTabInactive.name = "BuildPaletteTab_" + i;
+    }
+    Farm.buildingPaletteCategories[0].group.visible = true;
+
+    for (let i = 0; i < Farm.buildingPaletteCategories.length; i++) {
+        for (let j = 0; j < Farm.buildingPaletteCategories.length; j++) {
+            if (i != j) {
+                Farm.buildingPaletteCategories[i].group.add(Farm.buildingPaletteCategories[j].spriteTabInactive.clone());
+            }
+        }
+    }
+
     let selectSize = calculatedBuildPaletteHeight - 35;
 
     let thumbnailSize = calculatedBuildPaletteHeight - 40;
@@ -202,10 +240,15 @@ function initHudScene(Farm) {
         Farm.spriteBuildPaletteSelect.name = "BuildPaletteSelect";
     });
 
+    // Building Thumbnails
 
     for (let i = 0; i < Farm.BUILDINGS.length; i++) {
-
         let curBuilding = Farm.BUILDINGS[i];
+        let category = Farm.buildingPaletteCategories[mapCategoryNameToIdx[curBuilding.category]];
+        let categoryIdx = category.buildingTypes.length;
+
+        category.buildingTypes.push(i);
+
         textureLoader.load(curBuilding.thumbnail, function(texture) {
 
             material = new THREE.SpriteMaterial({ map: texture });
@@ -213,8 +256,8 @@ function initHudScene(Farm) {
             curBuilding.spriteThumbnail = new THREE.Sprite(material);
             curBuilding.spriteThumbnail.center.set(0.5, 0.5);
             curBuilding.spriteThumbnail.scale.set(thumbnailSize, thumbnailSize, 1);
-            Farm.groupBuildPalette.add(curBuilding.spriteThumbnail);
-            curBuilding.spriteThumbnail.position.set(-window.innerWidth * 0.5 + 20 + (i + 0.5) * (thumbnailSize + 20), thumbnailY, 2);
+            category.group.add(curBuilding.spriteThumbnail);
+            curBuilding.spriteThumbnail.position.set(-window.innerWidth * 0.5 + 20 + (categoryIdx + 0.5) * (thumbnailSize + 20), thumbnailY, 2);
             curBuilding.spriteThumbnail.name = "BuildPalette_" + curBuilding.name;
         });
     }
@@ -236,8 +279,6 @@ function loadBuildingAssets(Farm) {
     for (let i = 0; i < Farm.BUILDINGS.length; i++) {
 
         let curBuilding = Farm.BUILDINGS[i];
-
-        Farm.buildPaletteMap[curBuilding.name] = i;
 
         if (curBuilding.name == "Soil") {
             modelLoader.load(curBuilding.models[0], function(gltf) {
@@ -292,8 +333,19 @@ function loadBuildingAssets(Farm) {
                 });
             }
         }
-
     }
+
+    // Configure buildPaletteMap
+    for (let i = 0; i < Farm.buildingPaletteCategories.length; i++) {
+        for (let j = 0; j < Farm.buildingPaletteCategories[i].buildingTypes.length; j++) {
+            Farm.buildPaletteMap[Farm.BUILDINGS[Farm.buildingPaletteCategories[i].buildingTypes[j]].name] = {
+                buildingType: Farm.buildingPaletteCategories[i].buildingTypes[j],
+                buildingCategory: i,
+                buildingCategoryIdx: j
+            };
+        }
+    }
+
 }
 
 function loadEntitiesAssets(Farm) {

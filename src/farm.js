@@ -187,6 +187,16 @@ export let Farm = {
     }],
 
     // Build Palette
+
+    buildingPaletteCategories: [{
+        name: "ground",
+    }, {
+        name: "plants",
+    }, {
+        name: "buildings",
+    }],
+    curBuildingPaletteCategories: 0,
+
     BUILDINGS: [{
         name: "Soil",
         category: "ground",

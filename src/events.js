@@ -71,6 +71,10 @@ export function onMouseDown(Farm, event) {
 
             for (let intersect of intersects) {
 
+                if (!intersect.object.visible || !intersect.object.parent.visible) {
+                    continue;
+                }
+
                 if (intersect.object.name == "BuildButton") {
 
                     if (Farm.lens == Farm.LENS.DEFAULT) {
@@ -99,17 +103,31 @@ export function onMouseDown(Farm, event) {
                     }
                 } else if (intersect.object.name.startsWith("BuildPalette_")) {
 
-                    Farm.buildPaletteSelect = Farm.buildPaletteMap[intersect.object.name.substring("BuildPalette_".length)];
-                    Farm.spriteBuildPaletteSelect.position.set(-window.innerWidth * 0.5 + 20 + (Farm.buildPaletteSelect + 0.5) * (Farm.thumbnailSize + 20), Farm.thumbnailY, 2);
+                    let buildingPaletteInfo = Farm.buildPaletteMap[intersect.object.name.substring("BuildPalette_".length)];
+                    Farm.buildPaletteSelect = buildingPaletteInfo.buildingType;
+                    let categoryIdx = buildingPaletteInfo.buildingCategoryIdx;
+                    Farm.spriteBuildPaletteSelect.position.set(-window.innerWidth * 0.5 + 20 + (categoryIdx + 0.5) * (Farm.thumbnailSize + 20), Farm.thumbnailY, 2);
 
-                    switch (Farm.BUILDINGS[Farm.buildPaletteSelect].category) {
-                        case "buildings":
-                            Farm.overlay = Farm.OVERLAY.BUILD_BUILDINGS;
-                            break;
-                        default:
-                            Farm.overlay = Farm.OVERLAY.DEFAULT;
-                            break;
-                    }
+                    updateBuildPaletteSelect(Farm);
+
+                    Farm.ignoreNextMouseUp = true;
+                    return;
+                } else if (intersect.object.name == "BuildPaletteTabCur") {
+                    continue;
+                } else if (intersect.object.name.startsWith("BuildPaletteTab_")) {
+
+                    Farm.buildingPaletteCategories[Farm.curBuildingPaletteCategories].group.visible = false;
+
+                    Farm.curBuildingPaletteCategories = intersect.object.name.substring("BuildPaletteTab_".length);
+
+                    Farm.buildingPaletteCategories[Farm.curBuildingPaletteCategories].group.visible = true;
+
+                    let buildingPaletteInfo = Farm.buildPaletteMap[Farm.BUILDINGS[Farm.buildingPaletteCategories[Farm.curBuildingPaletteCategories].buildingTypes[0]].name];
+                    Farm.buildPaletteSelect = buildingPaletteInfo.buildingType;
+                    let categoryIdx = buildingPaletteInfo.buildingCategoryIdx;
+                    Farm.spriteBuildPaletteSelect.position.set(-window.innerWidth * 0.5 + 20 + (categoryIdx + 0.5) * (Farm.thumbnailSize + 20), Farm.thumbnailY, 2);
+
+                    updateBuildPaletteSelect(Farm);
 
                     Farm.ignoreNextMouseUp = true;
                     return;
@@ -327,5 +345,17 @@ function createNewBuilding(Farm) {
         }
 
         Farm.buildings.push(building);
+    }
+}
+
+function updateBuildPaletteSelect(Farm) {
+
+    switch (Farm.BUILDINGS[Farm.buildPaletteSelect].category) {
+        case "buildings":
+            Farm.overlay = Farm.OVERLAY.BUILD_BUILDINGS;
+            break;
+        default:
+            Farm.overlay = Farm.OVERLAY.DEFAULT;
+            break;
     }
 }
