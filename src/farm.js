@@ -103,6 +103,9 @@ export let Farm = {
         BUILD_AREA: 1,
         BUILD_PLANTS: 2,
         BUILD_BUILDINGS: 3,
+        REMOVE_AREA: 4,
+        REMOVE_PLANTS: 5,
+        REMOVE_BUILDINGS: 6,
     },
     overlay: 0,
 
@@ -197,6 +200,8 @@ export let Farm = {
         name: "plants",
     }, {
         name: "buildings",
+    }, {
+        name: "remove",
     }],
     curBuildingPaletteCategories: 0,
 
@@ -252,6 +257,36 @@ export let Farm = {
         models: [
             'assets/models/workers_house0.glb',
         ],
+    }, {
+        name: "Remove All",
+        category: "remove",
+        price: 0,
+        thumbnail: 'assets/textures/potato_thumbnail.png',
+        models: [],
+    }, {
+        name: "Remove Soil",
+        category: "remove",
+        price: 0,
+        thumbnail: 'assets/textures/soil_thumbnail.png',
+        models: [],
+    }, {
+        name: "Remove Water",
+        category: "remove",
+        price: 0,
+        thumbnail: 'assets/textures/water_thumbnail.png',
+        models: [],
+    }, {
+        name: "Remove Plants",
+        category: "remove",
+        price: 0,
+        thumbnail: 'assets/textures/carrot_thumbnail.png',
+        models: [],
+    }, {
+        name: "Remove Buildings",
+        category: "remove",
+        price: 0,
+        thumbnail: 'assets/textures/workers_house_thumbnail.png',
+        models: [],
     }, ],
 
     // Entities

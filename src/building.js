@@ -23,6 +23,21 @@ export class Building {
             this.mesh.position.set(this.pos.x * this.Farm.blockSize, 0, this.pos.z * this.Farm.blockSize);
         }
     }
+
+    remove() {
+        for (let child of this.childEntities) {
+            child.remove();
+        }
+
+        this.mesh.geometry.dispose();
+        this.mesh.material.dispose();
+        this.Farm.scene.remove(this.mesh);
+
+        let idx = this.Farm.buildings.indexOf(this);
+        this.Farm.buildings[idx] = null;
+
+        this.isRemoved = true;
+    }
 }
 
 export class BuildingWorkersHouse extends Building {

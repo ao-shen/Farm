@@ -91,8 +91,8 @@ function initScene(Farm) {
 
     Farm.controls.zoomSpeed = 2;
 
-    Farm.camera.position.set(15, 70, 35);
-    Farm.controls.target.set(20, 0, 35);
+    Farm.camera.position.set(-25, 60, 40);
+    Farm.controls.target.set(35, 0, 40);
     Farm.controls.update();
 
     // Lights
@@ -533,7 +533,10 @@ function initOverlays(Farm) {
     material = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, linewidth: 3 });
 
     Farm.buildAreaRect = new THREE.Line(geometry, material);
+    Farm.buildAreaRect.visible = false;
     Farm.hudScene.add(Farm.buildAreaRect);
+
+    Farm.buildAreaCorner = new THREE.Vector3();
 }
 
 function initEvents(Farm) {

@@ -25,7 +25,7 @@ export class Entity {
         let thisEntity = this;
         this.Farm.scheduler.addToSchedule(1000, function() {
             return thisEntity.navigateToTarget();
-        });
+        }, this);
     }
 
     onSchedule() {
@@ -110,7 +110,7 @@ export class Entity {
         let thisEntity = this;
         this.Farm.scheduler.addToSchedule(100, function() {
             return thisEntity.navigateHome();
-        });
+        }, this);
     }
 
     update() {
@@ -130,13 +130,13 @@ export class Entity {
                     if (this.goal == this.parentBuilding) {
                         this.Farm.scheduler.addToSchedule(1000, function() {
                             return thisEntity.navigateToTarget();
-                        });
+                        }, this);
                     } else {
                         switch (this.Farm.ENTITIES[this.type].name) {
                             case "Worker":
                                 this.Farm.scheduler.addToSchedule(1000, function() {
                                     return thisEntity.performActionAtTarget();
-                                });
+                                }, this);
                                 break;
                         }
                     }
@@ -157,6 +157,22 @@ export class Entity {
         if (this.mesh) {
             this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
         }
+    }
+
+    remove() {
+        if (this.pathMesh) {
+            this.pathMesh.geometry.dispose();
+            this.pathMesh.material.dispose();
+            this.Farm.scene.remove(this.pathMesh);
+        }
+        this.mesh.geometry.dispose();
+        this.mesh.material.dispose();
+        this.Farm.scene.remove(this.mesh);
+
+        let idx = this.Farm.entities.indexOf(this);
+        this.Farm.entities[idx] = null;
+
+        this.isRemoved = true;
     }
 
     isCollidingAt(x, z) {

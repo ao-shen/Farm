@@ -17,7 +17,7 @@ export class Plant {
         let thisPlant = this;
         this.Farm.scheduler.addToSchedule(this.Farm.BUILDINGS[this.type].matureTime, function() {
             return thisPlant.onGrowth();
-        });
+        }, this);
     }
 
     onGrowth() {
@@ -58,7 +58,7 @@ export class Plant {
         let thisPlant = this;
         this.Farm.scheduler.addToSchedule(this.Farm.BUILDINGS[this.type].matureTime, function() {
             return thisPlant.onGrowth();
-        });
+        }, this);
 
         this.harvestClaimer = null;
 

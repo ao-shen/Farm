@@ -18,12 +18,13 @@ export class Scheduler {
         }
     }
 
-    addToSchedule(interval, callback) {
+    addToSchedule(interval, callback, caller = {}) {
         let schedule = this.schedules[interval];
         let now = (new Date()).getTime();
         let curInstance = Math.floor((now - schedule.startTime) / (schedule.SCHEDULE.interval / schedule.SCHEDULE.instances)) + 1;
         this.schedules[interval].instances[(curInstance + schedule.SCHEDULE.instances) % schedule.SCHEDULE.instances].add({
             skip: true,
+            caller: caller,
             callback: callback
         });
     }
@@ -41,7 +42,7 @@ export class Scheduler {
                     if (schedulee.skip) {
                         schedulee.skip = false;
                     } else {
-                        if (!schedulee.callback()) {
+                        if (schedulee.caller.isRemoved || !schedulee.callback()) {
                             schedule.instances[schedule.lastInstance % schedule.SCHEDULE.instances].delete(schedulee);
                         }
                     }

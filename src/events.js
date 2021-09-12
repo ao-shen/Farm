@@ -50,6 +50,13 @@ export function onMouseUp(Farm, event) {
                 Farm.buildAreaRect.visible = false;
             } else if (Farm.overlay == Farm.OVERLAY.BUILD_BUILDINGS) {
                 createNewBuilding(Farm);
+            } else if (Farm.lens == Farm.LENS.REMOVE) {
+                remove(Farm);
+                Farm.overlay = Farm.OVERLAY.DEFAULT;
+                Farm.buildAreaRect.visible = false;
+            } else {
+                Farm.overlay = Farm.OVERLAY.DEFAULT;
+                Farm.buildAreaRect.visible = false;
             }
             Farm.buildAreaPoint1 = null;
             Farm.buildAreaPoint2 = null;
@@ -89,9 +96,22 @@ export function onMouseDown(Farm, event) {
                         Farm.groupBuildPalette.visible = true;
                         Farm.spriteBuildPaletteSelect.position.set(-window.innerWidth * 0.5 + 20 + (Farm.buildPaletteSelect + 0.5) * (Farm.thumbnailSize + 20), Farm.thumbnailY, 2);
 
+                        Farm.buildingPaletteCategories[Farm.curBuildingPaletteCategories].group.visible = false;
+
+                        Farm.curBuildingPaletteCategories = 0;
+
+                        Farm.buildingPaletteCategories[Farm.curBuildingPaletteCategories].group.visible = true;
+
+                        let buildingPaletteInfo = Farm.buildPaletteMap[Farm.BUILDINGS[Farm.buildingPaletteCategories[Farm.curBuildingPaletteCategories].buildingTypes[0]].name];
+                        Farm.buildPaletteSelect = buildingPaletteInfo.buildingType;
+                        let categoryIdx = buildingPaletteInfo.buildingCategoryIdx;
+                        Farm.spriteBuildPaletteSelect.position.set(-window.innerWidth * 0.5 + 20 + (categoryIdx + 0.5) * (Farm.thumbnailSize + 20), Farm.thumbnailY, 2);
+
+                        updateBuildPaletteSelect(Farm);
+
                         Farm.ignoreNextMouseUp = true;
                         return;
-                    } else if (Farm.lens == Farm.LENS.BUILD) {
+                    } else if (Farm.lens == Farm.LENS.BUILD || Farm.lens == Farm.LENS.REMOVE) {
                         Farm.lens = Farm.LENS.DEFAULT;
                         Farm.overlay = Farm.OVERLAY.DEFAULT;
                         Farm.textBuildButton.text = 'BUILD';
@@ -137,7 +157,7 @@ export function onMouseDown(Farm, event) {
                 }
             }
 
-            if (Farm.lens == Farm.LENS.BUILD) {
+            if (Farm.lens == Farm.LENS.BUILD || Farm.lens == Farm.LENS.REMOVE) {
                 Farm.mouseRaycaster.setFromCamera(Farm.mousePos, Farm.camera);
 
                 intersects = Farm.mouseRaycaster.intersectObject(Farm.groundMesh);
@@ -160,16 +180,9 @@ export function onMouseDown(Farm, event) {
 
                     Farm.buildAreaCorner = point;
 
-                    Farm.buildAreaRect.visible = true;
+                    updateBuildPaletteSelect(Farm);
 
-                    switch (Farm.BUILDINGS[Farm.buildPaletteSelect].category) {
-                        case "ground":
-                            Farm.overlay = Farm.OVERLAY.BUILD_AREA;
-                            break;
-                        case "plants":
-                            Farm.overlay = Farm.OVERLAY.BUILD_PLANTS;
-                            break;
-                    }
+                    Farm.buildAreaRect.visible = true;
                 }
             }
             break;
@@ -377,12 +390,96 @@ function createNewBuilding(Farm) {
 
 function updateBuildPaletteSelect(Farm) {
 
+    let oldLens = Farm.lens;
+
+    Farm.lens = Farm.LENS.BUILD;
+
     switch (Farm.BUILDINGS[Farm.buildPaletteSelect].category) {
+        case "ground":
+            Farm.overlay = Farm.OVERLAY.BUILD_AREA;
+            break;
+        case "plants":
+            Farm.overlay = Farm.OVERLAY.BUILD_PLANTS;
+            break;
         case "buildings":
             Farm.overlay = Farm.OVERLAY.BUILD_BUILDINGS;
             break;
-        default:
-            Farm.overlay = Farm.OVERLAY.DEFAULT;
+        case "remove":
+            Farm.lens = Farm.LENS.REMOVE;
+            switch (Farm.BUILDINGS[Farm.buildPaletteSelect].name) {
+                case "Remove All":
+                case "Remove Soil":
+                case "Remove Water":
+                    Farm.overlay = Farm.OVERLAY.REMOVE_AREA;
+                    break;
+                case "Remove Plants":
+                    Farm.overlay = Farm.OVERLAY.REMOVE_PLANTS;
+                    break;
+                case "Remove Buildings":
+                    Farm.overlay = Farm.OVERLAY.REMOVE_BUILDINGS;
+                    break;
+            }
             break;
     }
+    if (oldLens != Farm.lens) {
+        if (Farm.lens == Farm.LENS.BUILD) {
+            Farm.buildAreaRect.material = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, linewidth: 3 });
+        } else {
+            Farm.buildAreaRect.material = new THREE.LineBasicMaterial({ color: 0xff0000, transparent: true, linewidth: 3 });
+        }
+    }
+    if (Farm.overlay == Farm.OVERLAY.BUILD_BUILDINGS) {
+        Farm.buildAreaRect.visible = true;
+    } else {
+        Farm.buildAreaRect.visible = false;
+    }
+}
+
+function remove(Farm) {
+    for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x; x++) {
+        for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z; z++) {
+            let curBlock = Farm.blocks[x + ',' + z];
+
+            if (typeof curBlock === 'undefined') continue;
+
+            if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Buildings" ||
+                Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+                for (let i = 0; i < curBlock.buildings.length; i++) {
+                    curBlock.buildings[i].remove();
+                }
+                curBlock.buildings = [];
+            }
+            if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
+                Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+
+            }
+            if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Soil" ||
+                Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+
+            }
+            if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Water" ||
+                Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+
+            }
+        }
+    }
+
+    if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Buildings" ||
+        Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+        Farm.buildings = Farm.buildings.filter(building => building);
+        Farm.entities = Farm.entities.filter(entity => entity);
+    }
+    if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
+        Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+
+    }
+    if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Soil" ||
+        Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+
+    }
+    if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Water" ||
+        Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+
+    }
+
 }

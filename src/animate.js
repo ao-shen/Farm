@@ -97,7 +97,11 @@ function renderOverlays(Farm) {
 
         Farm.blockLine.visible = true;
 
-        if (Farm.overlay == Farm.OVERLAY.BUILD_AREA || Farm.overlay == Farm.OVERLAY.BUILD_PLANTS) {
+        if (Farm.overlay == Farm.OVERLAY.BUILD_AREA ||
+            Farm.overlay == Farm.OVERLAY.BUILD_PLANTS ||
+            Farm.overlay == Farm.OVERLAY.REMOVE_AREA ||
+            Farm.overlay == Farm.OVERLAY.REMOVE_PLANTS ||
+            Farm.overlay == Farm.OVERLAY.REMOVE_BUILDINGS) {
 
             let rectX1 = Math.min(point.x, Farm.buildAreaCorner.x);
             let rectZ1 = Math.min(point.z, Farm.buildAreaCorner.z);
