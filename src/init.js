@@ -351,6 +351,7 @@ function loadBuildingAssets(Farm) {
 function loadEntitiesAssets(Farm) {
     let modelLoader = new GLTFLoader();
     const defaultEntityTransform = new THREE.Matrix4()
+        .makeRotationY(-Math.PI / 2)
         .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
 
     for (let i = 0; i < Farm.ENTITIES.length; i++) {

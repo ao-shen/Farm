@@ -159,6 +159,7 @@ export class Entity {
 
             this.pos.x += velocity.x;
             this.pos.z += velocity.z;
+            this.mesh.lookAt(this.pos);
         }
     }
 
