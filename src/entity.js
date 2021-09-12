@@ -166,9 +166,9 @@ export class Entity {
 
         let curBlock = this.Farm.blocks[x + ',' + z];
 
-        /*if (curBlock.type == BLOCK.SOIL) {
+        if (curBlock.groundState == Farm.GROUND_STATES_NAMES.WATER) {
             return true;
-        }*/
+        }
 
         if (curBlock.buildings.length == 0) {
             return false;

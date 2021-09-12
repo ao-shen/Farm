@@ -472,6 +472,8 @@ function initWorld(Farm) {
     geometry.rotateX(Math.PI / 2);
     geometry.rotateY(-Math.PI / 2);
     texture = textureLoader.load('assets/textures/road.png');
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.NearestFilter;
     material = new THREE.MeshLambertMaterial({
         map: texture,
         side: THREE.DoubleSide,

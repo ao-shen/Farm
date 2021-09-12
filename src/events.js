@@ -38,6 +38,9 @@ export function onMouseUp(Farm, event) {
                     case "Soil":
                         createNewSoil(Farm);
                         break;
+                    case "Water":
+                        createWater(Farm);
+                        break;
                 }
                 Farm.overlay = Farm.OVERLAY.DEFAULT;
                 Farm.buildAreaRect.visible = false;
@@ -193,7 +196,7 @@ export function onKeyDown(Farm, event) {
 
                 let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
                 for (let i = 0; i < 8; i++) {
-                    Farm.groundUVs[curIdx + i] = instanced[i];
+                    Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
                 }
                 Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
             }
@@ -213,7 +216,8 @@ function createNewSoil(Farm) {
 
             if (curBlock.type == BLOCK.GRASS &&
                 curBlock.plants.length == 0 &&
-                curBlock.buildings.length == 0) {
+                curBlock.buildings.length == 0 &&
+                curBlock.groundState != Farm.GROUND_STATES_NAMES.WATER) {
                 curBlock.type = BLOCK.SOIL;
 
                 newSoil = true;
@@ -252,6 +256,29 @@ function createNewSoil(Farm) {
 
         Farm.scene.add(Farm.meshSoil);
     }
+}
+
+function createWater(Farm) {
+
+    for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x; x++) {
+        for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z; z++) {
+            let curBlock = Farm.blocks[x + ',' + z];
+            if (typeof curBlock === 'undefined') continue;
+
+            if (curBlock.type == BLOCK.GRASS &&
+                curBlock.plants.length == 0 &&
+                curBlock.buildings.length == 0) {
+
+                curBlock.groundState = Farm.GROUND_STATES_NAMES.WATER;
+
+                let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
+                for (let i = 0; i < 8; i++) {
+                    Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
+                }
+            }
+        }
+    }
+    Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
 }
 
 function createNewPlant(Farm) {

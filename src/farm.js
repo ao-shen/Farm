@@ -185,6 +185,9 @@ export let Farm = {
             0.5, 1.0
         ],
     }],
+    GROUND_STATES_NAMES: {
+        WATER: 4
+    },
 
     // Build Palette
 
@@ -203,6 +206,12 @@ export let Farm = {
         price: 0,
         thumbnail: 'assets/textures/soil_thumbnail.png',
         models: ['assets/models/soil.glb'],
+    }, {
+        name: "Water",
+        category: "ground",
+        price: 0,
+        thumbnail: 'assets/textures/water_thumbnail.png',
+        models: [],
     }, {
         name: "Carrot",
         category: "plants",
