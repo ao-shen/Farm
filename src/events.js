@@ -134,6 +134,7 @@ export function onMouseDown(Farm, event) {
                     Farm.spriteBuildPaletteSelect.position.set(-window.innerWidth * 0.5 + 20 + (categoryIdx + 0.5) * (Farm.thumbnailSize + 20), Farm.thumbnailY, 2);
 
                     updateBuildPaletteSelect(Farm);
+                    updateBuildingMeshPreview(Farm);
 
                     Farm.ignoreNextMouseUp = true;
                     return;
@@ -229,9 +230,22 @@ function createNewSoil(Farm) {
             let curBlock = Farm.blocks[x + ',' + z];
             if (typeof curBlock === 'undefined') continue;
 
+            let blockingPlants = false;
+            let blockingBuildings = false;
+            for (let plant of curBlock.plants) {
+                blockingPlants = true;
+                break;
+            }
+            for (let building of curBlock.buildings) {
+                if (building.isWall) {} else {
+                    blockingBuildings = true;
+                    break;
+                }
+            }
+
             if (curBlock.type == BLOCK.GRASS &&
-                curBlock.plants.length == 0 &&
-                curBlock.buildings.length == 0 &&
+                !blockingPlants &&
+                !blockingBuildings &&
                 curBlock.groundState != Farm.GROUND_STATES_NAMES.WATER) {
                 curBlock.type = BLOCK.SOIL;
 
@@ -307,8 +321,7 @@ function createNewPlant(Farm) {
             if (typeof curBlock === 'undefined') continue;
 
             if (curBlock.type == BLOCK.SOIL &&
-                curBlock.plants.length == 0 &&
-                curBlock.buildings.length == 0) {
+                curBlock.plants.length == 0) {
                 curBlock.plants.push(new Plant(Farm, plantType, curBlock));
                 newPlant = true;
             }
@@ -358,6 +371,7 @@ function createNewBuilding(Farm) {
     let newBuilding = true;
     let buildingType = Farm.buildPaletteSelect;
     let BUILDING = Farm.BUILDINGS[buildingType];
+    let isWall = BUILDING.name == "Fence";
 
     let foundationBlocks = [];
 
@@ -366,11 +380,39 @@ function createNewBuilding(Farm) {
     for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x && newBuilding; x++) {
         for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z && newBuilding; z++) {
             let curBlock = Farm.blocks[x + ',' + z];
-            if (typeof curBlock !== 'undefined' &&
-                curBlock.type == BLOCK.GRASS &&
-                curBlock.plants.length == 0 &&
-                curBlock.buildings.length == 0 &&
-                (curBlock.groundState != Farm.GROUND_STATES_NAMES.WATER || BUILDING.onWater)) {
+
+            if (typeof curBlock === 'undefined' ||
+                (curBlock.groundState == Farm.GROUND_STATES_NAMES.WATER && !BUILDING.onWater)) {
+                newBuilding = false;
+                continue;
+            }
+
+            let blockingPlants = false;
+            let blockingBuildings = false;
+            for (let plant of curBlock.plants) {
+                if (isWall) {} else {
+                    blockingPlants = true;
+                    break;
+                }
+            }
+            for (let building of curBlock.buildings) {
+                if (isWall) {
+                    if (building.isWall && Farm.buildBuildingSide == building.side) {
+                        blockingBuildings = true;
+                        break;
+                    }
+                } else {
+                    blockingBuildings = true;
+                    break;
+                }
+            }
+            if (blockingPlants || blockingBuildings) {
+                newBuilding = false;
+                continue;
+            }
+
+            if (curBlock.type == BLOCK.GRASS ||
+                (curBlock.type == BLOCK.SOIL && isWall)) {
                 foundationBlocks.push(curBlock);
             } else {
                 newBuilding = false;
@@ -380,8 +422,19 @@ function createNewBuilding(Farm) {
 
     if (newBuilding) {
 
+        let building;
 
-        let building = new BuildingObjects.BuildingWorkersHouse(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType);
+        switch (Farm.BUILDINGS[buildingType].name) {
+            case "Worker's House":
+                building = new BuildingObjects.BuildingWorkersHouse(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                break;
+            case "Fence":
+                building = new BuildingObjects.BuildingWall(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                break;
+            default:
+                building = new BuildingObjects.Building(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                break;
+        }
 
         for (const block of foundationBlocks) {
             block.buildings.push(building);
@@ -435,6 +488,19 @@ function updateBuildPaletteSelect(Farm) {
         Farm.buildAreaRect.visible = true;
     } else {
         Farm.buildAreaRect.visible = false;
+    }
+    updateBuildingMeshPreview(Farm);
+}
+
+function updateBuildingMeshPreview(Farm) {
+    if (Farm.buildBuildingMesh != null) {
+        Farm.scene.remove(Farm.buildBuildingMesh);
+        Farm.buildBuildingMesh.geometry.dispose();
+        Farm.buildBuildingMesh = null;
+    }
+    if (Farm.overlay == Farm.OVERLAY.BUILD_BUILDINGS) {
+        Farm.buildBuildingMesh = new THREE.Mesh(Farm.BUILDINGS[Farm.buildPaletteSelect].geometries[0].clone(), Farm.buildBuildingMaterial);
+        Farm.scene.add(Farm.buildBuildingMesh);
     }
 }
 

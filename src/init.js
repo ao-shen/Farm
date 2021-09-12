@@ -346,6 +346,14 @@ function loadBuildingAssets(Farm) {
         }
     }
 
+    // Configure buildBuilding
+    Farm.buildBuildingMaterial = new THREE.MeshPhongMaterial({
+        color: 0x00FF77,
+        opacity: 0.5,
+        transparent: true,
+        side: THREE.DoubleSide,
+    });
+
 }
 
 function loadEntitiesAssets(Farm) {

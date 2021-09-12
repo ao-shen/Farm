@@ -1,8 +1,9 @@
 import * as THREE from 'three';
+import { TextureLoader } from 'three';
 import { Entity } from './entity';
 
 export class Building {
-    constructor(Farm, x, z, type, name = null) {
+    constructor(Farm, x, z, type, side, name = null) {
         this.Farm = Farm;
         this.pos = new THREE.Vector3(x, 0, z);
         this.type = type;
@@ -10,6 +11,9 @@ export class Building {
 
         this.mesh = this.Farm.BUILDINGS[this.type].meshes[0].clone();
         Farm.scene.add(this.mesh);
+
+        this.side = side;
+        this.mesh.rotateY(-(this.side - 1) * Math.PI / 2);
 
         this.childEntities = [];
     }
@@ -41,8 +45,8 @@ export class Building {
 }
 
 export class BuildingWorkersHouse extends Building {
-    constructor(Farm, x, z, type, name = null) {
-        super(Farm, x, z, type, name);
+    constructor(Farm, x, z, type, side, name = null) {
+        super(Farm, x, z, type, side, name);
 
         for (let entityType of this.Farm.BUILDINGS[this.type].entities) {
             let workerEntity = new Entity(Farm, x, z, entityType);
@@ -50,6 +54,22 @@ export class BuildingWorkersHouse extends Building {
             this.childEntities.push(workerEntity);
             this.Farm.entities.push(workerEntity);
         }
+    }
+
+    update() {
+        super.update();
+    }
+
+    render() {
+        super.render();
+    }
+}
+
+export class BuildingWall extends Building {
+    constructor(Farm, x, z, type, side, name = null) {
+        super(Farm, x, z, type, side, name);
+
+        this.isWall = true;
     }
 
     update() {

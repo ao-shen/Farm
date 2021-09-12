@@ -125,6 +125,20 @@ function renderOverlays(Farm) {
             ]), 3));
         } else if (Farm.overlay == Farm.OVERLAY.BUILD_BUILDINGS) {
 
+            let offsetFromCenterOfBlock = intersect.point.clone();
+            offsetFromCenterOfBlock.sub(point);
+            offsetFromCenterOfBlock.subScalar(Farm.blockSize * 0.5);
+
+            if (offsetFromCenterOfBlock.x <= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x <= -offsetFromCenterOfBlock.z) {
+                Farm.buildBuildingSide = Farm.SOUTH;
+            } else if (offsetFromCenterOfBlock.x >= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x <= -offsetFromCenterOfBlock.z) {
+                Farm.buildBuildingSide = Farm.WEST;
+            } else if (offsetFromCenterOfBlock.x >= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x >= -offsetFromCenterOfBlock.z) {
+                Farm.buildBuildingSide = Farm.NORTH;
+            } else if (offsetFromCenterOfBlock.x <= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x >= -offsetFromCenterOfBlock.z) {
+                Farm.buildBuildingSide = Farm.EAST;
+            }
+
             let curSizeX = Farm.BUILDINGS[Farm.buildPaletteSelect].size.x;
             let curSizeZ = Farm.BUILDINGS[Farm.buildPaletteSelect].size.z;
 
@@ -151,6 +165,12 @@ function renderOverlays(Farm) {
                 rectScreenPoint4.x, rectScreenPoint4.y, -100,
                 rectScreenPoint1.x, rectScreenPoint1.y, -100,
             ]), 3));
+
+            // update build building preview
+            if (Farm.buildBuildingMesh != null) {
+                Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
+                Farm.buildBuildingMesh.position.set(Farm.buildAreaPoint1.x * Farm.blockSize, 0, Farm.buildAreaPoint1.z * Farm.blockSize);
+            }
         }
 
     } else {

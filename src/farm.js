@@ -75,6 +75,10 @@ export let Farm = {
     buildAreaPoint1: null,
     buildAreaPoint2: null,
 
+    buildBuildingSide: 0,
+    buildBuildingMesh: null,
+    buildBuildingMaterial: null,
+
     // BUILDINGS -----------------------------------------------
 
     // Meshes
@@ -191,6 +195,11 @@ export let Farm = {
     GROUND_STATES_NAMES: {
         WATER: 4
     },
+
+    NORTH: 0,
+    EAST: 1,
+    SOUTH: 2,
+    WEST: 3,
 
     // Build Palette
 
