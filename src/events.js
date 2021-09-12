@@ -463,10 +463,19 @@ function remove(Farm) {
             }
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Soil" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
-
+                if (curBlock.type == BLOCK.SOIL && curBlock.buildings.length == 0 && curBlock.plants.length == 0) {
+                    curBlock.type = BLOCK.GRASS;
+                }
             }
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Water" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+                if (curBlock.type == BLOCK.GRASS && curBlock.buildings.length == 0 && curBlock.plants.length == 0) {
+                    curBlock.groundState = 0;
+                    let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
+                    for (let i = 0; i < 8; i++) {
+                        Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
+                    }
+                }
 
             }
         }
@@ -512,11 +521,34 @@ function remove(Farm) {
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Soil" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+        let soilBlocks = [];
 
+        for (const curBlockIdx in Farm.blocks) {
+            if (Farm.blocks[curBlockIdx].type == BLOCK.SOIL) {
+                soilBlocks.push(Farm.blocks[curBlockIdx]);
+            }
+        }
+
+        Farm.scene.remove(Farm.meshSoil);
+        Farm.meshSoil.dispose();
+        Farm.meshSoil = new THREE.InstancedMesh(Farm.geometrySoil, Farm.materialSoil, soilBlocks.length);
+
+        const matrix = new THREE.Matrix4();
+        for (let i = 0; i < soilBlocks.length; i++) {
+            matrix.makeTranslation(
+                soilBlocks[i].x * Farm.blockSize,
+                0,
+                soilBlocks[i].z * Farm.blockSize
+            );
+            matrix.scale(new THREE.Vector3(1, -1, 1));
+
+            Farm.meshSoil.setMatrixAt(i, matrix);
+        }
+        Farm.scene.add(Farm.meshSoil);
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Water" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
-
+        Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
     }
 
 }
