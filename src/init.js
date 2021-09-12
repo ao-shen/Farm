@@ -111,11 +111,11 @@ function initScene(Farm) {
     const light = new THREE.AmbientLight(0x202020); // soft white light
     Farm.scene.add(light);
 
-    geometry = new THREE.SphereGeometry(2, 32, 16);
+    /*geometry = new THREE.SphereGeometry(2, 32, 16);
     material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
     const sphere = new THREE.Mesh(geometry, material);
     sphere.position.set(0, 0, 0);
-    Farm.scene.add(sphere);
+    Farm.scene.add(sphere);*/
 }
 
 function initHudScene(Farm) {

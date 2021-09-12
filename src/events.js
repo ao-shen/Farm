@@ -357,6 +357,7 @@ function createNewBuilding(Farm) {
 
     let newBuilding = true;
     let buildingType = Farm.buildPaletteSelect;
+    let BUILDING = Farm.BUILDINGS[buildingType];
 
     let foundationBlocks = [];
 
@@ -368,7 +369,8 @@ function createNewBuilding(Farm) {
             if (typeof curBlock !== 'undefined' &&
                 curBlock.type == BLOCK.GRASS &&
                 curBlock.plants.length == 0 &&
-                curBlock.buildings.length == 0) {
+                curBlock.buildings.length == 0 &&
+                (curBlock.groundState != Farm.GROUND_STATES_NAMES.WATER || BUILDING.onWater)) {
                 foundationBlocks.push(curBlock);
             } else {
                 newBuilding = false;
@@ -378,7 +380,6 @@ function createNewBuilding(Farm) {
 
     if (newBuilding) {
 
-        let BUILDING = Farm.BUILDINGS[buildingType];
 
         let building = new BuildingObjects.BuildingWorkersHouse(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType);
 

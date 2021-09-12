@@ -117,7 +117,14 @@ export class Entity {
 
     update() {
         if (this.path != null) {
-            if (Math.pow(this.path[0].x * Farm.blockSize - this.pos.x, 2) + Math.pow(this.path[0].z * Farm.blockSize - this.pos.z, 2) < 1) {
+
+            let allowedDeviationFromPathSquared = 20;
+
+            if (this.path.length == 1) {
+                allowedDeviationFromPathSquared = 1;
+            }
+
+            if (Math.pow(this.path[0].x * Farm.blockSize - this.pos.x, 2) + Math.pow(this.path[0].z * Farm.blockSize - this.pos.z, 2) < allowedDeviationFromPathSquared) {
                 this.path.shift();
                 if (this.path.length == 0) {
                     this.path = null;

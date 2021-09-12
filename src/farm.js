@@ -210,7 +210,12 @@ export let Farm = {
         category: "ground",
         price: 0,
         thumbnail: 'assets/textures/soil_thumbnail.png',
-        models: ['assets/models/soil.glb'],
+        models: [
+            'assets/models/soil0.glb',
+            'assets/models/soil1.glb',
+            'assets/models/soil2.glb',
+            'assets/models/soil3.glb',
+        ],
     }, {
         name: "Water",
         category: "ground",
@@ -256,6 +261,32 @@ export let Farm = {
         thumbnail: 'assets/textures/workers_house_thumbnail.png',
         models: [
             'assets/models/workers_house0.glb',
+        ],
+    }, {
+        name: "Fence",
+        category: "buildings",
+        price: 2,
+        size: {
+            x: 1,
+            z: 1,
+        },
+        entities: [],
+        thumbnail: 'assets/textures/fence_thumbnail.png',
+        models: [
+            'assets/models/fence0.glb',
+        ],
+    }, {
+        name: "Stone Path",
+        category: "buildings",
+        price: 2,
+        size: {
+            x: 1,
+            z: 1,
+        },
+        entities: [],
+        thumbnail: 'assets/textures/stone_path_thumbnail.png',
+        models: [
+            'assets/models/stone_path0.glb',
         ],
     }, {
         name: "Remove All",
