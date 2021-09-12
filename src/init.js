@@ -124,8 +124,8 @@ function initHudScene(Farm) {
 
     Farm.hudScene = new THREE.Scene();
 
-    Farm.hudCamera = new THREE.OrthographicCamera(-window.innerWidth * 0.5, window.innerWidth * 0.5, window.innerHeight * 0.5, -window.innerHeight * 0.5, 1, 100);
-    Farm.hudCamera.position.set(0, 0, 10);
+    Farm.hudCamera = new THREE.OrthographicCamera(-window.innerWidth * 0.5, window.innerWidth * 0.5, window.innerHeight * 0.5, -window.innerHeight * 0.5, 1, 1000);
+    Farm.hudCamera.position.set(0, 0, 500);
 
     /*let hudAmbientLight = new THREE.AmbientLight(0x222222);
     Farm.hudScene.add(hudAmbientLight);*/
@@ -199,12 +199,12 @@ function initHudScene(Farm) {
 
         spriteTab.center.set(0.5, 0.5);
         spriteTab.scale.set(calculatedBuildPaletteHeight * 0.5, calculatedBuildPaletteHeight / 256 * 90, 1);
-        spriteTab.position.set(-window.innerWidth * 0.5 + 100 + i * calculatedBuildPaletteHeight * 0.5, -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 1.04, 2);
+        spriteTab.position.set(-window.innerWidth * 0.5 + (i + 1) * calculatedBuildPaletteHeight * 0.5, -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 1.04, 2);
         spriteTab.name = "BuildPaletteTabCur";
         Farm.buildingPaletteCategories[i].group.add(spriteTab);
         spriteTabInactive.center.set(0.5, 0.5);
         spriteTabInactive.scale.set(calculatedBuildPaletteHeight * 0.5, calculatedBuildPaletteHeight / 256 * 90, 1);
-        spriteTabInactive.position.set(-window.innerWidth * 0.5 + 100 + i * calculatedBuildPaletteHeight * 0.5, -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 1.04, -2);
+        spriteTabInactive.position.set(-window.innerWidth * 0.5 + (i + 1) * calculatedBuildPaletteHeight * 0.5, -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 1.04, -2);
         spriteTabInactive.name = "BuildPaletteTab_" + i;
     }
     Farm.buildingPaletteCategories[0].group.visible = true;

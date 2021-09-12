@@ -85,10 +85,10 @@ function renderOverlays(Farm) {
         let rectScreenPoint4 = Farm.posToScreenPos(new Vector3(point.x, 0, point.z + Farm.blockSize), Farm.camera);
 
         Farm.blockLine.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
-            rectScreenPoint1.x, rectScreenPoint1.y, 0,
-            rectScreenPoint2.x, rectScreenPoint2.y, 0,
-            rectScreenPoint3.x, rectScreenPoint3.y, 0,
-            rectScreenPoint4.x, rectScreenPoint4.y, 0,
+            rectScreenPoint1.x, rectScreenPoint1.y, -101,
+            rectScreenPoint2.x, rectScreenPoint2.y, -101,
+            rectScreenPoint3.x, rectScreenPoint3.y, -101,
+            rectScreenPoint4.x, rectScreenPoint4.y, -101,
         ]), 3));
 
         Farm.groundMesh.updateMatrix();
@@ -117,11 +117,11 @@ function renderOverlays(Farm) {
             rectScreenPoint4 = Farm.posToScreenPos(new Vector3(rectX2, 0, rectZ1), Farm.camera);
 
             Farm.buildAreaRect.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
-                rectScreenPoint1.x, rectScreenPoint1.y, 0,
-                rectScreenPoint2.x, rectScreenPoint2.y, 0,
-                rectScreenPoint3.x, rectScreenPoint3.y, 0,
-                rectScreenPoint4.x, rectScreenPoint4.y, 0,
-                rectScreenPoint1.x, rectScreenPoint1.y, 0,
+                rectScreenPoint1.x, rectScreenPoint1.y, -100,
+                rectScreenPoint2.x, rectScreenPoint2.y, -100,
+                rectScreenPoint3.x, rectScreenPoint3.y, -100,
+                rectScreenPoint4.x, rectScreenPoint4.y, -100,
+                rectScreenPoint1.x, rectScreenPoint1.y, -100,
             ]), 3));
         } else if (Farm.overlay == Farm.OVERLAY.BUILD_BUILDINGS) {
 
@@ -145,11 +145,11 @@ function renderOverlays(Farm) {
             rectScreenPoint4 = Farm.posToScreenPos(new Vector3(rectX2, 0, rectZ1), Farm.camera);
 
             Farm.buildAreaRect.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
-                rectScreenPoint1.x, rectScreenPoint1.y, 0,
-                rectScreenPoint2.x, rectScreenPoint2.y, 0,
-                rectScreenPoint3.x, rectScreenPoint3.y, 0,
-                rectScreenPoint4.x, rectScreenPoint4.y, 0,
-                rectScreenPoint1.x, rectScreenPoint1.y, 0,
+                rectScreenPoint1.x, rectScreenPoint1.y, -100,
+                rectScreenPoint2.x, rectScreenPoint2.y, -100,
+                rectScreenPoint3.x, rectScreenPoint3.y, -100,
+                rectScreenPoint4.x, rectScreenPoint4.y, -100,
+                rectScreenPoint1.x, rectScreenPoint1.y, -100,
             ]), 3));
         }
 
