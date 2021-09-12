@@ -33,7 +33,9 @@ export function onMouseUp(Farm, event) {
 
     switch (event.button) {
         case 0:
-            if (Farm.overlay == Farm.OVERLAY.BUILD_AREA) {
+            if (Farm.buildAreaPoint1 == null || Farm.buildAreaPoint2 == null) {
+
+            } else if (Farm.overlay == Farm.OVERLAY.BUILD_AREA) {
                 switch (Farm.BUILDINGS[Farm.buildPaletteSelect].name) {
                     case "Soil":
                         createNewSoil(Farm);
@@ -436,6 +438,9 @@ function updateBuildPaletteSelect(Farm) {
 }
 
 function remove(Farm) {
+
+    let removedPlantTypes = new Set();
+
     for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x; x++) {
         for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z; z++) {
             let curBlock = Farm.blocks[x + ',' + z];
@@ -451,7 +456,10 @@ function remove(Farm) {
             }
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
-
+                for (let i = 0; i < curBlock.plants.length; i++) {
+                    removedPlantTypes.add(curBlock.plants[i].remove());
+                }
+                curBlock.plants = [];
             }
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Soil" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
@@ -471,6 +479,35 @@ function remove(Farm) {
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+        removedPlantTypes.forEach(function(plantType) {
+            let plantBuffer = [];
+            let plantBuilding = Farm.BUILDINGS[plantType];
+
+            for (const curBlockIdx in Farm.blocks) {
+                for (let curPlant of Farm.blocks[curBlockIdx].plants) {
+                    if (curPlant.type == plantType) {
+                        curPlant.meshIdx = plantBuffer.length;
+                        plantBuffer.push({ block: Farm.blocks[curBlockIdx], plant: curPlant });
+                        break;
+                    }
+                }
+            }
+
+            for (let m = 0; m < plantBuilding.meshes.length; m++) {
+                let curMesh = plantBuilding.meshes[m];
+
+                Farm.scene.remove(curMesh);
+                curMesh.dispose();
+                curMesh = new THREE.InstancedMesh(plantBuilding.geometries[m], plantBuilding.materials[m], plantBuffer.length * 4);
+                Farm.scene.add(curMesh);
+
+                plantBuilding.meshes[m] = curMesh;
+            }
+
+            for (let i = 0; i < plantBuffer.length; i++) {
+                plantBuffer[i].plant.updateMesh();
+            }
+        });
 
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Soil" ||

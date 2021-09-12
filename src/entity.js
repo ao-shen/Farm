@@ -104,7 +104,9 @@ export class Entity {
     performActionAtTarget() {
 
         if (this.goal.actionCategory == "harvest") {
-            this.goal.harvest();
+            if (!this.goal.isRemoved) {
+                this.goal.harvest();
+            }
         }
 
         let thisEntity = this;

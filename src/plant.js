@@ -20,6 +20,12 @@ export class Plant {
         }, this);
     }
 
+    remove() {
+        this.Farm.plantsAwaitingHarvest.remove({ x: this.block.x, z: this.block.z }, this);
+        this.isRemoved = true;
+        return this.type;
+    }
+
     onGrowth() {
 
         this.stage = this.stage + 1;
