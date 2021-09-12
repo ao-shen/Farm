@@ -372,6 +372,7 @@ function createNewBuilding(Farm) {
     let buildingType = Farm.buildPaletteSelect;
     let BUILDING = Farm.BUILDINGS[buildingType];
     let isWall = BUILDING.name == "Fence";
+    let isPath = BUILDING.name == "Stone Path";
 
     let foundationBlocks = [];
 
@@ -396,11 +397,12 @@ function createNewBuilding(Farm) {
                 }
             }
             for (let building of curBlock.buildings) {
-                if (isWall) {
-                    if (building.isWall && Farm.buildBuildingSide == building.side) {
-                        blockingBuildings = true;
-                        break;
-                    }
+                if ((building.isWall && isWall && Farm.buildBuildingSide == building.side) ||
+                    (isPath && building.isPath)) {
+                    blockingBuildings = true;
+                    break;
+                } else if (building.isWall || isWall || isPath || building.isPath) {
+
                 } else {
                     blockingBuildings = true;
                     break;
@@ -430,6 +432,9 @@ function createNewBuilding(Farm) {
                 break;
             case "Fence":
                 building = new BuildingObjects.BuildingWall(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                break;
+            case "Stone Path":
+                building = new BuildingObjects.BuildingPath(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             default:
                 building = new BuildingObjects.Building(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);

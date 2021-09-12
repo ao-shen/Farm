@@ -80,3 +80,19 @@ export class BuildingWall extends Building {
         super.render();
     }
 }
+
+export class BuildingPath extends Building {
+    constructor(Farm, x, z, type, side, name = null) {
+        super(Farm, x, z, type, side, name);
+
+        this.isPath = true;
+    }
+
+    update() {
+        super.update();
+    }
+
+    render() {
+        super.render();
+    }
+}

@@ -185,7 +185,10 @@ export class Entity {
         this.isRemoved = true;
     }
 
-    isCollidingAt(x, z) {
+    isCollidingAt(curPos, direction, isTarget = false) {
+
+        let x = curPos.x + direction.x;
+        let z = curPos.z + direction.z;
 
         if (x < 0 || x > Farm.numBlocks.x - 1 || z < 0 || z > Farm.numBlocks.z - 1)
             return true;
@@ -200,7 +203,21 @@ export class Entity {
             return false;
         }
 
-        return true;
+        for (let building of curBlock.buildings) {
+            if (building.isWall) {
+                if (direction.destSides.includes(building.side)) {
+                    return true;
+                }
+            } else if (building.isPath) {
+
+            } else {
+                if (!isTarget) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     pathFind(goal) {
@@ -239,11 +256,25 @@ export class Entity {
                 let newX = cur.x + direction.x;
                 let newZ = cur.z + direction.z;
 
+                // Collision tests
+                let selfCollide = false;
+                let curBlock = this.Farm.blocks[cur.x + ',' + cur.z];
+                for (let building of curBlock.buildings) {
+                    if (building.isWall) {
+                        if (direction.sides.includes(building.side)) {
+                            selfCollide = true;
+                            break;
+                        }
+                    }
+                }
+                if (selfCollide) continue;
+                if (this.isCollidingAt(cur, direction, newX == goal.x && newZ == goal.z)) continue;
                 if (direction.blocking.length == 2) {
-                    if (this.isCollidingAt(cur.x + direction.blocking[0].x, cur.z + direction.blocking[0].z)) continue;
-                    if (this.isCollidingAt(cur.x + direction.blocking[1].x, cur.z + direction.blocking[1].z)) continue;
+                    if (this.isCollidingAt(cur, direction.blocking[0])) continue;
+                    if (this.isCollidingAt(cur, direction.blocking[1])) continue;
                 }
 
+                // If target reached
                 if (newX == goal.x && newZ == goal.z) {
 
                     let path = [{ x: newX, z: newZ }];
@@ -257,7 +288,8 @@ export class Entity {
                     return path;
                 }
 
-                if (!((newX + ',' + newZ) in vis) && !this.isCollidingAt(newX, newZ) && cur.pathLength + direction.length < 30) {
+                // Otherwise
+                if (!((newX + ',' + newZ) in vis) && cur.pathLength + direction.length < 30) {
                     pq.push({ x: newX, z: newZ, pathLength: cur.pathLength + direction.length, parent: cur, heuristic: heuristic(newX, newZ, cur.pathLength + 1) });
                     vis[newX + ',' + newZ] = 1;
                 }
@@ -268,13 +300,73 @@ export class Entity {
     }
 }
 
-const DIRECTIONS = [
-    { x: 0, z: 1, length: 1, blocking: [] },
-    { x: 1, z: 1, length: 1.414, blocking: [{ x: 0, z: 1 }, { x: 1, z: 0 }] },
-    { x: 1, z: 0, length: 1, blocking: [] },
-    { x: 1, z: -1, length: 1.414, blocking: [{ x: 0, z: -1 }, { x: 1, z: 0 }] },
-    { x: 0, z: -1, length: 1, blocking: [] },
-    { x: -1, z: -1, length: 1.414, blocking: [{ x: 0, z: -1 }, { x: -1, z: 0 }] },
-    { x: -1, z: 0, length: 1, blocking: [] },
-    { x: -1, z: 1, length: 1.414, blocking: [{ x: 0, z: 1 }, { x: -1, z: 0 }] },
+const NORTH = 0;
+const EAST = 1;
+const SOUTH = 2;
+const WEST = 3;
+
+const DIRECTIONS = [{
+        x: 0,
+        z: 1,
+        sides: [EAST],
+        destSides: [WEST],
+        length: 1,
+        blocking: []
+    },
+    {
+        x: 1,
+        z: 1,
+        sides: [EAST, NORTH],
+        destSides: [WEST, SOUTH],
+        length: 1.414,
+        blocking: [{ x: 0, z: 1, destSides: [WEST, NORTH] }, { x: 1, z: 0, destSides: [EAST, SOUTH] }]
+    },
+    {
+        x: 1,
+        z: 0,
+        sides: [NORTH],
+        destSides: [SOUTH],
+        length: 1,
+        blocking: []
+    },
+    {
+        x: 1,
+        z: -1,
+        sides: [WEST, NORTH],
+        destSides: [EAST, SOUTH],
+        length: 1.414,
+        blocking: [{ x: 0, z: -1, destSides: [EAST, NORTH] }, { x: 1, z: 0, destSides: [WEST, SOUTH] }]
+    },
+    {
+        x: 0,
+        z: -1,
+        sides: [WEST],
+        destSides: [EAST],
+        length: 1,
+        blocking: []
+    },
+    {
+        x: -1,
+        z: -1,
+        sides: [WEST, SOUTH],
+        destSides: [EAST, NORTH],
+        length: 1.414,
+        blocking: [{ x: 0, z: -1, destSides: [EAST, SOUTH] }, { x: -1, z: 0, destSides: [WEST, NORTH] }]
+    },
+    {
+        x: -1,
+        z: 0,
+        sides: [SOUTH],
+        destSides: [NORTH],
+        length: 1,
+        blocking: []
+    },
+    {
+        x: -1,
+        z: 1,
+        sides: [EAST, SOUTH],
+        destSides: [WEST, NORTH],
+        length: 1.414,
+        blocking: [{ x: 0, z: 1, destSides: [WEST, SOUTH] }, { x: -1, z: 0, destSides: [EAST, NORTH] }]
+    },
 ];
