@@ -97,19 +97,18 @@ function initScene(Farm) {
 
     // Lights
 
-    let dirLight1 = new THREE.DirectionalLight(0xaaaaaa);
+    let dirLight1 = new THREE.DirectionalLight(0xffeeb1, 1);
     dirLight1.position.set(1, 1, 1);
     Farm.scene.add(dirLight1);
 
-    let dirLight2 = new THREE.DirectionalLight(0x886622);
+    let hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 0.5);
+    Farm.scene.add(hemiLight);
+    /*let dirLight2 = new THREE.DirectionalLight(0x443322);
     dirLight2.position.set(-1, -1, -1);
-    Farm.scene.add(dirLight2);
+    Farm.scene.add(dirLight2);*/
 
     let ambientLight = new THREE.AmbientLight(0x222222);
     Farm.scene.add(ambientLight);
-
-    const light = new THREE.AmbientLight(0x202020); // soft white light
-    Farm.scene.add(light);
 
     /*geometry = new THREE.SphereGeometry(2, 32, 16);
     material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
@@ -270,7 +269,7 @@ function loadBuildingAssets(Farm) {
     // Load Models
     const defaultTransform = new THREE.Matrix4()
         .makeRotationX(Math.PI)
-        .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
+        .multiply(new THREE.Matrix4().makeScale(-5, 5, 5));
 
     const defaultBuildingTransform = new THREE.Matrix4()
         .multiply(new THREE.Matrix4().makeScale(5, 5, 5));

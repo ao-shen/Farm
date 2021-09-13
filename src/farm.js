@@ -235,7 +235,7 @@ export let Farm = {
         name: "Carrot",
         category: "plants",
         price: 10,
-        matureTime: 1000,
+        matureTime: 100,
         thumbnail: 'assets/textures/carrot_thumbnail.png',
         models: [
             'assets/models/carrot0.glb',
@@ -255,6 +255,21 @@ export let Farm = {
             'assets/models/potato2.glb',
             'assets/models/potato3.glb',
             'assets/models/potato4.glb',
+        ],
+    }, {
+        name: "Corn",
+        category: "plants",
+        price: 20,
+        matureTime: 5000,
+        thumbnail: 'assets/textures/corn_thumbnail.png',
+        models: [
+            'assets/models/corn0.glb',
+            'assets/models/corn1.glb',
+            'assets/models/corn2.glb',
+            'assets/models/corn3.glb',
+            'assets/models/corn4.glb',
+            'assets/models/corn5.glb',
+            'assets/models/corn6.glb',
         ],
     }, {
         name: "Worker's House",
