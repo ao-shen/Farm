@@ -7,6 +7,8 @@ import * as Stats from 'stats.js';
 import * as BufferGeometryUtils from './THREE/BufferGeometryUtils.js';
 import { OrbitControls } from './THREE/OrbitControls.js';
 import { GLTFLoader } from './THREE/GLTFLoader.js';
+import { OutlinePass } from './THREE/OutlinePass.js';
+import { Sky } from './THREE/Sky.js';
 
 import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown } from './events.js';
 import { BLOCK, Block } from './block.js';
@@ -65,6 +67,7 @@ function initScene(Farm) {
     Farm.renderer.setClearColor(0x000000, 0);
     Farm.renderer.autoClear = false;
     Farm.renderer.outputEncoding = THREE.sRGBEncoding;
+    Farm.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     document.body.appendChild(Farm.renderer.domElement);
 
     Farm.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);
@@ -95,20 +98,55 @@ function initScene(Farm) {
     Farm.controls.target.set(35, 0, 40);
     Farm.controls.update();
 
+    // Add Sky
+    let sky = new Sky();
+    sky.scale.setScalar(10000);
+    Farm.scene.add(sky);
+
+    let sun = new THREE.Vector3();
+
+    const effectController = {
+        turbidity: 10,
+        rayleigh: 1,
+        mieCoefficient: 0.005,
+        mieDirectionalG: 0.995,
+        elevation: 60,
+        azimuth: 180,
+        exposure: 0.7
+    };
+
+    const uniforms = sky.material.uniforms;
+    uniforms['turbidity'].value = effectController.turbidity;
+    uniforms['rayleigh'].value = effectController.rayleigh;
+    uniforms['mieCoefficient'].value = effectController.mieCoefficient;
+    uniforms['mieDirectionalG'].value = effectController.mieDirectionalG;
+
+    const phi = THREE.MathUtils.degToRad(90 - effectController.elevation);
+    const theta = THREE.MathUtils.degToRad(effectController.azimuth);
+
+    sun.setFromSphericalCoords(1, phi, theta);
+
+    uniforms['sunPosition'].value.copy(sun);
+
+    Farm.renderer.toneMappingExposure = effectController.exposure;
+
+    const pmremGenerator = new THREE.PMREMGenerator(Farm.renderer);
+    Farm.scene.environment = pmremGenerator.fromScene(sky).texture;
+
     // Lights
 
-    let dirLight1 = new THREE.DirectionalLight(0xffeeb1, 1);
+    /*let dirLight1 = new THREE.DirectionalLight(0xffeeb1, 1);
     dirLight1.position.set(1, 0.5, 1);
     Farm.scene.add(dirLight1);
 
     let hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 0.5);
-    Farm.scene.add(hemiLight);
+    Farm.scene.add(hemiLight);*/
     /*let dirLight2 = new THREE.DirectionalLight(0x443322);
     dirLight2.position.set(-1, -1, -1);
     Farm.scene.add(dirLight2);*/
 
-    let ambientLight = new THREE.AmbientLight(0x222222, 2);
-    Farm.scene.add(ambientLight);
+    /*let ambientLight = new THREE.AmbientLight(0x222222, 2);
+    Farm.scene.add(ambientLight);*/
 
     /*geometry = new THREE.SphereGeometry(2, 32, 16);
     material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
@@ -346,7 +384,7 @@ function loadBuildingAssets(Farm) {
     }
 
     // Configure buildBuilding
-    Farm.buildBuildingMaterial = new THREE.MeshPhongMaterial({
+    Farm.buildBuildingMaterial = new THREE.MeshStandardMaterial({
         color: 0x00FF77,
         opacity: 0.5,
         transparent: true,
@@ -459,7 +497,7 @@ function initWorld(Farm) {
     Farm.texSoilBlock.minFilter = THREE.NearestFilter;
 
 
-    let groundMaterial = new THREE.MeshLambertMaterial({
+    let groundMaterial = new THREE.MeshStandardMaterial({
         map: Farm.texGroundBlock,
         side: THREE.DoubleSide,
     });
@@ -482,7 +520,7 @@ function initWorld(Farm) {
     texture = textureLoader.load('assets/textures/road.png');
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.NearestFilter;
-    material = new THREE.MeshLambertMaterial({
+    material = new THREE.MeshStandardMaterial({
         map: texture,
         side: THREE.DoubleSide,
     });
@@ -501,7 +539,7 @@ function initWorld(Farm) {
     geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
     geometry.rotateX(Math.PI / 2);
     texture = textureLoader.load('assets/textures/river.png');
-    material = new THREE.MeshLambertMaterial({
+    material = new THREE.MeshStandardMaterial({
         map: texture,
         side: THREE.DoubleSide,
     });
