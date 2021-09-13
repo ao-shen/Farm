@@ -10,7 +10,18 @@ export class Building {
         this.name = name;
 
         this.mesh = this.Farm.BUILDINGS[this.type].meshes[0].clone();
+        this.size = this.Farm.BUILDINGS[this.type].size;
         Farm.scene.add(this.mesh);
+
+        this.center = {
+            x: (this.pos.x + this.size.x * 0.5 - 0.5) * this.Farm.blockSize,
+            z: (this.pos.z + this.size.z * 0.5 - 0.5) * this.Farm.blockSize
+        };
+
+        this.centerBlock = {
+            x: Math.floor(this.center.x / this.Farm.blockSize),
+            z: Math.floor(this.center.z / this.Farm.blockSize)
+        };
 
         this.side = side;
         this.mesh.rotateY(-(this.side - 1) * Math.PI / 2);
@@ -24,7 +35,7 @@ export class Building {
 
     render() {
         if (this.mesh) {
-            this.mesh.position.set(this.pos.x * this.Farm.blockSize, 0, this.pos.z * this.Farm.blockSize);
+            this.mesh.position.set(this.center.x, 0, this.center.z);
         }
     }
 
@@ -49,19 +60,11 @@ export class BuildingWorkersHouse extends Building {
         super(Farm, x, z, type, side, name);
 
         for (let entityType of this.Farm.BUILDINGS[this.type].entities) {
-            let workerEntity = new Entity(Farm, x, z, entityType);
+            let workerEntity = new Entity(Farm, this.center.x, this.center.z, entityType);
             workerEntity.parentBuilding = this;
             this.childEntities.push(workerEntity);
             this.Farm.entities.push(workerEntity);
         }
-    }
-
-    update() {
-        super.update();
-    }
-
-    render() {
-        super.render();
     }
 }
 
@@ -71,14 +74,6 @@ export class BuildingWall extends Building {
 
         this.isWall = true;
     }
-
-    update() {
-        super.update();
-    }
-
-    render() {
-        super.render();
-    }
 }
 
 export class BuildingPath extends Building {
@@ -86,13 +81,5 @@ export class BuildingPath extends Building {
         super(Farm, x, z, type, side, name);
 
         this.isPath = true;
-    }
-
-    update() {
-        super.update();
-    }
-
-    render() {
-        super.render();
     }
 }

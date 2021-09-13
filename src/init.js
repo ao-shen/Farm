@@ -98,7 +98,7 @@ function initScene(Farm) {
     // Lights
 
     let dirLight1 = new THREE.DirectionalLight(0xffeeb1, 1);
-    dirLight1.position.set(1, 1, 1);
+    dirLight1.position.set(1, 0.5, 1);
     Farm.scene.add(dirLight1);
 
     let hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 0.5);
@@ -107,7 +107,7 @@ function initScene(Farm) {
     dirLight2.position.set(-1, -1, -1);
     Farm.scene.add(dirLight2);*/
 
-    let ambientLight = new THREE.AmbientLight(0x222222);
+    let ambientLight = new THREE.AmbientLight(0x222222, 2);
     Farm.scene.add(ambientLight);
 
     /*geometry = new THREE.SphereGeometry(2, 32, 16);

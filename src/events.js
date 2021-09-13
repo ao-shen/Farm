@@ -428,6 +428,7 @@ function createNewBuilding(Farm) {
 
         switch (Farm.BUILDINGS[buildingType].name) {
             case "Worker's House":
+            case "Big Worker's House":
                 building = new BuildingObjects.BuildingWorkersHouse(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "Fence":

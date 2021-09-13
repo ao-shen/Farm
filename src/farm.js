@@ -287,6 +287,25 @@ export let Farm = {
             'assets/models/workers_house0.glb',
         ],
     }, {
+        name: "Big Worker's House",
+        category: "buildings",
+        price: 200,
+        size: {
+            x: 2,
+            z: 2,
+        },
+        entities: [
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        thumbnail: 'assets/textures/big_workers_house_thumbnail.png',
+        models: [
+            'assets/models/big_workers_house0.glb',
+        ],
+    }, {
         name: "Fence",
         category: "buildings",
         price: 2,

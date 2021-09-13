@@ -168,8 +168,13 @@ function renderOverlays(Farm) {
 
             // update build building preview
             if (Farm.buildBuildingMesh != null) {
+                let buildingSize = Farm.BUILDINGS[Farm.buildPaletteSelect].size;
                 Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
-                Farm.buildBuildingMesh.position.set(Farm.buildAreaPoint1.x * Farm.blockSize, 0, Farm.buildAreaPoint1.z * Farm.blockSize);
+                Farm.buildBuildingMesh.position.set(
+                    (Farm.buildAreaPoint1.x + buildingSize.x * 0.5 - 0.5) * Farm.blockSize,
+                    0,
+                    (Farm.buildAreaPoint1.z + buildingSize.z * 0.5 - 0.5) * Farm.blockSize
+                );
             }
         }
 

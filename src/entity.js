@@ -8,7 +8,7 @@ import { Plant } from './plant';
 export class Entity {
     constructor(Farm, x, z, type, name = null) {
         this.Farm = Farm;
-        this.pos = new THREE.Vector3(x * Farm.blockSize, 0, z * Farm.blockSize);
+        this.pos = new THREE.Vector3(x, 0, z);
         this.type = type;
         this.name = name;
 
@@ -37,8 +37,9 @@ export class Entity {
 
         this.goal = null;
 
-        this.path = this.pathFind(this.parentBuilding.pos);
+        this.path = this.pathFind(this.parentBuilding.centerBlock);
         if (this.path != null) {
+            this.path.push({ x: this.parentBuilding.center.x / this.Farm.blockSize, z: this.parentBuilding.center.z / this.Farm.blockSize })
             this.goal = this.parentBuilding;
             this.renderPath();
             return false;
@@ -208,7 +209,7 @@ export class Entity {
                 if (direction.destSides.includes(building.side)) {
                     return true;
                 }
-            } else if (building.isPath) {
+            } else if (building.isPath || building == this.parentBuilding) {
 
             } else {
                 if (!isTarget) {
