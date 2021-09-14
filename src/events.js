@@ -217,6 +217,18 @@ export function onKeyDown(Farm, event) {
                 Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
             }
             break;
+        case 'k':
+            Farm.shadowLight.shadow.bias -= 0.00001;
+            break;
+        case 'l':
+            Farm.shadowLight.shadow.bias += 0.00001;
+            break;
+        case 'i':
+            Farm.shadowLight.shadow.normalBias -= 0.0001;
+            break;
+        case 'o':
+            Farm.shadowLight.shadow.normalBias += 0.0001;
+            break;
     }
 
 }
@@ -267,17 +279,17 @@ function createNewSoil(Farm) {
         Farm.scene.remove(Farm.meshSoil);
         Farm.meshSoil.dispose();
         Farm.meshSoil = new THREE.InstancedMesh(Farm.geometrySoil, Farm.materialSoil, soilBlocks.length);
+        Farm.meshSoil.receiveShadow = true;
+        Farm.meshSoil.castShadow = true;
 
         const matrix = new THREE.Matrix4();
         for (let i = 0; i < soilBlocks.length; i++) {
-
 
             matrix.makeTranslation(
                 soilBlocks[i].x * Farm.blockSize,
                 0,
                 soilBlocks[i].z * Farm.blockSize
             );
-            matrix.scale(new THREE.Vector3(1, -1, 1));
 
             Farm.meshSoil.setMatrixAt(i, matrix);
 
@@ -349,6 +361,11 @@ function createNewPlant(Farm) {
             Farm.scene.remove(curMesh);
             curMesh.dispose();
             curMesh = new THREE.InstancedMesh(plantBuilding.geometries[m], plantBuilding.materials[m], plantBuffer.length * 4);
+            if (plantBuilding.customDepthMaterial[m]) {
+                curMesh.customDepthMaterial = plantBuilding.customDepthMaterial[m];
+            }
+            curMesh.receiveShadow = true;
+            curMesh.castShadow = true;
             Farm.scene.add(curMesh);
 
             plantBuilding.meshes[m] = curMesh;
@@ -581,6 +598,8 @@ function remove(Farm) {
                 Farm.scene.remove(curMesh);
                 curMesh.dispose();
                 curMesh = new THREE.InstancedMesh(plantBuilding.geometries[m], plantBuilding.materials[m], plantBuffer.length * 4);
+                curMesh.receiveShadow = true;
+                curMesh.castShadow = true;
                 Farm.scene.add(curMesh);
 
                 plantBuilding.meshes[m] = curMesh;
@@ -605,6 +624,8 @@ function remove(Farm) {
         Farm.scene.remove(Farm.meshSoil);
         Farm.meshSoil.dispose();
         Farm.meshSoil = new THREE.InstancedMesh(Farm.geometrySoil, Farm.materialSoil, soilBlocks.length);
+        Farm.meshSoil.receiveShadow = true;
+        Farm.meshSoil.castShadow = true;
 
         const matrix = new THREE.Matrix4();
         for (let i = 0; i < soilBlocks.length; i++) {
@@ -613,7 +634,6 @@ function remove(Farm) {
                 0,
                 soilBlocks[i].z * Farm.blockSize
             );
-            matrix.scale(new THREE.Vector3(1, -1, 1));
 
             Farm.meshSoil.setMatrixAt(i, matrix);
         }

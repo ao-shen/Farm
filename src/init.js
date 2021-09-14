@@ -68,6 +68,7 @@ function initScene(Farm) {
     Farm.renderer.autoClear = false;
     Farm.renderer.outputEncoding = THREE.sRGBEncoding;
     Farm.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    Farm.renderer.shadowMap.enabled = true;
     document.body.appendChild(Farm.renderer.domElement);
 
     Farm.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);
@@ -110,8 +111,8 @@ function initScene(Farm) {
         rayleigh: 1,
         mieCoefficient: 0.005,
         mieDirectionalG: 0.995,
-        elevation: 60,
-        azimuth: 180,
+        elevation: 30,
+        azimuth: 220,
         exposure: 0.7
     };
 
@@ -128,10 +129,44 @@ function initScene(Farm) {
 
     uniforms['sunPosition'].value.copy(sun);
 
+    Farm.sun = sun;
+
     Farm.renderer.toneMappingExposure = effectController.exposure;
 
+    // Environment 
+    geometry = new THREE.PlaneGeometry(1000, 1000);
+    material = new THREE.MeshBasicMaterial({ color: 0x0a400a, side: THREE.DoubleSide });
+    const plane = new THREE.Mesh(geometry, material);
+    plane.rotateX(Math.PI / 2);
+    plane.position.set(0, -0.1, 0);
+    Farm.scene.add(plane);
     const pmremGenerator = new THREE.PMREMGenerator(Farm.renderer);
-    Farm.scene.environment = pmremGenerator.fromScene(sky).texture;
+    Farm.scene.environment = pmremGenerator.fromScene(Farm.scene).texture;
+    Farm.scene.remove(plane);
+
+    // Shadow
+    const light = new THREE.DirectionalLight(0xddffdd, 0.6);
+    light.position.set(sun.x, sun.y, sun.z);
+    light.castShadow = true;
+    light.shadow.mapSize.width = 2048;
+    light.shadow.mapSize.height = 2048;
+
+    const d = 128;
+
+    light.shadow.camera.left = -d;
+    light.shadow.camera.right = d;
+    light.shadow.camera.top = d;
+    light.shadow.camera.bottom = -d;
+    light.shadow.camera.far = 50000;
+    light.shadow.bias = 0.000;
+    light.shadow.normalBias = 0.00;
+
+    Farm.scene.add(light);
+    Farm.scene.add(light.target);
+
+    Farm.shadowLight = light;
+    Farm.shadowLight.shadow.bias = -0.000001;
+    Farm.shadowLight.shadow.normalBias = 0.0;
 
     // Lights
 
@@ -303,11 +338,11 @@ function initHudScene(Farm) {
 function loadBuildingAssets(Farm) {
 
     let modelLoader = new GLTFLoader();
+    const textureLoader = new THREE.TextureLoader();
 
     // Load Models
     const defaultTransform = new THREE.Matrix4()
-        .makeRotationX(Math.PI)
-        .multiply(new THREE.Matrix4().makeScale(-5, 5, 5));
+        .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
 
     const defaultBuildingTransform = new THREE.Matrix4()
         .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
@@ -329,12 +364,16 @@ function loadBuildingAssets(Farm) {
 
                 Farm.meshSoil = new THREE.InstancedMesh(Farm.geometrySoil, Farm.materialSoil, 0);
 
+                Farm.meshSoil.receiveShadow = true;
+                Farm.meshSoil.castShadow = true;
+
                 Farm.scene.add(Farm.meshSoil);
             });
         } else if (curBuilding.category == "plants") {
             curBuilding.geometries = [];
             curBuilding.materials = [];
             curBuilding.meshes = [];
+            curBuilding.customDepthMaterial = [];
             curBuilding.numStages = curBuilding.models.length;
             for (let j = 0; j < curBuilding.models.length; j++) {
                 modelLoader.load(curBuilding.models[j], function(gltf) {
@@ -348,6 +387,21 @@ function loadBuildingAssets(Farm) {
 
                     curBuilding.meshes[j] = new THREE.InstancedMesh(curBuilding.geometries[j], curBuilding.materials[j], 0);
 
+                    if (curBuilding.transparentTexture) {
+                        let transparentTexture = textureLoader.load(curBuilding.transparentTexture);
+                        transparentTexture.flipY = false;
+                        let depthMat = new THREE.MeshDepthMaterial({
+                            depthPacking: THREE.RGBADepthPacking,
+                            map: transparentTexture,
+                            alphaTest: 0.5
+                        });
+                        curBuilding.customDepthMaterial[j] = depthMat;
+                        curBuilding.meshes[j].customDepthMaterial = depthMat;
+                    }
+
+                    curBuilding.meshes[j].receiveShadow = true;
+                    curBuilding.meshes[j].castShadow = true;
+
                     Farm.scene.add(curBuilding.meshes[j]);
                 });
             }
@@ -360,6 +414,10 @@ function loadBuildingAssets(Farm) {
                 modelLoader.load(curBuilding.models[j], function(gltf) {
                     let mesh = gltf.scene.children[0];
 
+                    mesh.receiveShadow = true;
+                    mesh.castShadow = true;
+
+                    mesh.geometry.computeVertexNormals();
                     mesh.geometry.applyMatrix4(defaultBuildingTransform);
 
                     curBuilding.geometries[j] = mesh.geometry.clone();
@@ -410,6 +468,9 @@ function loadEntitiesAssets(Farm) {
         for (let j = 0; j < curEntity.models.length; j++) {
             modelLoader.load(curEntity.models[j], function(gltf) {
                 let mesh = gltf.scene.children[0];
+
+                mesh.receiveShadow = true;
+                mesh.castShadow = true;
 
                 mesh.geometry.applyMatrix4(defaultEntityTransform);
 
@@ -496,13 +557,14 @@ function initWorld(Farm) {
     Farm.texSoilBlock.magFilter = THREE.NearestFilter;
     Farm.texSoilBlock.minFilter = THREE.NearestFilter;
 
-
     let groundMaterial = new THREE.MeshStandardMaterial({
         map: Farm.texGroundBlock,
         side: THREE.DoubleSide,
     });
 
     Farm.groundMesh = new THREE.Mesh(Farm.groundGeometry, groundMaterial);
+
+    Farm.groundMesh.receiveShadow = true;
 
     Farm.scene.add(Farm.groundMesh);
 
@@ -525,6 +587,7 @@ function initWorld(Farm) {
         side: THREE.DoubleSide,
     });
     mesh = new THREE.InstancedMesh(geometry, material, numSides);
+    mesh.receiveShadow = true;
     for (let i = 0; i < numSides; i++) {
         matrix.makeTranslation(
             ((i + 0.5) * blocksPerSize - 0.5) * Farm.blockSize,
@@ -544,6 +607,7 @@ function initWorld(Farm) {
         side: THREE.DoubleSide,
     });
     mesh = new THREE.InstancedMesh(geometry, material, numSides);
+    mesh.receiveShadow = true;
     for (let i = 0; i < numSides; i++) {
         matrix.makeTranslation(
             ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize,

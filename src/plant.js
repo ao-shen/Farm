@@ -107,7 +107,7 @@ export class Plant {
 
                 onCurStage *= (rand() - 0.5) * 0.2 + 1;
 
-                matrix.scale(new THREE.Vector3(onCurStage, -onCurStage, onCurStage));
+                matrix.scale(new THREE.Vector3(onCurStage, onCurStage, onCurStage));
 
                 curMesh.setMatrixAt(this.meshIdx * 4 + j, matrix);
             }

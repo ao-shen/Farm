@@ -30,6 +30,22 @@ export function animate(Farm) {
         entity.update();
     }
 
+
+    let d = 256 * Farm.controls.object.position.distanceTo(Farm.controls.target) / 100;
+
+    Farm.shadowLight.shadow.camera.left = -d;
+    Farm.shadowLight.shadow.camera.right = d;
+    Farm.shadowLight.shadow.camera.top = d;
+    Farm.shadowLight.shadow.camera.bottom = -d;
+    Farm.shadowLight.shadow.camera.updateProjectionMatrix();
+
+    d *= 10;
+
+    Farm.shadowLight.position.set(Farm.controls.target.x + Farm.sun.x * d, Farm.sun.y * d, Farm.controls.target.z + Farm.sun.z * d);
+    Farm.shadowLight.target.position.set(Farm.controls.target.x, 0, Farm.controls.target.z);
+
+    //Farm.shadowLight.shadow.camera.position.set(Farm.controls.target.x, 10, Farm.controls.target.y);
+
     render(Farm);
 
     Farm.stats.end();
