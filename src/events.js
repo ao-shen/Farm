@@ -123,6 +123,9 @@ export function onMouseDown(Farm, event) {
                         Farm.groupBuildPalette.visible = false;
                         Farm.buildPaletteSelect = 0;
 
+                        updateBuildingMeshPreview(Farm);
+                        Farm.buildAreaRect.visible = false;
+
                         Farm.ignoreNextMouseUp = true;
                         return;
                     }

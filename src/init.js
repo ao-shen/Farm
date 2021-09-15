@@ -8,6 +8,10 @@ import * as BufferGeometryUtils from './THREE/BufferGeometryUtils.js';
 import { OrbitControls } from './THREE/OrbitControls.js';
 import { GLTFLoader } from './THREE/GLTFLoader.js';
 import { OutlinePass } from './THREE/OutlinePass.js';
+import { EffectComposer } from './THREE/EffectComposer.js';
+import { RenderPass } from './THREE/RenderPass.js';
+import { ShaderPass } from './THREE/ShaderPass.js';
+import { FXAAShader } from './THREE/FXAAShader.js';
 import { Sky } from './THREE/Sky.js';
 
 import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown } from './events.js';
@@ -113,7 +117,7 @@ function initScene(Farm) {
         mieDirectionalG: 0.995,
         elevation: 30,
         azimuth: 220,
-        exposure: 0.7
+        exposure: 1
     };
 
     const uniforms = sky.material.uniforms;
@@ -134,7 +138,7 @@ function initScene(Farm) {
     Farm.renderer.toneMappingExposure = effectController.exposure;
 
     // Environment 
-    geometry = new THREE.PlaneGeometry(1000, 1000);
+    /*geometry = new THREE.PlaneGeometry(1000, 1000);
     material = new THREE.MeshBasicMaterial({ color: 0x0a400a, side: THREE.DoubleSide });
     const plane = new THREE.Mesh(geometry, material);
     plane.rotateX(Math.PI / 2);
@@ -142,10 +146,13 @@ function initScene(Farm) {
     Farm.scene.add(plane);
     const pmremGenerator = new THREE.PMREMGenerator(Farm.renderer);
     Farm.scene.environment = pmremGenerator.fromScene(Farm.scene).texture;
-    Farm.scene.remove(plane);
+    Farm.scene.remove(plane);*/
+
+    let hemiLight = new THREE.HemisphereLight(0xb1eeff, 0x60a060, 0.75);
+    Farm.scene.add(hemiLight);
 
     // Shadow
-    const light = new THREE.DirectionalLight(0xddffdd, 0.6);
+    const light = new THREE.DirectionalLight(0xffeeb1, 1);
     light.position.set(sun.x, sun.y, sun.z);
     light.castShadow = true;
     light.shadow.mapSize.width = 2048;
@@ -167,6 +174,22 @@ function initScene(Farm) {
     Farm.shadowLight = light;
     Farm.shadowLight.shadow.bias = -0.000001;
     Farm.shadowLight.shadow.normalBias = 0.0;
+
+    // Render Passes
+    Farm.composer = new EffectComposer(Farm.renderer);
+
+    // Regular Pass
+    Farm.renderPass = new RenderPass(Farm.scene, Farm.camera);
+    Farm.composer.addPass(Farm.renderPass);
+
+    // Outline Pass
+    Farm.outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), Farm.scene, Farm.camera);
+    Farm.composer.addPass(Farm.outlinePass);
+
+    // FXAA Pass
+    let effectFXAA = new ShaderPass(FXAAShader);
+    effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
+    Farm.composer.addPass(effectFXAA);
 
     // Lights
 

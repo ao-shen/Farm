@@ -26,6 +26,9 @@ export let Farm = {
     renderer: null,
     shadowLight: null,
     sun: null,
+    composer: null,
+    renderPass: null,
+    outlinePass: null,
 
     // 2D HUD
     hudCamera: null,
@@ -262,7 +265,7 @@ export let Farm = {
         name: "Corn",
         category: "plants",
         price: 20,
-        matureTime: 100,
+        matureTime: 5000,
         thumbnail: 'assets/textures/corn_thumbnail.png',
         models: [
             'assets/models/corn0.glb',
