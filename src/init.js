@@ -158,8 +158,8 @@ function initScene(Farm) {
     const light = new THREE.DirectionalLight(0xffeeb1, 1);
     light.position.set(sun.x, sun.y, sun.z);
     light.castShadow = true;
-    light.shadow.mapSize.width = 2048;
-    light.shadow.mapSize.height = 2048;
+    light.shadow.mapSize.width = 4096;
+    light.shadow.mapSize.height = 4096;
 
     const d = 128;
 
@@ -191,7 +191,7 @@ function initScene(Farm) {
 
     // FXAA Pass
     let effectFXAA = new ShaderPass(FXAAShader);
-    effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
+    effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth / window.devicePixelRatio, 1 / window.innerHeight / window.devicePixelRatio);
     Farm.composer.addPass(effectFXAA);
 
     // Info-able group
