@@ -48,11 +48,15 @@ export let Farm = {
 
     ignoreNextMouseUp: false,
 
-    // Raycaster
+    // Building Raycaster
     mouseRaycaster: new THREE.Raycaster(),
     mousePos: new THREE.Vector2(),
 
     hoveringBlock: null,
+
+    // Info box
+    infoBoxRaycaster: new THREE.Raycaster(),
+    groupInfoable: new THREE.Group(),
 
     // Blocks -----------------------------------------------
 

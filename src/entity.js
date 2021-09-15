@@ -20,7 +20,7 @@ export class Entity {
 
         this.mesh = this.Farm.ENTITIES[this.type].meshes[0].clone();
         this.mesh.center = this.Farm.ENTITIES[this.type].meshes[0].center;
-        this.Farm.scene.add(this.mesh);
+        this.Farm.groupInfoable.add(this.mesh);
 
         let thisEntity = this;
         this.Farm.scheduler.addToSchedule(1000, function() {
@@ -178,7 +178,7 @@ export class Entity {
         }
         this.mesh.geometry.dispose();
         this.mesh.material.dispose();
-        this.Farm.scene.remove(this.mesh);
+        this.Farm.groupInfoable.remove(this.mesh);
 
         let idx = this.Farm.entities.indexOf(this);
         this.Farm.entities[idx] = null;

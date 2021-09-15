@@ -31,10 +31,10 @@ export function init(Farm) {
     let modelLoader = new GLTFLoader();
     let texture, material, geometry;
 
-    // Tnit 3D Scene
+    // Init 3D Scene
     initScene(Farm);
 
-    // Tnit 2D Scene
+    // Init 2D Scene
     initHudScene(Farm);
 
     // Load Buildings
@@ -48,6 +48,9 @@ export function init(Farm) {
 
     // Init Overlays
     initOverlays(Farm);
+
+    // Init Info Boxes
+    initInfoBoxes(Farm);
 
     // Init Events
     initEvents(Farm);
@@ -190,6 +193,9 @@ function initScene(Farm) {
     let effectFXAA = new ShaderPass(FXAAShader);
     effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
     Farm.composer.addPass(effectFXAA);
+
+    // Info-able group
+    Farm.scene.add(Farm.groupInfoable);
 
     // Lights
 
@@ -670,6 +676,10 @@ function initOverlays(Farm) {
     Farm.hudScene.add(Farm.buildAreaRect);
 
     Farm.buildAreaCorner = new THREE.Vector3();
+}
+
+function initInfoBoxes(Farm) {
+
 }
 
 function initEvents(Farm) {

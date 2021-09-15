@@ -11,7 +11,7 @@ export class Building {
 
         this.mesh = this.Farm.BUILDINGS[this.type].meshes[0].clone();
         this.size = this.Farm.BUILDINGS[this.type].size;
-        Farm.scene.add(this.mesh);
+        Farm.groupInfoable.add(this.mesh);
 
         this.center = {
             x: (this.pos.x + this.size.x * 0.5 - 0.5) * this.Farm.blockSize,
@@ -46,7 +46,7 @@ export class Building {
 
         this.mesh.geometry.dispose();
         this.mesh.material.dispose();
-        this.Farm.scene.remove(this.mesh);
+        this.Farm.groupInfoable.remove(this.mesh);
 
         let idx = this.Farm.buildings.indexOf(this);
         this.Farm.buildings[idx] = null;

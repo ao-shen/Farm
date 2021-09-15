@@ -55,6 +55,7 @@ export function animate(Farm) {
 function render(Farm) {
 
     renderOverlays(Farm);
+    renderInfoBoxes(Farm);
 
     for (const building of Farm.buildings) {
         building.render();
@@ -70,6 +71,22 @@ function render(Farm) {
 
     Farm.renderer.clearDepth();
     Farm.renderer.render(Farm.hudScene, Farm.hudCamera);
+}
+
+function renderInfoBoxes(Farm) {
+
+    if (Farm.lens == Farm.LENS.DEFAULT) {
+        Farm.infoBoxRaycaster.setFromCamera(Farm.mousePos, Farm.camera);
+
+        const intersects = Farm.infoBoxRaycaster.intersectObject(Farm.groupInfoable, true);
+
+        if (intersects.length > 0) {
+            const selectedObject = intersects[0].object;
+            Farm.outlinePass.selectedObjects = [selectedObject];
+        } else {
+            Farm.outlinePass.selectedObjects = [];
+        }
+    }
 }
 
 function renderOverlays(Farm) {
