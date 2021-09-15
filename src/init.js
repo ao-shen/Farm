@@ -16,6 +16,7 @@ import { Sky } from './THREE/Sky.js';
 
 import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown } from './events.js';
 import { BLOCK, Block } from './block.js';
+import { NineSlicePlane } from './nine_slice.js';
 
 export function init(Farm) {
 
@@ -151,11 +152,11 @@ function initScene(Farm) {
     Farm.scene.environment = pmremGenerator.fromScene(Farm.scene).texture;
     Farm.scene.remove(plane);*/
 
-    let hemiLight = new THREE.HemisphereLight(0xb1eeff, 0x60a060, 0.75);
+    let hemiLight = new THREE.HemisphereLight(0xb1eeff, 0x60a060, 1.75);
     Farm.scene.add(hemiLight);
 
     // Shadow
-    const light = new THREE.DirectionalLight(0xffeeb1, 1);
+    const light = new THREE.DirectionalLight(0xffeeb1, 2);
     light.position.set(sun.x, sun.y, sun.z);
     light.castShadow = true;
     light.shadow.mapSize.width = 4096;
@@ -239,7 +240,9 @@ function initHudScene(Farm) {
 
     // Build Button
     Farm.texBuildButton = textureLoader.load("assets/textures/button.png");
+    Farm.texBuildButton.encoding = THREE.sRGBEncoding;
     Farm.texStopBuildButton = textureLoader.load("assets/textures/button_inverted.png");
+    Farm.texStopBuildButton.encoding = THREE.sRGBEncoding;
     material = new THREE.SpriteMaterial({ map: Farm.texBuildButton });
 
     Farm.spriteBuildButton = new THREE.Sprite(material);
@@ -265,6 +268,7 @@ function initHudScene(Farm) {
 
     // Build Palette
     textureLoader.load("assets/textures/palette.png", function(texture) {
+        texture.encoding = THREE.sRGBEncoding;
 
         Farm.texBuildPalette = texture;
 
@@ -282,7 +286,9 @@ function initHudScene(Farm) {
 
     // Build Palette Category Tabs
     let texTab = textureLoader.load("assets/textures/palette_tab.png");
+    texTab.encoding = THREE.sRGBEncoding;
     let texTabInactive = textureLoader.load("assets/textures/palette_tab_inactive.png");
+    texTabInactive.encoding = THREE.sRGBEncoding;
 
     // Init Building Palette Categories
     let mapCategoryNameToIdx = {};
@@ -328,6 +334,7 @@ function initHudScene(Farm) {
     Farm.thumbnailY = thumbnailY;
 
     textureLoader.load("assets/textures/green_overlay.png", function(texture) {
+        texture.encoding = THREE.sRGBEncoding;
 
         Farm.texBuildPaletteSelect = texture;
 
@@ -351,6 +358,7 @@ function initHudScene(Farm) {
         category.buildingTypes.push(i);
 
         textureLoader.load(curBuilding.thumbnail, function(texture) {
+            texture.encoding = THREE.sRGBEncoding;
 
             material = new THREE.SpriteMaterial({ map: texture });
 
@@ -418,6 +426,7 @@ function loadBuildingAssets(Farm) {
 
                     if (curBuilding.transparentTexture) {
                         let transparentTexture = textureLoader.load(curBuilding.transparentTexture);
+                        transparentTexture.encoding = THREE.sRGBEncoding;
                         transparentTexture.flipY = false;
                         let depthMat = new THREE.MeshDepthMaterial({
                             depthPacking: THREE.RGBADepthPacking,
@@ -577,11 +586,13 @@ function initWorld(Farm) {
     Farm.groundGeometry.setIndex(new THREE.BufferAttribute(new Uint32Array(groundIndices), 1));
 
     Farm.texGroundBlock = textureLoader.load('assets/textures/ground.png');
+    Farm.texGroundBlock.encoding = THREE.sRGBEncoding;
     Farm.texGroundBlock.anisotropy = 1;
     Farm.texGroundBlock.magFilter = THREE.NearestFilter;
     Farm.texGroundBlock.minFilter = THREE.NearestFilter;
 
     Farm.texSoilBlock = textureLoader.load('assets/textures/soil.png');
+    Farm.texSoilBlock.encoding = THREE.sRGBEncoding;
     Farm.texSoilBlock.anisotropy = 1;
     Farm.texSoilBlock.magFilter = THREE.NearestFilter;
     Farm.texSoilBlock.minFilter = THREE.NearestFilter;
@@ -609,6 +620,7 @@ function initWorld(Farm) {
     geometry.rotateX(Math.PI / 2);
     geometry.rotateY(-Math.PI / 2);
     texture = textureLoader.load('assets/textures/road.png');
+    texture.encoding = THREE.sRGBEncoding;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.NearestFilter;
     material = new THREE.MeshStandardMaterial({
@@ -631,6 +643,7 @@ function initWorld(Farm) {
     geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
     geometry.rotateX(Math.PI / 2);
     texture = textureLoader.load('assets/textures/river.png');
+    texture.encoding = THREE.sRGBEncoding;
     material = new THREE.MeshStandardMaterial({
         map: texture,
         side: THREE.DoubleSide,
@@ -661,6 +674,7 @@ function initOverlays(Farm) {
     // Ground Raycaster
 
     texture = textureLoader.load('assets/textures/white_overlay.png');
+    texture.encoding = THREE.sRGBEncoding;
     Farm.blockLine = createOverlayMesh(texture);
     Farm.hudScene.add(Farm.blockLine);
 
@@ -679,6 +693,21 @@ function initOverlays(Farm) {
 }
 
 function initInfoBoxes(Farm) {
+
+    let texture, material, geometry;
+
+    const textureLoader = new THREE.TextureLoader();
+
+    texture = textureLoader.load("assets/textures/info_box.png");
+    texture.encoding = THREE.sRGBEncoding;
+
+    Farm.materialInfoBoxBackground = new THREE.MeshBasicMaterial({ map: texture, color: 0xc0c0c0, transparent: true });
+
+    /*let mesh = new NineSlicePlane(material, { width: 600, height: 300, border: 50 });
+
+    mesh.position.set(0, 0, -50);
+
+    //Farm.hudScene.add(mesh);*/
 
 }
 

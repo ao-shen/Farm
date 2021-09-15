@@ -4,6 +4,7 @@ import { PriorityQueue } from './priority_queue';
 import { BLOCK, Block } from './block.js';
 import { Vector3 } from 'three';
 import { Plant } from './plant';
+import { InfoBox } from './info_box';
 
 export class Entity {
     constructor(Farm, x, z, type, name = null) {
@@ -20,12 +21,24 @@ export class Entity {
 
         this.mesh = this.Farm.ENTITIES[this.type].meshes[0].clone();
         this.mesh.center = this.Farm.ENTITIES[this.type].meshes[0].center;
+        this.mesh.owner = this;
         this.Farm.groupInfoable.add(this.mesh);
 
         let thisEntity = this;
         this.Farm.scheduler.addToSchedule(1000, function() {
             return thisEntity.navigateToTarget();
         }, this);
+
+        this.infoBox = new InfoBox(this.Farm);
+    }
+
+    showInfoBox() {
+
+        let pos = this.Farm.posToScreenPos(this.Farm.getCenterPoint(this.mesh), this.Farm.camera);
+
+        this.infoBox.updatePosition(pos.x, pos.y);
+
+        this.infoBox.show();
     }
 
     onSchedule() {
@@ -176,6 +189,9 @@ export class Entity {
             this.pathMesh.material.dispose();
             this.Farm.scene.remove(this.pathMesh);
         }
+
+        this.infoBox.remove();
+
         this.mesh.geometry.dispose();
         this.mesh.material.dispose();
         this.Farm.groupInfoable.remove(this.mesh);

@@ -58,6 +58,10 @@ export let Farm = {
     infoBoxRaycaster: new THREE.Raycaster(),
     groupInfoable: new THREE.Group(),
 
+    materialInfoBoxBackground: null,
+
+    visibleInfoBoxes: [],
+
     // Blocks -----------------------------------------------
 
     numBlocks: {
@@ -160,6 +164,20 @@ export let Farm = {
             Math.round(vector.x * window.innerWidth / 2),
             Math.round(vector.y * window.innerHeight / 2)
         );
+    },
+
+    getCenterPoint: function(mesh) {
+        var middle = new THREE.Vector3();
+        var geometry = mesh.geometry;
+
+        geometry.computeBoundingBox();
+
+        middle.x = (geometry.boundingBox.max.x + geometry.boundingBox.min.x) / 2;
+        middle.y = (geometry.boundingBox.max.y + geometry.boundingBox.min.y) / 2;
+        middle.z = (geometry.boundingBox.max.z + geometry.boundingBox.min.z) / 2;
+
+        mesh.localToWorld(middle);
+        return middle;
     },
 
     // CONFIGS -----------------------------------------------

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { TextureLoader } from 'three';
 import { Entity } from './entity';
+import { InfoBox } from './info_box';
 
 export class Building {
     constructor(Farm, x, z, type, side, name = null) {
@@ -11,6 +12,7 @@ export class Building {
 
         this.mesh = this.Farm.BUILDINGS[this.type].meshes[0].clone();
         this.size = this.Farm.BUILDINGS[this.type].size;
+        this.mesh.owner = this;
         Farm.groupInfoable.add(this.mesh);
 
         this.center = {
@@ -27,6 +29,17 @@ export class Building {
         this.mesh.rotateY(-(this.side - 1) * Math.PI / 2);
 
         this.childEntities = [];
+
+        this.infoBox = new InfoBox(this.Farm);
+    }
+
+    showInfoBox() {
+
+        let pos = this.Farm.posToScreenPos(this.Farm.getCenterPoint(this.mesh), this.Farm.camera);
+
+        this.infoBox.updatePosition(pos.x, pos.y);
+
+        this.infoBox.show();
     }
 
     update() {
@@ -43,6 +56,8 @@ export class Building {
         for (let child of this.childEntities) {
             child.remove();
         }
+
+        this.infoBox.remove();
 
         this.mesh.geometry.dispose();
         this.mesh.material.dispose();
