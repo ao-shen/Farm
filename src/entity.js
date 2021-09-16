@@ -29,7 +29,8 @@ export class Entity {
             return thisEntity.navigateToTarget();
         }, this);
 
-        this.infoBox = new InfoBox(this.Farm);
+        this.infoBox = new InfoBox(this.Farm, this);
+        this.infoBox.addText("Entity");
     }
 
     showInfoBox() {
@@ -180,6 +181,7 @@ export class Entity {
     render() {
         if (this.mesh) {
             this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+            this.infoBox.render();
         }
     }
 

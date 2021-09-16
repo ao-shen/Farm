@@ -30,7 +30,8 @@ export class Building {
 
         this.childEntities = [];
 
-        this.infoBox = new InfoBox(this.Farm);
+        this.infoBox = new InfoBox(this.Farm, this);
+        this.infoBox.addText("Building");
     }
 
     showInfoBox() {
@@ -49,6 +50,7 @@ export class Building {
     render() {
         if (this.mesh) {
             this.mesh.position.set(this.center.x, 0, this.center.z);
+            this.infoBox.render();
         }
     }
 
