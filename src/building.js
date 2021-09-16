@@ -4,8 +4,9 @@ import { Entity } from './entity';
 import { InfoBox } from './info_box';
 
 export class Building {
-    constructor(Farm, x, z, type, side, name = null) {
+    constructor(Farm, idx, x, z, type, side, name = null) {
         this.Farm = Farm;
+        this.idx = idx;
         this.pos = new THREE.Vector3(x, 0, z);
         this.type = type;
         this.name = name;
@@ -65,37 +66,37 @@ export class Building {
         this.mesh.material.dispose();
         this.Farm.groupInfoable.remove(this.mesh);
 
-        let idx = this.Farm.buildings.indexOf(this);
-        this.Farm.buildings[idx] = null;
+        delete this.Farm.buildings[this.idx];
 
         this.isRemoved = true;
     }
 }
 
 export class BuildingWorkersHouse extends Building {
-    constructor(Farm, x, z, type, side, name = null) {
-        super(Farm, x, z, type, side, name);
+    constructor(Farm, idx, x, z, type, side, name = null) {
+        super(Farm, idx, x, z, type, side, name);
 
         for (let entityType of this.Farm.BUILDINGS[this.type].entities) {
-            let workerEntity = new Entity(Farm, this.center.x, this.center.z, entityType);
+            let workerEntity = new Entity(Farm, this.Farm.entityIdx, this.center.x, this.center.z, entityType);
             workerEntity.parentBuilding = this;
             this.childEntities.push(workerEntity);
-            this.Farm.entities.push(workerEntity);
+            this.Farm.entities[this.Farm.entityIdx] = workerEntity;
+            this.Farm.entityIdx++;
         }
     }
 }
 
 export class BuildingWall extends Building {
-    constructor(Farm, x, z, type, side, name = null) {
-        super(Farm, x, z, type, side, name);
+    constructor(Farm, idx, x, z, type, side, name = null) {
+        super(Farm, idx, x, z, type, side, name);
 
         this.isWall = true;
     }
 }
 
 export class BuildingPath extends Building {
-    constructor(Farm, x, z, type, side, name = null) {
-        super(Farm, x, z, type, side, name);
+    constructor(Farm, idx, x, z, type, side, name = null) {
+        super(Farm, idx, x, z, type, side, name);
 
         this.isPath = true;
     }

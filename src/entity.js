@@ -7,8 +7,9 @@ import { Plant } from './plant';
 import { InfoBox } from './info_box';
 
 export class Entity {
-    constructor(Farm, x, z, type, name = null) {
+    constructor(Farm, idx, x, z, type, name = null) {
         this.Farm = Farm;
+        this.idx = idx;
         this.pos = new THREE.Vector3(x, 0, z);
         this.type = type;
         this.name = name;
@@ -198,8 +199,7 @@ export class Entity {
         this.mesh.material.dispose();
         this.Farm.groupInfoable.remove(this.mesh);
 
-        let idx = this.Farm.entities.indexOf(this);
-        this.Farm.entities[idx] = null;
+        delete this.Farm.entities[this.idx];
 
         this.isRemoved = true;
     }

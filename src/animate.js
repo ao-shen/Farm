@@ -22,12 +22,12 @@ export function animate(Farm) {
     }
     Farm.plantTypeAwaitingMeshUpdate = new Set();
 
-    for (const building of Farm.buildings) {
-        building.update();
+    for (const building in Farm.buildings) {
+        Farm.buildings[building].update();
     }
 
-    for (const entity of Farm.entities) {
-        entity.update();
+    for (const entity in Farm.entities) {
+        Farm.entities[entity].update();
     }
 
 
@@ -57,12 +57,12 @@ function render(Farm) {
     renderOverlays(Farm);
     renderInfoBoxes(Farm);
 
-    for (const building of Farm.buildings) {
-        building.render();
+    for (const building in Farm.buildings) {
+        Farm.buildings[building].render();
     }
 
-    for (const entity of Farm.entities) {
-        entity.render();
+    for (const entity in Farm.entities) {
+        Farm.entities[entity].render();
     }
 
     Farm.renderer.clear();

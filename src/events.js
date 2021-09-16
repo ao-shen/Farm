@@ -466,16 +466,16 @@ function createNewBuilding(Farm) {
         switch (Farm.BUILDINGS[buildingType].name) {
             case "Worker's House":
             case "Big Worker's House":
-                building = new BuildingObjects.BuildingWorkersHouse(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.BuildingWorkersHouse(Farm, this.Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "Fence":
-                building = new BuildingObjects.BuildingWall(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.BuildingWall(Farm, this.Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "Stone Path":
-                building = new BuildingObjects.BuildingPath(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.BuildingPath(Farm, this.Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             default:
-                building = new BuildingObjects.Building(Farm, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.Building(Farm, this.Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
         }
 
@@ -483,7 +483,8 @@ function createNewBuilding(Farm) {
             block.buildings.push(building);
         }
 
-        Farm.buildings.push(building);
+        Farm.buildings[this.Farm.buildingIdx] = building;
+        this.Farm.buildingIdx++;
     }
 }
 
@@ -593,8 +594,8 @@ function remove(Farm) {
 
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Buildings" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
-        Farm.buildings = Farm.buildings.filter(building => building);
-        Farm.entities = Farm.entities.filter(entity => entity);
+        //Farm.buildings = Farm.buildings.filter(building => building);
+        //Farm.entities = Farm.entities.filter(entity => entity);
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
