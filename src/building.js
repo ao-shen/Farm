@@ -9,11 +9,12 @@ export class Building {
         this.idx = idx;
         this.pos = new THREE.Vector3(x, 0, z);
         this.type = type;
-        this.name = name;
+        this.name = "Building_" + this.idx;
 
         this.mesh = this.Farm.BUILDINGS[this.type].meshes[0].clone();
         this.size = this.Farm.BUILDINGS[this.type].size;
         this.mesh.owner = this;
+        this.mesh.name = this.name;
         Farm.groupInfoable.add(this.mesh);
 
         this.center = {
@@ -32,7 +33,7 @@ export class Building {
         this.childEntities = [];
 
         this.infoBox = new InfoBox(this.Farm, this);
-        this.infoBox.addText("Building");
+        this.infoBox.addText(this.name);
     }
 
     showInfoBox() {

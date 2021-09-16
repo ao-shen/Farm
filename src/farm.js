@@ -62,6 +62,10 @@ export let Farm = {
 
     visibleInfoBoxes: [],
 
+    draggingInfoBoxStartPos: null,
+    draggingInfoBoxStartMousePos: new THREE.Vector2(),
+    draggingInfoBox: null,
+
     // Blocks -----------------------------------------------
 
     numBlocks: {

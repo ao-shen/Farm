@@ -33,7 +33,9 @@ export function onMouseUp(Farm, event) {
 
     switch (event.button) {
         case 0:
-            if (Farm.buildAreaPoint1 == null || Farm.buildAreaPoint2 == null) {
+            if (Farm.draggingInfoBox) {
+                Farm.draggingInfoBox = null;
+            } else if (Farm.buildAreaPoint1 == null || Farm.buildAreaPoint2 == null) {
 
             } else if (Farm.overlay == Farm.OVERLAY.BUILD_AREA) {
                 switch (Farm.BUILDINGS[Farm.buildPaletteSelect].name) {
@@ -87,6 +89,8 @@ export function onMouseDown(Farm, event) {
                     continue;
                 }
 
+                console.log(intersect.object.name);
+
                 if (intersect.object.name == "BuildButton") {
 
                     if (Farm.lens == Farm.LENS.DEFAULT) {
@@ -129,6 +133,23 @@ export function onMouseDown(Farm, event) {
                         Farm.ignoreNextMouseUp = true;
                         return;
                     }
+                } else if (intersect.object.name.startsWith("InfoBox_")) {
+                    let infoBoxOwnerName = intersect.object.name.substring("InfoBox_".length)
+                    let curInfoBox, infoBoxOwnerIdx;
+                    if (infoBoxOwnerName.startsWith("Building_")) {
+                        infoBoxOwnerIdx = infoBoxOwnerName.substring("Building_".length)
+                        curInfoBox = Farm.buildings[infoBoxOwnerIdx].infoBox;
+                    } else if (infoBoxOwnerName.startsWith("Entity_")) {
+                        infoBoxOwnerIdx = infoBoxOwnerName.substring("Entity_".length)
+                        curInfoBox = Farm.entities[infoBoxOwnerIdx].infoBox;
+                    } else {
+                        continue;
+                    }
+                    Farm.draggingInfoBox = curInfoBox;
+                    Farm.draggingInfoBoxStartPos = curInfoBox.pos.clone();
+                    Farm.draggingInfoBoxStartMousePos = Farm.mousePos.clone();
+
+                    return;
                 } else if (Farm.lens == Farm.LENS.BUILD || Farm.lens == Farm.LENS.REMOVE) {
                     if (intersect.object.name.startsWith("BuildPalette_")) {
 
@@ -466,16 +487,16 @@ function createNewBuilding(Farm) {
         switch (Farm.BUILDINGS[buildingType].name) {
             case "Worker's House":
             case "Big Worker's House":
-                building = new BuildingObjects.BuildingWorkersHouse(Farm, this.Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.BuildingWorkersHouse(Farm, Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "Fence":
-                building = new BuildingObjects.BuildingWall(Farm, this.Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.BuildingWall(Farm, Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "Stone Path":
-                building = new BuildingObjects.BuildingPath(Farm, this.Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.BuildingPath(Farm, Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             default:
-                building = new BuildingObjects.Building(Farm, this.Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.Building(Farm, Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
         }
 
@@ -483,8 +504,8 @@ function createNewBuilding(Farm) {
             block.buildings.push(building);
         }
 
-        Farm.buildings[this.Farm.buildingIdx] = building;
-        this.Farm.buildingIdx++;
+        Farm.buildings[Farm.buildingIdx] = building;
+        Farm.buildingIdx++;
     }
 }
 

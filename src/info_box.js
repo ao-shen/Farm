@@ -9,6 +9,8 @@ export class InfoBox {
         this.Farm = Farm;
         this.owner = owner;
 
+        this.name = "InfoBox_" + owner.name;
+
         this.width = 200;
         this.height = 300;
 
@@ -20,6 +22,8 @@ export class InfoBox {
             border: 10
         });
 
+        this.meshBackground.name = this.name;
+
         this.showing = false;
 
         let geometry = new THREE.BufferGeometry();
@@ -28,7 +32,7 @@ export class InfoBox {
 
         geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(lineVertices), 3));
 
-        let material = new THREE.LineBasicMaterial({ color: 0xff75fd, transparent: true, linewidth: 3 });
+        let material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, linewidth: 3 });
 
         this.lineMesh = new THREE.Line(geometry, material);
 
@@ -41,6 +45,7 @@ export class InfoBox {
         textMesh.fontSize = 24;
         textMesh.color = 0xFFFFFF;
         textMesh.position.set(-this.width / 2 + 10, +this.height / 2 - 10, 1);
+        textMesh.name = this.name;
         this.meshBackground.add(textMesh);
 
         this.infos.push(textMesh);
@@ -69,12 +74,13 @@ export class InfoBox {
         }
 
         this.pos.set(x, y);
-
-        this.meshBackground.position.set(this.pos.x, this.pos.y, -50);
     }
 
     render() {
         if (this.showing) {
+
+            this.meshBackground.position.set(this.pos.x, this.pos.y, -50);
+
             let pos = this.Farm.posToScreenPos(this.Farm.getCenterPoint(this.owner.mesh), this.Farm.camera);
 
             let lineVertices = [pos.x, pos.y, -51];

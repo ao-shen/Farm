@@ -12,7 +12,7 @@ export class Entity {
         this.idx = idx;
         this.pos = new THREE.Vector3(x, 0, z);
         this.type = type;
-        this.name = name;
+        this.name = "Entity_" + this.idx;;
 
         this.path = null;
         this.pathMesh = null;
@@ -23,6 +23,7 @@ export class Entity {
         this.mesh = this.Farm.ENTITIES[this.type].meshes[0].clone();
         this.mesh.center = this.Farm.ENTITIES[this.type].meshes[0].center;
         this.mesh.owner = this;
+        this.mesh.name = this.name;
         this.Farm.groupInfoable.add(this.mesh);
 
         let thisEntity = this;
@@ -31,7 +32,7 @@ export class Entity {
         }, this);
 
         this.infoBox = new InfoBox(this.Farm, this);
-        this.infoBox.addText("Entity");
+        this.infoBox.addText(this.name);
     }
 
     showInfoBox() {

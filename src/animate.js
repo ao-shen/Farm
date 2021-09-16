@@ -14,6 +14,7 @@ export function animate(Farm) {
 
     Farm.scheduler.onFrame();
 
+    // Update plants buildings and entities
     for (let plantType of Farm.plantTypeAwaitingMeshUpdate) {
         let plantBuilding = Farm.BUILDINGS[plantType];
         for (let m = 0; m < plantBuilding.meshes.length; m++) {
@@ -30,7 +31,17 @@ export function animate(Farm) {
         Farm.entities[entity].update();
     }
 
+    // Update dragging info boxes
+    if (Farm.draggingInfoBox) {
+        console.log(Farm.draggingInfoBoxStartPos.x);
+        Farm.draggingInfoBox.pos.set(
+            Farm.draggingInfoBoxStartPos.x + (Farm.mousePos.x - Farm.draggingInfoBoxStartMousePos.x) / 2 * window.innerWidth,
+            Farm.draggingInfoBoxStartPos.y + (Farm.mousePos.y - Farm.draggingInfoBoxStartMousePos.y) / 2 * window.innerHeight,
+            Farm.draggingInfoBoxStartPos.z
+        );
+    }
 
+    // Update Shadows
     let d = 256 * Farm.controls.object.position.distanceTo(Farm.controls.target) / 100;
 
     Farm.shadowLight.shadow.camera.left = -d;
