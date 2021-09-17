@@ -89,8 +89,6 @@ export function onMouseDown(Farm, event) {
                     continue;
                 }
 
-                console.log(intersect.object.name);
-
                 if (intersect.object.name == "BuildButton") {
 
                     if (Farm.lens == Farm.LENS.DEFAULT) {
@@ -137,10 +135,10 @@ export function onMouseDown(Farm, event) {
                     let infoBoxOwnerName = intersect.object.name.substring("InfoBox_".length)
                     let curInfoBox, infoBoxOwnerIdx;
                     if (infoBoxOwnerName.startsWith("Building_")) {
-                        infoBoxOwnerIdx = infoBoxOwnerName.substring("Building_".length)
+                        infoBoxOwnerIdx = infoBoxOwnerName.substring("Building_".length);
                         curInfoBox = Farm.buildings[infoBoxOwnerIdx].infoBox;
                     } else if (infoBoxOwnerName.startsWith("Entity_")) {
-                        infoBoxOwnerIdx = infoBoxOwnerName.substring("Entity_".length)
+                        infoBoxOwnerIdx = infoBoxOwnerName.substring("Entity_".length);
                         curInfoBox = Farm.entities[infoBoxOwnerIdx].infoBox;
                     } else {
                         continue;
@@ -487,16 +485,16 @@ function createNewBuilding(Farm) {
         switch (Farm.BUILDINGS[buildingType].name) {
             case "Worker's House":
             case "Big Worker's House":
-                building = new BuildingObjects.BuildingWorkersHouse(Farm, Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.BuildingWorkersHouse(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "Fence":
-                building = new BuildingObjects.BuildingWall(Farm, Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.BuildingWall(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "Stone Path":
-                building = new BuildingObjects.BuildingPath(Farm, Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.BuildingPath(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             default:
-                building = new BuildingObjects.Building(Farm, Farm.entityIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                building = new BuildingObjects.Building(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
         }
 

@@ -2,9 +2,10 @@ import * as THREE from 'three';
 import { TextureLoader } from 'three';
 import { Entity } from './entity';
 import { InfoBox } from './info_box';
+import { Inventory } from './inventory';
 
 export class Building {
-    constructor(Farm, idx, x, z, type, side, name = null) {
+    constructor(Farm, idx, x, z, type, side) {
         this.Farm = Farm;
         this.idx = idx;
         this.pos = new THREE.Vector3(x, 0, z);
@@ -16,6 +17,10 @@ export class Building {
         this.mesh.owner = this;
         this.mesh.name = this.name;
         Farm.groupInfoable.add(this.mesh);
+
+        if (this.Farm.BUILDINGS[this.type].inventorySlots) {
+            this.inventory = new Inventory(this.Farm.BUILDINGS[this.type].inventorySlots);
+        }
 
         this.center = {
             x: (this.pos.x + this.size.x * 0.5 - 0.5) * this.Farm.blockSize,
@@ -34,6 +39,7 @@ export class Building {
 
         this.infoBox = new InfoBox(this.Farm, this);
         this.infoBox.addText(this.name);
+        this.infoBox.addInventory(this.inventory);
     }
 
     showInfoBox() {
@@ -74,8 +80,8 @@ export class Building {
 }
 
 export class BuildingWorkersHouse extends Building {
-    constructor(Farm, idx, x, z, type, side, name = null) {
-        super(Farm, idx, x, z, type, side, name);
+    constructor(Farm, idx, x, z, type, side) {
+        super(Farm, idx, x, z, type, side);
 
         for (let entityType of this.Farm.BUILDINGS[this.type].entities) {
             let workerEntity = new Entity(Farm, this.Farm.entityIdx, this.center.x, this.center.z, entityType);
@@ -88,16 +94,16 @@ export class BuildingWorkersHouse extends Building {
 }
 
 export class BuildingWall extends Building {
-    constructor(Farm, idx, x, z, type, side, name = null) {
-        super(Farm, idx, x, z, type, side, name);
+    constructor(Farm, idx, x, z, type, side) {
+        super(Farm, idx, x, z, type, side);
 
         this.isWall = true;
     }
 }
 
 export class BuildingPath extends Building {
-    constructor(Farm, idx, x, z, type, side, name = null) {
-        super(Farm, idx, x, z, type, side, name);
+    constructor(Farm, idx, x, z, type, side) {
+        super(Farm, idx, x, z, type, side);
 
         this.isPath = true;
     }

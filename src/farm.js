@@ -309,6 +309,7 @@ export let Farm = {
         name: "Worker's House",
         category: "buildings",
         price: 50,
+        inventorySlots: 5,
         size: {
             x: 1,
             z: 1,
@@ -324,6 +325,7 @@ export let Farm = {
         name: "Big Worker's House",
         category: "buildings",
         price: 200,
+        inventorySlots: 30,
         size: {
             x: 2,
             z: 2,
@@ -400,6 +402,7 @@ export let Farm = {
     // Entities
     ENTITIES: [{
         name: "Worker",
+        inventorySlots: 1,
         models: ['assets/models/worker.glb'],
     }, ],
 };

@@ -33,7 +33,6 @@ export function animate(Farm) {
 
     // Update dragging info boxes
     if (Farm.draggingInfoBox) {
-        console.log(Farm.draggingInfoBoxStartPos.x);
         Farm.draggingInfoBox.pos.set(
             Farm.draggingInfoBoxStartPos.x + (Farm.mousePos.x - Farm.draggingInfoBoxStartMousePos.x) / 2 * window.innerWidth,
             Farm.draggingInfoBoxStartPos.y + (Farm.mousePos.y - Farm.draggingInfoBoxStartMousePos.y) / 2 * window.innerHeight,

@@ -5,9 +5,10 @@ import { BLOCK, Block } from './block.js';
 import { Vector3 } from 'three';
 import { Plant } from './plant';
 import { InfoBox } from './info_box';
+import { Inventory } from './inventory';
 
 export class Entity {
-    constructor(Farm, idx, x, z, type, name = null) {
+    constructor(Farm, idx, x, z, type) {
         this.Farm = Farm;
         this.idx = idx;
         this.pos = new THREE.Vector3(x, 0, z);
@@ -26,13 +27,18 @@ export class Entity {
         this.mesh.name = this.name;
         this.Farm.groupInfoable.add(this.mesh);
 
+        if (this.Farm.ENTITIES[this.type].inventorySlots) {
+            this.inventory = new Inventory(this.Farm.ENTITIES[this.type].inventorySlots);
+        }
+
         let thisEntity = this;
         this.Farm.scheduler.addToSchedule(1000, function() {
-            return thisEntity.navigateToTarget();
+            return thisEntity.logic();
         }, this);
 
         this.infoBox = new InfoBox(this.Farm, this);
         this.infoBox.addText(this.name);
+        this.infoBox.addInventory(this.inventory);
     }
 
     showInfoBox() {
@@ -44,9 +50,25 @@ export class Entity {
         this.infoBox.show();
     }
 
-    onSchedule() {
+    logic() {
+        if (this.inventory.isFull()) {
+            if (this.isAtHome()) {
+                this.inventory.transferAllTo(this.parentBuilding.inventory);
+                return true;
+            } else {
+                return this.navigateHome();
+            }
+        } else {
+            if (this.isAtHome()) {
+                return this.navigateToTarget();
+            } else {
+                return this.navigateHome();
+            }
+        }
+    }
 
-        return false;
+    isAtHome() {
+        return Math.pow(this.parentBuilding.center.x - this.pos.x, 2) + Math.pow(this.parentBuilding.center.z - this.pos.z, 2) < 2
     }
 
     navigateHome() {
@@ -122,14 +144,35 @@ export class Entity {
 
         if (this.goal.actionCategory == "harvest") {
             if (!this.goal.isRemoved) {
-                this.goal.harvest();
+                if (!this.inventory.isFull()) {
+                    this.goal.harvest();
+                    this.inventory.add(this.goal.type, 1);
+                }
             }
         }
 
         let thisEntity = this;
-        this.Farm.scheduler.addToSchedule(100, function() {
-            return thisEntity.navigateHome();
+        this.Farm.scheduler.addToSchedule(1000, function() {
+            return thisEntity.logic();
         }, this);
+    }
+
+    reachedTarget() {
+        let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
+        let thisEntity = this;
+        if (this.goal == this.parentBuilding) {
+            this.Farm.scheduler.addToSchedule(1000, function() {
+                return thisEntity.logic();
+            }, this);
+        } else {
+            switch (this.Farm.ENTITIES[this.type].name) {
+                case "Worker":
+                    this.Farm.scheduler.addToSchedule(100, function() {
+                        return thisEntity.performActionAtTarget();
+                    }, this);
+                    break;
+            }
+        }
     }
 
     update() {
@@ -151,21 +194,9 @@ export class Entity {
                         this.pathMesh.material.dispose();
                         this.pathMesh = null;
                     }
-                    let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
-                    let thisEntity = this;
-                    if (this.goal == this.parentBuilding) {
-                        this.Farm.scheduler.addToSchedule(1000, function() {
-                            return thisEntity.navigateToTarget();
-                        }, this);
-                    } else {
-                        switch (this.Farm.ENTITIES[this.type].name) {
-                            case "Worker":
-                                this.Farm.scheduler.addToSchedule(1000, function() {
-                                    return thisEntity.performActionAtTarget();
-                                }, this);
-                                break;
-                        }
-                    }
+
+                    this.reachedTarget();
+
                     return;
                 }
             }

@@ -3,6 +3,9 @@ import { Vector2 } from 'three';
 import { Text } from 'troika-three-text';
 import { NineSlicePlane } from './nine_slice';
 
+const TEXT = 0;
+const INVENTORY = 1;
+
 export class InfoBox {
     constructor(Farm, owner) {
 
@@ -44,11 +47,22 @@ export class InfoBox {
         textMesh.text = text;
         textMesh.fontSize = 24;
         textMesh.color = 0xFFFFFF;
-        textMesh.position.set(-this.width / 2 + 10, +this.height / 2 - 10, 1);
         textMesh.name = this.name;
         this.meshBackground.add(textMesh);
 
-        this.infos.push(textMesh);
+        this.infos.push({ type: TEXT, mesh: textMesh });
+    }
+
+    addInventory(inventory) {
+
+        let textMesh = new Text();
+        textMesh.text = "Inventory";
+        textMesh.fontSize = 24;
+        textMesh.color = 0xFFFFFF;
+        textMesh.name = this.name;
+        this.meshBackground.add(textMesh);
+
+        this.infos.push({ type: INVENTORY, inventory: inventory, mesh: textMesh });
     }
 
     updatePosition(x, y) {
@@ -78,6 +92,28 @@ export class InfoBox {
 
     render() {
         if (this.showing) {
+
+            let curXOffset = -this.width / 2 + 10;
+            let curYOffset = +this.height / 2 - 10;
+            for (let info of this.infos) {
+                let mesh = info.mesh;
+                switch (info.type) {
+                    case TEXT:
+                        mesh.position.set(curXOffset, curYOffset, 1);
+                        curYOffset -= 30;
+                        break;
+                    case INVENTORY:
+                        mesh.position.set(curXOffset, curYOffset, 1);
+                        let str = "Inventory:\n";
+                        curYOffset -= 30;
+                        for (let type in info.inventory.inventory) {
+                            str += this.owner.Farm.BUILDINGS[type].name + " x" + info.inventory.inventory[type] + "\n";
+                            curYOffset -= 30;
+                        }
+                        mesh.text = str;
+                        break;
+                }
+            }
 
             this.meshBackground.position.set(this.pos.x, this.pos.y, -50);
 
