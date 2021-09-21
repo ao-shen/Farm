@@ -2,8 +2,8 @@ import _ from 'lodash';
 
 import { Farm } from './farm.js';
 import { init } from './init.js';
-import { animate } from './animate.js';
+import { animate, onAnimationFrame } from './animate.js';
 
 
 init(Farm);
-animate(Farm);
+onAnimationFrame(Farm);
