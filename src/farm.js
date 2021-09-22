@@ -124,8 +124,8 @@ export let Farm = {
     OVERLAY: {
         DEFAULT: 0,
         BUILD_AREA: 1,
-        BUILD_PLANTS: 2,
-        BUILD_BUILDINGS: 3,
+        BUILD_LINE: 2,
+        BUILD_SINGLE: 3,
         REMOVE_AREA: 4,
         REMOVE_PLANTS: 5,
         REMOVE_BUILDINGS: 6,
@@ -250,6 +250,7 @@ export let Farm = {
     BUILDINGS: [{
         name: "Soil",
         category: "ground",
+        build_mode: "area",
         price: 0,
         thumbnail: 'assets/textures/soil_thumbnail.png',
         models: [
@@ -259,14 +260,23 @@ export let Farm = {
             'assets/models/soil3.glb',
         ],
     }, {
-        name: "Water",
+        name: "Trench",
         category: "ground",
+        build_mode: "line",
         price: 0,
         thumbnail: 'assets/textures/water_thumbnail.png',
-        models: [],
+        models: [
+            'assets/models/trench0.glb',
+            'assets/models/trench1.glb',
+            'assets/models/trench2.glb',
+            'assets/models/trench3.glb',
+            'assets/models/trench4.glb',
+            'assets/models/trench5.glb',
+        ],
     }, {
         name: "Carrot",
         category: "plants",
+        build_mode: "area",
         price: 10,
         matureTime: 100,
         thumbnail: 'assets/textures/carrot_thumbnail.png',
@@ -279,6 +289,7 @@ export let Farm = {
     }, {
         name: "Potato",
         category: "plants",
+        build_mode: "area",
         price: 5,
         matureTime: 5000,
         thumbnail: 'assets/textures/potato_thumbnail.png',
@@ -292,6 +303,7 @@ export let Farm = {
     }, {
         name: "Corn",
         category: "plants",
+        build_mode: "area",
         price: 20,
         matureTime: 5000,
         thumbnail: 'assets/textures/corn_thumbnail.png',
@@ -308,6 +320,7 @@ export let Farm = {
     }, {
         name: "Worker's House",
         category: "buildings",
+        build_mode: "single",
         price: 50,
         inventorySlots: 5,
         size: {
@@ -324,6 +337,7 @@ export let Farm = {
     }, {
         name: "Big Worker's House",
         category: "buildings",
+        build_mode: "single",
         price: 200,
         inventorySlots: 30,
         size: {
@@ -344,6 +358,7 @@ export let Farm = {
     }, {
         name: "Fence",
         category: "buildings",
+        build_mode: "line",
         price: 2,
         size: {
             x: 1,
@@ -357,6 +372,7 @@ export let Farm = {
     }, {
         name: "Stone Path",
         category: "buildings",
+        build_mode: "area",
         price: 2,
         size: {
             x: 1,
@@ -370,30 +386,35 @@ export let Farm = {
     }, {
         name: "Remove All",
         category: "remove",
+        build_mode: "remove",
         price: 0,
         thumbnail: 'assets/textures/potato_thumbnail.png',
         models: [],
     }, {
         name: "Remove Soil",
         category: "remove",
+        build_mode: "remove",
         price: 0,
         thumbnail: 'assets/textures/soil_thumbnail.png',
         models: [],
     }, {
         name: "Remove Water",
         category: "remove",
+        build_mode: "remove",
         price: 0,
         thumbnail: 'assets/textures/water_thumbnail.png',
         models: [],
     }, {
         name: "Remove Plants",
         category: "remove",
+        build_mode: "remove",
         price: 0,
         thumbnail: 'assets/textures/carrot_thumbnail.png',
         models: [],
     }, {
         name: "Remove Buildings",
         category: "remove",
+        build_mode: "remove",
         price: 0,
         thumbnail: 'assets/textures/workers_house_thumbnail.png',
         models: [],

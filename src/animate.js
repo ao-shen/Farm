@@ -163,8 +163,23 @@ function renderOverlays(Farm) {
 
             Farm.blockLine.visible = true;
 
+            // Find building side
+
+            let offsetFromCenterOfBlock = intersect.point.clone();
+            offsetFromCenterOfBlock.sub(point);
+            offsetFromCenterOfBlock.subScalar(Farm.blockSize * 0.5);
+
+            if (offsetFromCenterOfBlock.x <= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x <= -offsetFromCenterOfBlock.z) {
+                Farm.buildBuildingSide = Farm.SOUTH;
+            } else if (offsetFromCenterOfBlock.x >= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x <= -offsetFromCenterOfBlock.z) {
+                Farm.buildBuildingSide = Farm.WEST;
+            } else if (offsetFromCenterOfBlock.x >= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x >= -offsetFromCenterOfBlock.z) {
+                Farm.buildBuildingSide = Farm.NORTH;
+            } else if (offsetFromCenterOfBlock.x <= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x >= -offsetFromCenterOfBlock.z) {
+                Farm.buildBuildingSide = Farm.EAST;
+            }
+
             if (Farm.overlay == Farm.OVERLAY.BUILD_AREA ||
-                Farm.overlay == Farm.OVERLAY.BUILD_PLANTS ||
                 Farm.overlay == Farm.OVERLAY.REMOVE_AREA ||
                 Farm.overlay == Farm.OVERLAY.REMOVE_PLANTS ||
                 Farm.overlay == Farm.OVERLAY.REMOVE_BUILDINGS) {
@@ -189,21 +204,47 @@ function renderOverlays(Farm) {
                     rectScreenPoint4.x, rectScreenPoint4.y, -100,
                     rectScreenPoint1.x, rectScreenPoint1.y, -100,
                 ]), 3));
-            } else if (Farm.overlay == Farm.OVERLAY.BUILD_BUILDINGS) {
+            } else if (Farm.overlay == Farm.OVERLAY.BUILD_LINE) {
 
-                let offsetFromCenterOfBlock = intersect.point.clone();
-                offsetFromCenterOfBlock.sub(point);
-                offsetFromCenterOfBlock.subScalar(Farm.blockSize * 0.5);
+                let rectX1 = Math.min(point.x, Farm.buildAreaCorner.x);
+                let rectZ1 = Math.min(point.z, Farm.buildAreaCorner.z);
+                let rectX2 = Math.max(point.x, Farm.buildAreaCorner.x) + Farm.blockSize;
+                let rectZ2 = Math.max(point.z, Farm.buildAreaCorner.z) + Farm.blockSize;
 
-                if (offsetFromCenterOfBlock.x <= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x <= -offsetFromCenterOfBlock.z) {
-                    Farm.buildBuildingSide = Farm.SOUTH;
-                } else if (offsetFromCenterOfBlock.x >= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x <= -offsetFromCenterOfBlock.z) {
-                    Farm.buildBuildingSide = Farm.WEST;
-                } else if (offsetFromCenterOfBlock.x >= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x >= -offsetFromCenterOfBlock.z) {
-                    Farm.buildBuildingSide = Farm.NORTH;
-                } else if (offsetFromCenterOfBlock.x <= offsetFromCenterOfBlock.z && offsetFromCenterOfBlock.x >= -offsetFromCenterOfBlock.z) {
-                    Farm.buildBuildingSide = Farm.EAST;
+                if ((point.x - Farm.buildAreaCorner.x - point.z + Farm.buildAreaCorner.z) * (point.x - Farm.buildAreaCorner.x + point.z - Farm.buildAreaCorner.z) < 0) {
+                    rectX1 = Farm.buildAreaCorner.x;
+                    rectX2 = Farm.buildAreaCorner.x + Farm.blockSize;
+                } else {
+                    rectZ1 = Farm.buildAreaCorner.z;
+                    rectZ2 = Farm.buildAreaCorner.z + Farm.blockSize;
                 }
+
+                Farm.buildAreaPoint1 = Farm.posToBlocks(rectX1, rectZ1);
+                Farm.buildAreaPoint2 = Farm.posToBlocks(rectX2 - Farm.blockSize, rectZ2 - Farm.blockSize);
+
+                rectScreenPoint1 = Farm.posToScreenPos(new Vector3(rectX1, 0, rectZ1), Farm.camera);
+                rectScreenPoint2 = Farm.posToScreenPos(new Vector3(rectX1, 0, rectZ2), Farm.camera);
+                rectScreenPoint3 = Farm.posToScreenPos(new Vector3(rectX2, 0, rectZ2), Farm.camera);
+                rectScreenPoint4 = Farm.posToScreenPos(new Vector3(rectX2, 0, rectZ1), Farm.camera);
+
+                Farm.buildAreaRect.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                    rectScreenPoint1.x, rectScreenPoint1.y, -100,
+                    rectScreenPoint2.x, rectScreenPoint2.y, -100,
+                    rectScreenPoint3.x, rectScreenPoint3.y, -100,
+                    rectScreenPoint4.x, rectScreenPoint4.y, -100,
+                    rectScreenPoint1.x, rectScreenPoint1.y, -100,
+                ]), 3));
+
+                // update build building preview
+                if (Farm.buildBuildingMesh != null) {
+                    Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
+                    Farm.buildBuildingMesh.position.set(
+                        (rectX2) - 0.5 * Farm.blockSize,
+                        0,
+                        (rectZ2) - 0.5 * Farm.blockSize
+                    );
+                }
+            } else if (Farm.overlay == Farm.OVERLAY.BUILD_SINGLE) {
 
                 let curSizeX = Farm.BUILDINGS[Farm.buildPaletteSelect].size.x;
                 let curSizeZ = Farm.BUILDINGS[Farm.buildPaletteSelect].size.z;

@@ -45,15 +45,28 @@ export function onMouseUp(Farm, event) {
                     case "Water":
                         createWater(Farm);
                         break;
+                    default:
+                        switch (Farm.BUILDINGS[Farm.buildPaletteSelect].category) {
+                            case "plants":
+                                createNewPlant(Farm);
+                                break;
+                            case "buildings":
+                                createAreaOfNewBuildings(Farm);
+                                break;
+                        }
+                        break;
                 }
                 Farm.overlay = Farm.OVERLAY.DEFAULT;
                 Farm.buildAreaRect.visible = false;
-            } else if (Farm.overlay == Farm.OVERLAY.BUILD_PLANTS) {
-                createNewPlant(Farm);
+            } else if (Farm.overlay == Farm.OVERLAY.BUILD_LINE) {
+                createAreaOfNewBuildings(Farm);
                 Farm.overlay = Farm.OVERLAY.DEFAULT;
                 Farm.buildAreaRect.visible = false;
-            } else if (Farm.overlay == Farm.OVERLAY.BUILD_BUILDINGS) {
-                createNewBuilding(Farm);
+                if (Farm.buildBuildingMesh != null) {
+                    Farm.buildBuildingMesh.visible = false;
+                }
+            } else if (Farm.overlay == Farm.OVERLAY.BUILD_SINGLE) {
+                createSingleNewBuilding(Farm);
             } else if (Farm.lens == Farm.LENS.REMOVE) {
                 remove(Farm);
                 Farm.overlay = Farm.OVERLAY.DEFAULT;
@@ -225,6 +238,10 @@ export function onMouseDown(Farm, event) {
                     updateBuildPaletteSelect(Farm);
 
                     Farm.buildAreaRect.visible = true;
+
+                    if (Farm.buildBuildingMesh != null) {
+                        Farm.buildBuildingMesh.visible = true;
+                    }
                 }
             }
             break;
@@ -422,7 +439,21 @@ function createNewPlant(Farm) {
     }
 }
 
-function createNewBuilding(Farm) {
+function createAreaOfNewBuildings(Farm) {
+    let startX = Farm.buildAreaPoint1.x;
+    let startZ = Farm.buildAreaPoint1.z;
+    let endX = Farm.buildAreaPoint2.x;
+    let endZ = Farm.buildAreaPoint2.z;
+    for (let x = startX; x <= endX; x++) {
+        for (let z = startZ; z <= endZ; z++) {
+            Farm.buildAreaPoint1.x = Farm.buildAreaPoint2.x = x;
+            Farm.buildAreaPoint1.z = Farm.buildAreaPoint2.z = z;
+            createSingleNewBuilding(Farm);
+        }
+    }
+}
+
+function createSingleNewBuilding(Farm) {
 
     let newBuilding = true;
     let buildingType = Farm.buildPaletteSelect;
@@ -513,15 +544,15 @@ function updateBuildPaletteSelect(Farm) {
 
     Farm.lens = Farm.LENS.BUILD;
 
-    switch (Farm.BUILDINGS[Farm.buildPaletteSelect].category) {
-        case "ground":
+    switch (Farm.BUILDINGS[Farm.buildPaletteSelect].build_mode) {
+        case "area":
             Farm.overlay = Farm.OVERLAY.BUILD_AREA;
             break;
-        case "plants":
-            Farm.overlay = Farm.OVERLAY.BUILD_PLANTS;
+        case "line":
+            Farm.overlay = Farm.OVERLAY.BUILD_LINE;
             break;
-        case "buildings":
-            Farm.overlay = Farm.OVERLAY.BUILD_BUILDINGS;
+        case "single":
+            Farm.overlay = Farm.OVERLAY.BUILD_SINGLE;
             break;
         case "remove":
             Farm.lens = Farm.LENS.REMOVE;
@@ -540,14 +571,12 @@ function updateBuildPaletteSelect(Farm) {
             }
             break;
     }
-    if (oldLens != Farm.lens) {
-        if (Farm.lens == Farm.LENS.BUILD) {
-            Farm.buildAreaRect.material = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, linewidth: 3 });
-        } else {
-            Farm.buildAreaRect.material = new THREE.LineBasicMaterial({ color: 0xff0000, transparent: true, linewidth: 3 });
-        }
+    if (Farm.lens == Farm.LENS.BUILD) {
+        Farm.buildAreaRect.material = new THREE.LineBasicMaterial({ color: 0x00ff00, transparent: true, linewidth: 3 });
+    } else {
+        Farm.buildAreaRect.material = new THREE.LineBasicMaterial({ color: 0xff0000, transparent: true, linewidth: 3 });
     }
-    if (Farm.overlay == Farm.OVERLAY.BUILD_BUILDINGS) {
+    if (Farm.overlay == Farm.OVERLAY.BUILD_SINGLE) {
         Farm.buildAreaRect.visible = true;
     } else {
         Farm.buildAreaRect.visible = false;
@@ -561,9 +590,13 @@ function updateBuildingMeshPreview(Farm) {
         Farm.buildBuildingMesh.geometry.dispose();
         Farm.buildBuildingMesh = null;
     }
-    if (Farm.overlay == Farm.OVERLAY.BUILD_BUILDINGS) {
+    if (Farm.overlay == Farm.OVERLAY.BUILD_SINGLE || Farm.overlay == Farm.OVERLAY.BUILD_LINE) {
         Farm.buildBuildingMesh = new THREE.Mesh(Farm.BUILDINGS[Farm.buildPaletteSelect].geometries[0].clone(), Farm.buildBuildingMaterial);
         Farm.scene.add(Farm.buildBuildingMesh);
+        Farm.buildBuildingMesh.visible = true;
+    }
+    if (Farm.overlay == Farm.OVERLAY.BUILD_LINE) {
+        Farm.buildBuildingMesh.visible = false;
     }
 }
 
