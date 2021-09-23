@@ -193,7 +193,12 @@ function initScene(Farm) {
     effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth / window.devicePixelRatio, 1 / window.innerHeight / window.devicePixelRatio);
     Farm.composer.addPass(effectFXAA);
 
-    // Info-able group
+    // Groups
+
+    Farm.groupSoilAndPlants.position.set(0, -1, 0);
+
+    Farm.scene.add(Farm.groupSoilAndPlants);
+
     Farm.scene.add(Farm.groupInfoable);
 
     // Lights
@@ -377,7 +382,6 @@ function loadBuildingAssets(Farm) {
 
     // Load Models
     const defaultTransform = new THREE.Matrix4()
-        .multiply(new THREE.Matrix4().makeTranslation(0, -1, 0))
         .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
 
     const defaultBuildingTransform = new THREE.Matrix4()
@@ -407,7 +411,11 @@ function loadBuildingAssets(Farm) {
                     curBuilding.meshes[j].receiveShadow = true;
                     curBuilding.meshes[j].castShadow = true;
 
-                    Farm.scene.add(curBuilding.meshes[j]);
+                    if (curBuilding.name == "Soil") {
+                        Farm.groupSoilAndPlants.add(curBuilding.meshes[j]);
+                    } else {
+                        Farm.scene.add(curBuilding.meshes[j]);
+                    }
                 });
             }
         } else if (curBuilding.category == "plants") {
@@ -444,7 +452,7 @@ function loadBuildingAssets(Farm) {
                     curBuilding.meshes[j].receiveShadow = true;
                     curBuilding.meshes[j].castShadow = true;
 
-                    Farm.scene.add(curBuilding.meshes[j]);
+                    Farm.groupSoilAndPlants.add(curBuilding.meshes[j]);
                 });
             }
         } else if (curBuilding.category == "buildings") {

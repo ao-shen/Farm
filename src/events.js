@@ -342,12 +342,12 @@ function createNewSoil(Farm) {
         for (let m = 0; m < buildingBuilding.meshes.length; m++) {
             let curMesh = buildingBuilding.meshes[m];
 
-            Farm.scene.remove(curMesh);
+            Farm.groupSoilAndPlants.remove(curMesh);
             curMesh.dispose();
             curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length);
             curMesh.receiveShadow = true;
             curMesh.castShadow = true;
-            Farm.scene.add(curMesh);
+            Farm.groupSoilAndPlants.add(curMesh);
 
             buildingBuilding.meshes[m] = curMesh;
         }
@@ -482,7 +482,7 @@ function createNewPlant(Farm) {
         for (let m = 0; m < plantBuilding.meshes.length; m++) {
             let curMesh = plantBuilding.meshes[m];
 
-            Farm.scene.remove(curMesh);
+            Farm.groupSoilAndPlants.remove(curMesh);
             curMesh.dispose();
             curMesh = new THREE.InstancedMesh(plantBuilding.geometries[m], plantBuilding.materials[m], plantBuffer.length * 4);
             if (plantBuilding.customDepthMaterial[m]) {
@@ -490,7 +490,7 @@ function createNewPlant(Farm) {
             }
             curMesh.receiveShadow = true;
             curMesh.castShadow = true;
-            Farm.scene.add(curMesh);
+            Farm.groupSoilAndPlants.add(curMesh);
 
             plantBuilding.meshes[m] = curMesh;
         }
@@ -781,12 +781,12 @@ function remove(Farm) {
             for (let m = 0; m < plantBuilding.meshes.length; m++) {
                 let curMesh = plantBuilding.meshes[m];
 
-                Farm.scene.remove(curMesh);
+                Farm.groupSoilAndPlants.remove(curMesh);
                 curMesh.dispose();
                 curMesh = new THREE.InstancedMesh(plantBuilding.geometries[m], plantBuilding.materials[m], plantBuffer.length * 4);
                 curMesh.receiveShadow = true;
                 curMesh.castShadow = true;
-                Farm.scene.add(curMesh);
+                Farm.groupSoilAndPlants.add(curMesh);
 
                 plantBuilding.meshes[m] = curMesh;
             }
@@ -812,12 +812,12 @@ function remove(Farm) {
         for (let m = 0; m < buildingBuilding.meshes.length; m++) {
             let curMesh = buildingBuilding.meshes[m];
 
-            Farm.scene.remove(curMesh);
+            Farm.groupSoilAndPlants.remove(curMesh);
             curMesh.dispose();
             curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length * 4);
             curMesh.receiveShadow = true;
             curMesh.castShadow = true;
-            Farm.scene.add(curMesh);
+            Farm.groupSoilAndPlants.add(curMesh);
 
             buildingBuilding.meshes[m] = curMesh;
         }

@@ -14,10 +14,26 @@ export class Plant {
 
         this.actionCategory = "harvest";
 
+        /*this.Farm.scheduler.addToSchedule(this.Farm.BUILDINGS[this.type].matureTime, , this);*/
         let thisPlant = this;
-        this.Farm.scheduler.addToSchedule(this.Farm.BUILDINGS[this.type].matureTime, function() {
+        this.growthTimeout = setTimeout(function() {
             return thisPlant.onGrowth();
-        }, this);
+        }, this.getGrowthSpeed());
+    }
+
+    getGrowthSpeed() {
+
+        let defaultMatureTime = this.Farm.BUILDINGS[this.type].matureTime;
+
+        if (this.block.wetness == 0) {
+            return defaultMatureTime;
+        } else if (this.block.wetness < 4) {
+            return defaultMatureTime;
+        } else if (this.block.wetness < 6) {
+            return defaultMatureTime * 2 / 3;
+        } else {
+            return defaultMatureTime / 3;
+        }
     }
 
     remove() {
@@ -27,21 +43,28 @@ export class Plant {
     }
 
     onGrowth() {
+        if (this.isRemoved) return;
 
-        this.stage = this.stage + 1;
+        if (this.block.wetness > 0) {
 
-        this.updateMesh();
+            this.stage = this.stage + 1;
 
-        if (this.isMature()) {
+            this.updateMesh();
 
-            if (!this.isHarvestClaimed()) {
-                this.Farm.plantsAwaitingHarvest.add({ x: this.block.x, z: this.block.z }, this);
+            if (this.isMature()) {
+
+                if (!this.isHarvestClaimed()) {
+                    this.Farm.plantsAwaitingHarvest.add({ x: this.block.x, z: this.block.z }, this);
+                }
+
+                return;
             }
-
-            return false;
         }
 
-        return true;
+        let thisPlant = this;
+        this.growthTimeout = setTimeout(function() {
+            return thisPlant.onGrowth();
+        }, this.getGrowthSpeed());
     }
 
     isMature() {
@@ -62,9 +85,9 @@ export class Plant {
         this.stage = 0;
 
         let thisPlant = this;
-        this.Farm.scheduler.addToSchedule(this.Farm.BUILDINGS[this.type].matureTime, function() {
+        this.growthTimeout = setTimeout(function() {
             return thisPlant.onGrowth();
-        }, this);
+        }, this.getGrowthSpeed());
 
         this.harvestClaimer = null;
 

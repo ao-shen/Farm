@@ -30,6 +30,8 @@ export let Farm = {
     renderPass: null,
     outlinePass: null,
 
+    groupSoilAndPlants: new THREE.Group(),
+
     // 2D HUD
     hudCamera: null,
     hudScene: null,
