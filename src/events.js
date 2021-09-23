@@ -411,6 +411,32 @@ function createNewTrench(Farm) {
     }
     Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
 
+    let buildingBuffer = [];
+    let buildingBuilding = Farm.BUILDINGS[buildingType];
+
+    for (const curBlockIdx in Farm.blocks) {
+        for (let curBuilding of Farm.blocks[curBlockIdx].buildings) {
+            if (curBuilding.type == buildingType) {
+                curBuilding.meshIdx = buildingBuffer.length;
+                buildingBuffer.push({ block: Farm.blocks[curBlockIdx], building: curBuilding });
+                break;
+            }
+        }
+    }
+
+    for (let m = 0; m < buildingBuilding.meshes.length; m++) {
+        let curMesh = buildingBuilding.meshes[m];
+
+        Farm.scene.remove(curMesh);
+        curMesh.dispose();
+        curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length * 4);
+        curMesh.receiveShadow = true;
+        curMesh.castShadow = true;
+        Farm.scene.add(curMesh);
+
+        buildingBuilding.meshes[m] = curMesh;
+    }
+
     for (let x = Math.max(0, Farm.buildAreaPoint1.x - 1); x <= Math.min(Farm.numBlocks.x, Farm.buildAreaPoint2.x + 1); x++) {
         for (let z = Math.max(0, Farm.buildAreaPoint1.z - 1); z <= Math.min(Farm.numBlocks.z, Farm.buildAreaPoint2.z + 1); z++) {
             let curBlock = Farm.blocks[x + ',' + z];
@@ -464,6 +490,10 @@ function createNewTrench(Farm) {
                 }
             }
         }
+    }
+
+    for (let i = 0; i < buildingBuffer.length; i++) {
+        buildingBuffer[i].building.updateInstancedMesh();
     }
 }
 

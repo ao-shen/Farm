@@ -27,12 +27,6 @@ export function init(Farm) {
     Farm.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
     document.body.appendChild(Farm.stats.dom);
 
-    // THREE
-
-    const textureLoader = new THREE.TextureLoader();
-    let modelLoader = new GLTFLoader();
-    let texture, material, geometry;
-
     // Init 3D Scene
     initScene(Farm);
 
@@ -58,7 +52,7 @@ export function init(Farm) {
     initEvents(Farm);
 
     // Start Water Updates
-    setInterval(function() { onUpdateWater(Farm); }, 200);
+    setInterval(function() { onUpdateWater(Farm); }, 500);
 
     return Farm;
 }
@@ -414,22 +408,23 @@ function loadBuildingAssets(Farm) {
             curBuilding.geometries = [];
             curBuilding.materials = [];
             curBuilding.meshes = [];
-            curBuilding.numVariants = curBuilding.models.length;
+            curBuilding.instanced = true;
             for (let j = 0; j < curBuilding.models.length; j++) {
                 modelLoader.load(curBuilding.models[j], function(gltf) {
                     let mesh = gltf.scene.children[0];
 
-                    mesh.receiveShadow = true;
-                    mesh.castShadow = true;
-
-                    mesh.geometry.computeVertexNormals();
-                    mesh.geometry.applyMatrix4(defaultBuildingTransform);
-
                     curBuilding.geometries[j] = mesh.geometry.clone();
+
+                    curBuilding.geometries[j].applyMatrix4(defaultTransform);
 
                     curBuilding.materials[j] = mesh.material;
 
-                    curBuilding.meshes[j] = mesh.clone();
+                    curBuilding.meshes[j] = new THREE.InstancedMesh(curBuilding.geometries[j], curBuilding.materials[j], 0);
+
+                    curBuilding.meshes[j].receiveShadow = true;
+                    curBuilding.meshes[j].castShadow = true;
+
+                    Farm.scene.add(curBuilding.meshes[j]);
                 });
             }
         } else if (curBuilding.category == "plants") {

@@ -11,12 +11,20 @@ export class Building {
         this.pos = new THREE.Vector3(x, 0, z);
         this.type = type;
         this.name = "Building_" + this.idx;
-
-        this.mesh = this.Farm.BUILDINGS[this.type].meshes[0].clone();
         this.size = this.Farm.BUILDINGS[this.type].size;
-        this.mesh.owner = this;
-        this.mesh.name = this.name;
-        Farm.groupInfoable.add(this.mesh);
+        this.side = side;
+        this.variation = 0;
+
+        if (this.Farm.BUILDINGS[this.type].instanced) {
+            this.instanced = true;
+            this.updateInstancedMesh();
+        } else {
+            this.mesh = this.Farm.BUILDINGS[this.type].meshes[this.variation].clone();
+            this.mesh.owner = this;
+            this.mesh.name = this.name;
+            Farm.groupInfoable.add(this.mesh);
+            this.mesh.rotateY(-(this.side - 1) * Math.PI / 2);
+        }
 
         if (this.Farm.BUILDINGS[this.type].inventorySlots) {
             this.inventory = new Inventory(this.Farm.BUILDINGS[this.type].inventorySlots);
@@ -32,9 +40,6 @@ export class Building {
             z: Math.floor(this.center.z / this.Farm.blockSize)
         };
 
-        this.side = side;
-        this.mesh.rotateY(-(this.side - 1) * Math.PI / 2);
-
         this.childEntities = [];
 
         this.infoBox = new InfoBox(this.Farm, this);
@@ -44,16 +49,58 @@ export class Building {
 
     updateMeshVariation(variation, side = -1) {
 
+        this.variation = variation;
         if (side != -1) {
             this.side = side;
         }
 
-        this.Farm.groupInfoable.remove(this.mesh);
-        this.mesh = this.Farm.BUILDINGS[this.type].meshes[variation].clone();
-        this.mesh.owner = this;
-        this.mesh.name = this.name;
-        this.Farm.groupInfoable.add(this.mesh);
-        this.mesh.rotateY(-(this.side - 1) * Math.PI / 2);
+        if (this.instanced) {
+            this.updateInstancedMesh();
+        } else {
+            this.Farm.groupInfoable.remove(this.mesh);
+            this.mesh = this.Farm.BUILDINGS[this.type].meshes[variation].clone();
+            this.mesh.owner = this;
+            this.mesh.name = this.name;
+            this.Farm.groupInfoable.add(this.mesh);
+            this.mesh.rotateY(-(this.side - 1) * Math.PI / 2);
+        }
+    }
+
+    updateInstancedMesh() {
+
+        let Farm = this.Farm;
+
+        const matrix = new THREE.Matrix4();
+
+        let building = Farm.BUILDINGS[this.type];
+
+        for (let m = 0; m < building.meshes.length; m++) {
+
+            let curMesh = building.meshes[m];
+
+            let onCurVariation = 0;
+
+            if (this.variation == m) {
+                onCurVariation = 1;
+            }
+
+            for (let j = 0; j < 4; j++) {
+
+                matrix.makeRotationY(-(this.side - 1) * Math.PI / 2);
+
+                matrix.setPosition(
+                    this.pos.x * Farm.blockSize,
+                    0,
+                    this.pos.z * Farm.blockSize
+                );
+
+                matrix.scale(new THREE.Vector3(onCurVariation, onCurVariation, onCurVariation));
+
+                curMesh.setMatrixAt(this.meshIdx * 4 + j, matrix);
+            }
+        }
+
+        this.Farm.plantTypeAwaitingMeshUpdate.add(this.type);
     }
 
     showInfoBox() {
@@ -70,7 +117,7 @@ export class Building {
     }
 
     render() {
-        if (this.mesh) {
+        if (!this.instanced && this.mesh) {
             this.mesh.position.set(this.center.x, 0, this.center.z);
             this.infoBox.render();
         }
@@ -83,9 +130,13 @@ export class Building {
 
         this.infoBox.remove();
 
-        this.mesh.geometry.dispose();
-        this.mesh.material.dispose();
-        this.Farm.groupInfoable.remove(this.mesh);
+        if (this.instanced) {
+
+        } else {
+            this.mesh.geometry.dispose();
+            this.mesh.material.dispose();
+            this.Farm.groupInfoable.remove(this.mesh);
+        }
 
         delete this.Farm.buildings[this.idx];
 
