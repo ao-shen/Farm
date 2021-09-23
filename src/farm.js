@@ -255,6 +255,7 @@ export let Farm = {
         name: "Soil",
         category: "ground",
         build_mode: "area",
+        instanced: true,
         price: 0,
         thumbnail: 'assets/textures/soil_thumbnail.png',
         models: [
@@ -267,6 +268,7 @@ export let Farm = {
         name: "Trench",
         category: "ground",
         build_mode: "line",
+        instanced: true,
         price: 0,
         size: {
             x: 1,

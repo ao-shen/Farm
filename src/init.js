@@ -52,7 +52,7 @@ export function init(Farm) {
     initEvents(Farm);
 
     // Start Water Updates
-    setInterval(function() { onUpdateWater(Farm); }, 250);
+    setInterval(function() { onUpdateWater(Farm); }, 50);
 
     return Farm;
 }
@@ -388,28 +388,10 @@ function loadBuildingAssets(Farm) {
 
         let curBuilding = Farm.BUILDINGS[i];
 
-        if (curBuilding.name == "Soil") {
-            modelLoader.load(curBuilding.models[0], function(gltf) {
-                let mesh = gltf.scene.children[0];
-
-                Farm.geometrySoil = mesh.geometry.clone();
-
-                Farm.geometrySoil.applyMatrix4(defaultTransform);
-
-                Farm.materialSoil = mesh.material;
-
-                Farm.meshSoil = new THREE.InstancedMesh(Farm.geometrySoil, Farm.materialSoil, 0);
-
-                Farm.meshSoil.receiveShadow = true;
-                Farm.meshSoil.castShadow = true;
-
-                Farm.scene.add(Farm.meshSoil);
-            });
-        } else if (curBuilding.name == "Trench") {
+        if (curBuilding.instanced) {
             curBuilding.geometries = [];
             curBuilding.materials = [];
             curBuilding.meshes = [];
-            curBuilding.instanced = true;
             for (let j = 0; j < curBuilding.models.length; j++) {
                 modelLoader.load(curBuilding.models[j], function(gltf) {
                     let mesh = gltf.scene.children[0];
@@ -572,7 +554,7 @@ function initWorld(Farm) {
     for (let x = 0; x < Farm.numBlocks.x; x++) {
         for (let z = 0; z < Farm.numBlocks.z; z++) {
 
-            Farm.blocks[x + ',' + z] = new Block(x, z);
+            Farm.blocks[x + ',' + z] = new Block(Farm, x, z);
 
             groundVertices.push((x - 0.5) * Farm.blockSize);
             groundVertices.push(0);

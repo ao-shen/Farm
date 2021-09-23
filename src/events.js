@@ -287,6 +287,9 @@ export function onKeyDown(Farm, event) {
         case 'o':
             Farm.shadowLight.shadow.normalBias += 0.0001;
             break;
+        case 't':
+            console.log(Farm.hoveringBlock.wetness);
+            break;
     }
 
 }
@@ -326,34 +329,32 @@ function createNewSoil(Farm) {
 
     if (newSoil) {
 
-        let soilBlocks = [];
+        let buildingBuffer = [];
+        let buildingBuilding = Farm.BUILDINGS[0];
 
         for (const curBlockIdx in Farm.blocks) {
             if (Farm.blocks[curBlockIdx].type == BLOCK.SOIL) {
-                soilBlocks.push(Farm.blocks[curBlockIdx]);
+                Farm.blocks[curBlockIdx].soilMeshIdx = buildingBuffer.length;
+                buildingBuffer.push(Farm.blocks[curBlockIdx]);
             }
         }
 
-        Farm.scene.remove(Farm.meshSoil);
-        Farm.meshSoil.dispose();
-        Farm.meshSoil = new THREE.InstancedMesh(Farm.geometrySoil, Farm.materialSoil, soilBlocks.length);
-        Farm.meshSoil.receiveShadow = true;
-        Farm.meshSoil.castShadow = true;
+        for (let m = 0; m < buildingBuilding.meshes.length; m++) {
+            let curMesh = buildingBuilding.meshes[m];
 
-        const matrix = new THREE.Matrix4();
-        for (let i = 0; i < soilBlocks.length; i++) {
+            Farm.scene.remove(curMesh);
+            curMesh.dispose();
+            curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length);
+            curMesh.receiveShadow = true;
+            curMesh.castShadow = true;
+            Farm.scene.add(curMesh);
 
-            matrix.makeTranslation(
-                soilBlocks[i].x * Farm.blockSize,
-                0,
-                soilBlocks[i].z * Farm.blockSize
-            );
-
-            Farm.meshSoil.setMatrixAt(i, matrix);
-
+            buildingBuilding.meshes[m] = curMesh;
         }
 
-        Farm.scene.add(Farm.meshSoil);
+        for (let i = 0; i < buildingBuffer.length; i++) {
+            buildingBuffer[i].updateSoilMesh();
+        }
     }
 }
 
@@ -430,7 +431,7 @@ function createNewTrench(Farm) {
 
         Farm.scene.remove(curMesh);
         curMesh.dispose();
-        curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length * 4);
+        curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length);
         curMesh.receiveShadow = true;
         curMesh.castShadow = true;
         Farm.scene.add(curMesh);
@@ -798,31 +799,32 @@ function remove(Farm) {
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Soil" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
-        let soilBlocks = [];
+        let buildingBuffer = [];
+        let buildingBuilding = Farm.BUILDINGS[0];
 
         for (const curBlockIdx in Farm.blocks) {
             if (Farm.blocks[curBlockIdx].type == BLOCK.SOIL) {
-                soilBlocks.push(Farm.blocks[curBlockIdx]);
+                Farm.blocks[curBlockIdx].soilMeshIdx = buildingBuffer.length;
+                buildingBuffer.push(Farm.blocks[curBlockIdx]);
             }
         }
 
-        Farm.scene.remove(Farm.meshSoil);
-        Farm.meshSoil.dispose();
-        Farm.meshSoil = new THREE.InstancedMesh(Farm.geometrySoil, Farm.materialSoil, soilBlocks.length);
-        Farm.meshSoil.receiveShadow = true;
-        Farm.meshSoil.castShadow = true;
+        for (let m = 0; m < buildingBuilding.meshes.length; m++) {
+            let curMesh = buildingBuilding.meshes[m];
 
-        const matrix = new THREE.Matrix4();
-        for (let i = 0; i < soilBlocks.length; i++) {
-            matrix.makeTranslation(
-                soilBlocks[i].x * Farm.blockSize,
-                0,
-                soilBlocks[i].z * Farm.blockSize
-            );
+            Farm.scene.remove(curMesh);
+            curMesh.dispose();
+            curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length * 4);
+            curMesh.receiveShadow = true;
+            curMesh.castShadow = true;
+            Farm.scene.add(curMesh);
 
-            Farm.meshSoil.setMatrixAt(i, matrix);
+            buildingBuilding.meshes[m] = curMesh;
         }
-        Farm.scene.add(Farm.meshSoil);
+
+        for (let i = 0; i < buildingBuffer.length; i++) {
+            buildingBuffer[i].updateSoilMesh();
+        }
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Water" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {

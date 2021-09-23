@@ -85,20 +85,17 @@ export class Building {
                 onCurVariation = 1;
             }
 
-            for (let j = 0; j < 4; j++) {
+            matrix.makeRotationY(-(this.side - 1) * Math.PI / 2);
 
-                matrix.makeRotationY(-(this.side - 1) * Math.PI / 2);
+            matrix.setPosition(
+                this.pos.x * Farm.blockSize,
+                0,
+                this.pos.z * Farm.blockSize
+            );
 
-                matrix.setPosition(
-                    this.pos.x * Farm.blockSize,
-                    0,
-                    this.pos.z * Farm.blockSize
-                );
+            matrix.scale(new THREE.Vector3(onCurVariation, onCurVariation, onCurVariation));
 
-                matrix.scale(new THREE.Vector3(onCurVariation, onCurVariation, onCurVariation));
-
-                curMesh.setMatrixAt(this.meshIdx * 4 + j, matrix);
-            }
+            curMesh.setMatrixAt(this.meshIdx, matrix);
         }
 
         this.Farm.plantTypeAwaitingMeshUpdate.add(this.type);
