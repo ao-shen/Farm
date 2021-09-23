@@ -286,7 +286,7 @@ export class BuildingWaterCarrier extends BuildingConnectible {
         this.waterMesh.material.dispose();
         this.Farm.scene.remove(this.waterMesh);
 
-        delete this.Farm.waterUpdateList[this.x + ',' + this.z];
+        delete this.Farm.waterUpdateList[this.pos.x + ',' + this.pos.z];
 
         super.remove();
     }

@@ -52,7 +52,7 @@ export function init(Farm) {
     initEvents(Farm);
 
     // Start Water Updates
-    setInterval(function() { onUpdateWater(Farm); }, 500);
+    setInterval(function() { onUpdateWater(Farm); }, 250);
 
     return Farm;
 }

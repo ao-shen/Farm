@@ -722,6 +722,7 @@ function updateBuildingMeshPreview(Farm) {
 function remove(Farm) {
 
     let removedPlantTypes = new Set();
+    let removedBuildingTypes = new Set();
 
     for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x; x++) {
         for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z; z++) {
@@ -732,6 +733,9 @@ function remove(Farm) {
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Buildings" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
                 for (let i = 0; i < curBlock.buildings.length; i++) {
+                    if (curBlock.buildings[i].instanced) {
+                        removedBuildingTypes.add(curBlock.buildings[i].type);
+                    }
                     curBlock.buildings[i].remove();
                 }
                 curBlock.buildings = [];
@@ -767,6 +771,37 @@ function remove(Farm) {
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
         //Farm.buildings = Farm.buildings.filter(building => building);
         //Farm.entities = Farm.entities.filter(entity => entity);
+        removedBuildingTypes.forEach(function(buildingType) {
+            let buildingBuffer = [];
+            let buildingBuilding = Farm.BUILDINGS[buildingType];
+
+            for (const curBlockIdx in Farm.blocks) {
+                for (let curBuilding of Farm.blocks[curBlockIdx].buildings) {
+                    if (curBuilding.type == buildingType) {
+                        curBuilding.meshIdx = buildingBuffer.length;
+                        buildingBuffer.push({ block: Farm.blocks[curBlockIdx], building: curBuilding });
+                        break;
+                    }
+                }
+            }
+
+            for (let m = 0; m < buildingBuilding.meshes.length; m++) {
+                let curMesh = buildingBuilding.meshes[m];
+
+                Farm.scene.remove(curMesh);
+                curMesh.dispose();
+                curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length * 4);
+                curMesh.receiveShadow = true;
+                curMesh.castShadow = true;
+                Farm.scene.add(curMesh);
+
+                buildingBuilding.meshes[m] = curMesh;
+            }
+
+            for (let i = 0; i < buildingBuffer.length; i++) {
+                buildingBuffer[i].building.updateInstancedMesh();
+            }
+        });
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
