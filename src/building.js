@@ -14,6 +14,7 @@ export class Building {
         this.size = this.Farm.BUILDINGS[this.type].size;
         this.side = side;
         this.variation = 0;
+        this.foundationBlocks = [];
 
         if (this.Farm.BUILDINGS[this.type].instanced) {
             this.instanced = true;

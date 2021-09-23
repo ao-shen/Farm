@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Plant } from './plant.js';
 import { BLOCK, Block } from './block.js';
 import * as BuildingObjects from './building.js';
+import { updateConnectibleConnections } from './water_update.js';
 
 
 export function onWindowResize(Farm) {
@@ -437,60 +438,7 @@ function createNewTrench(Farm) {
         buildingBuilding.meshes[m] = curMesh;
     }
 
-    for (let x = Math.max(0, Farm.buildAreaPoint1.x - 1); x <= Math.min(Farm.numBlocks.x, Farm.buildAreaPoint2.x + 1); x++) {
-        for (let z = Math.max(0, Farm.buildAreaPoint1.z - 1); z <= Math.min(Farm.numBlocks.z, Farm.buildAreaPoint2.z + 1); z++) {
-            let curBlock = Farm.blocks[x + ',' + z];
-            if (typeof curBlock === 'undefined') continue;
-
-            for (let building of curBlock.buildings) {
-                if (building.type != buildingType) continue;
-
-                let connections = [];
-
-                for (let i = 0; i < DIRECTIONS.length; i++) {
-                    let direction = DIRECTIONS[i];
-                    let otherBlock = Farm.blocks[(x + direction.x) + ',' + (z + direction.z)];
-
-                    if ((x + direction.x) < 0) {
-                        connections.push(i);
-                        continue;
-                    }
-
-                    if (typeof otherBlock === 'undefined') continue;
-
-                    for (let building of otherBlock.buildings) {
-                        if (building.type != buildingType) continue;
-
-                        connections.push(i);
-                        break;
-                    }
-                }
-
-                if (connections.length == 0) {
-                    building.updateMeshVariation(0, 0);
-                } else if (connections.length == 1) {
-                    building.updateMeshVariation(1, (connections[0] + 4) % 4);
-                } else if (connections.length == 2) {
-                    if ((connections[0] + 2) % 4 == connections[1]) {
-                        building.updateMeshVariation(2, (connections[0] + 4) % 4);
-                    } else if ((connections[0] + 1) % 4 == connections[1]) {
-                        building.updateMeshVariation(3, (connections[0] + 3) % 4);
-                    } else {
-                        building.updateMeshVariation(3, (connections[1] + 3) % 4);
-                    }
-                } else if (connections.length == 3) {
-                    for (let i = 0; i < 4; i++) {
-                        if (!connections.includes(i)) {
-                            building.updateMeshVariation(4, (i + 4) % 4);
-                            break;
-                        }
-                    }
-                } else if (connections.length == 4) {
-                    building.updateMeshVariation(5, 0);
-                }
-            }
-        }
-    }
+    updateConnectibleConnections(Farm, buildingType, Farm.buildAreaPoint1, Farm.buildAreaPoint2);
 
     for (let i = 0; i < buildingBuffer.length; i++) {
         buildingBuffer[i].building.updateInstancedMesh();
@@ -650,6 +598,7 @@ function createSingleNewBuilding(Farm) {
 
         for (const block of foundationBlocks) {
             block.buildings.push(building);
+            building.foundationBlocks.push(block);
         }
 
         Farm.buildings[Farm.buildingIdx] = building;
@@ -733,10 +682,17 @@ function remove(Farm) {
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Buildings" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
                 for (let i = 0; i < curBlock.buildings.length; i++) {
-                    if (curBlock.buildings[i].instanced) {
-                        removedBuildingTypes.add(curBlock.buildings[i].type);
+                    let curBuilding = curBlock.buildings[i];
+                    if (curBuilding.instanced) {
+                        removedBuildingTypes.add(curBuilding.type);
                     }
-                    curBlock.buildings[i].remove();
+                    for (let foundationBlock of curBuilding.foundationBlocks) {
+                        var index = foundationBlock.buildings.indexOf(curBuilding);
+                        if (index !== -1) {
+                            foundationBlock.buildings.splice(index, 1);
+                        }
+                    }
+                    curBuilding.remove();
                 }
                 curBlock.buildings = [];
             }
@@ -774,6 +730,8 @@ function remove(Farm) {
         removedBuildingTypes.forEach(function(buildingType) {
             let buildingBuffer = [];
             let buildingBuilding = Farm.BUILDINGS[buildingType];
+
+            updateConnectibleConnections(Farm, buildingType, Farm.buildAreaPoint1, Farm.buildAreaPoint2);
 
             for (const curBlockIdx in Farm.blocks) {
                 for (let curBuilding of Farm.blocks[curBlockIdx].buildings) {
