@@ -377,6 +377,7 @@ function loadBuildingAssets(Farm) {
 
     // Load Models
     const defaultTransform = new THREE.Matrix4()
+        .multiply(new THREE.Matrix4().makeTranslation(0, -1, 0))
         .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
 
     const defaultBuildingTransform = new THREE.Matrix4()
@@ -415,7 +416,7 @@ function loadBuildingAssets(Farm) {
 
                     curBuilding.geometries[j] = mesh.geometry.clone();
 
-                    curBuilding.geometries[j].applyMatrix4(defaultTransform);
+                    curBuilding.geometries[j].applyMatrix4(defaultBuildingTransform);
 
                     curBuilding.materials[j] = mesh.material;
 
