@@ -42,9 +42,6 @@ export function onMouseUp(Farm, event) {
                     case "Soil":
                         createNewSoil(Farm);
                         break;
-                    case "Water":
-                        createWater(Farm);
-                        break;
                     default:
                         switch (Farm.BUILDINGS[Farm.buildPaletteSelect].category) {
                             case "plants":
@@ -59,7 +56,11 @@ export function onMouseUp(Farm, event) {
                 Farm.overlay = Farm.OVERLAY.DEFAULT;
                 Farm.buildAreaRect.visible = false;
             } else if (Farm.overlay == Farm.OVERLAY.BUILD_LINE) {
-                createAreaOfNewBuildings(Farm);
+                if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Trench") {
+                    createNewTrench(Farm);
+                } else {
+                    createAreaOfNewBuildings(Farm);
+                }
                 Farm.overlay = Farm.OVERLAY.DEFAULT;
                 Farm.buildAreaRect.visible = false;
                 if (Farm.buildBuildingMesh != null) {
@@ -314,7 +315,7 @@ function createNewSoil(Farm) {
             if (curBlock.type == BLOCK.GRASS &&
                 !blockingPlants &&
                 !blockingBuildings &&
-                curBlock.groundState != Farm.GROUND_STATES_NAMES.WATER) {
+                curBlock.groundState <= Farm.GROUND_STATES_NAMES.CLEAR) {
                 curBlock.type = BLOCK.SOIL;
 
                 newSoil = true;
@@ -355,6 +356,7 @@ function createNewSoil(Farm) {
     }
 }
 
+// DEPRECATED
 function createWater(Farm) {
 
     for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x; x++) {
@@ -376,6 +378,93 @@ function createWater(Farm) {
         }
     }
     Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
+}
+
+function createNewTrench(Farm) {
+
+    let buildingType = Farm.buildPaletteSelect;
+
+    for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x; x++) {
+        for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z; z++) {
+            let curBlock = Farm.blocks[x + ',' + z];
+            if (typeof curBlock === 'undefined') continue;
+
+            if (curBlock.type == BLOCK.GRASS &&
+                curBlock.plants.length == 0 &&
+                curBlock.buildings.length == 0 &&
+                curBlock.groundState < Farm.GROUND_STATES_NAMES.CLEAR) {
+
+                curBlock.groundState = Farm.GROUND_STATES_NAMES.CLEAR;
+
+                let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
+                for (let i = 0; i < 8; i++) {
+                    Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
+                }
+
+                let building = new BuildingObjects.BuildingWaterCarrier(Farm, Farm.buildingIdx, x, z, buildingType, Farm.buildBuildingSide);
+                curBlock.buildings.push(building);
+
+                Farm.buildings[Farm.buildingIdx] = building;
+                Farm.buildingIdx++;
+            }
+        }
+    }
+    Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
+
+    for (let x = Math.max(0, Farm.buildAreaPoint1.x - 1); x <= Math.min(Farm.numBlocks.x, Farm.buildAreaPoint2.x + 1); x++) {
+        for (let z = Math.max(0, Farm.buildAreaPoint1.z - 1); z <= Math.min(Farm.numBlocks.z, Farm.buildAreaPoint2.z + 1); z++) {
+            let curBlock = Farm.blocks[x + ',' + z];
+            if (typeof curBlock === 'undefined') continue;
+
+            for (let building of curBlock.buildings) {
+                if (building.type != buildingType) continue;
+
+                let connections = [];
+
+                for (let i = 0; i < DIRECTIONS.length; i++) {
+                    let direction = DIRECTIONS[i];
+                    let otherBlock = Farm.blocks[(x + direction.x) + ',' + (z + direction.z)];
+
+                    if ((x + direction.x) < 0) {
+                        connections.push(i);
+                        continue;
+                    }
+
+                    if (typeof otherBlock === 'undefined') continue;
+
+                    for (let building of otherBlock.buildings) {
+                        if (building.type != buildingType) continue;
+
+                        connections.push(i);
+                        break;
+                    }
+                }
+
+                if (connections.length == 0) {
+                    building.updateMeshVariation(0, 0);
+                } else if (connections.length == 1) {
+                    building.updateMeshVariation(1, (connections[0] + 4) % 4);
+                } else if (connections.length == 2) {
+                    if ((connections[0] + 2) % 4 == connections[1]) {
+                        building.updateMeshVariation(2, (connections[0] + 4) % 4);
+                    } else if ((connections[0] + 1) % 4 == connections[1]) {
+                        building.updateMeshVariation(3, (connections[0] + 3) % 4);
+                    } else {
+                        building.updateMeshVariation(3, (connections[1] + 3) % 4);
+                    }
+                } else if (connections.length == 3) {
+                    for (let i = 0; i < 4; i++) {
+                        if (!connections.includes(i)) {
+                            building.updateMeshVariation(4, (i + 4) % 4);
+                            break;
+                        }
+                    }
+                } else if (connections.length == 4) {
+                    building.updateMeshVariation(5, 0);
+                }
+            }
+        }
+    }
 }
 
 function createNewPlant(Farm) {
@@ -470,7 +559,7 @@ function createSingleNewBuilding(Farm) {
             let curBlock = Farm.blocks[x + ',' + z];
 
             if (typeof curBlock === 'undefined' ||
-                (curBlock.groundState == Farm.GROUND_STATES_NAMES.WATER && !BUILDING.onWater)) {
+                (curBlock.groundState == Farm.GROUND_STATES_NAMES.CLEAR && !BUILDING.onWater)) {
                 newBuilding = false;
                 continue;
             }
@@ -718,3 +807,10 @@ function remove(Farm) {
     }
 
 }
+
+const DIRECTIONS = [
+    { x: 1, z: 0 },
+    { x: 0, z: 1 },
+    { x: -1, z: 0 },
+    { x: 0, z: -1 },
+];

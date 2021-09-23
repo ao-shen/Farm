@@ -246,12 +246,16 @@ export class Entity {
 
         let curBlock = this.Farm.blocks[x + ',' + z];
 
-        if (curBlock.groundState == Farm.GROUND_STATES_NAMES.WATER) {
-            return true;
-        }
-
         if (curBlock.buildings.length == 0) {
             return false;
+        }
+
+        let hasPath = false;
+        for (let building of curBlock.buildings) {
+            if (building.isPath) {
+                hasPath = true;
+                break;
+            }
         }
 
         for (let building of curBlock.buildings) {
@@ -260,6 +264,8 @@ export class Entity {
                     return true;
                 }
             } else if (building.isPath || building == this.parentBuilding) {
+
+            } else if (building.isConnectible && hasPath) {
 
             } else {
                 if (!isTarget) {

@@ -17,6 +17,7 @@ import { Sky } from './THREE/Sky.js';
 import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown } from './events.js';
 import { BLOCK, Block } from './block.js';
 import { NineSlicePlane } from './nine_slice.js';
+import { onUpdateWater } from './water_update.js';
 
 export function init(Farm) {
 
@@ -55,6 +56,9 @@ export function init(Farm) {
 
     // Init Events
     initEvents(Farm);
+
+    // Start Water Updates
+    setInterval(function() { onUpdateWater(Farm); }, 200);
 
     return Farm;
 }
@@ -406,6 +410,28 @@ function loadBuildingAssets(Farm) {
 
                 Farm.scene.add(Farm.meshSoil);
             });
+        } else if (curBuilding.name == "Trench") {
+            curBuilding.geometries = [];
+            curBuilding.materials = [];
+            curBuilding.meshes = [];
+            curBuilding.numVariants = curBuilding.models.length;
+            for (let j = 0; j < curBuilding.models.length; j++) {
+                modelLoader.load(curBuilding.models[j], function(gltf) {
+                    let mesh = gltf.scene.children[0];
+
+                    mesh.receiveShadow = true;
+                    mesh.castShadow = true;
+
+                    mesh.geometry.computeVertexNormals();
+                    mesh.geometry.applyMatrix4(defaultBuildingTransform);
+
+                    curBuilding.geometries[j] = mesh.geometry.clone();
+
+                    curBuilding.materials[j] = mesh.material;
+
+                    curBuilding.meshes[j] = mesh.clone();
+                });
+            }
         } else if (curBuilding.category == "plants") {
             curBuilding.geometries = [];
             curBuilding.materials = [];
@@ -600,6 +626,7 @@ function initWorld(Farm) {
     let groundMaterial = new THREE.MeshStandardMaterial({
         map: Farm.texGroundBlock,
         side: THREE.DoubleSide,
+        transparent: true,
     });
 
     Farm.groundMesh = new THREE.Mesh(Farm.groundGeometry, groundMaterial);

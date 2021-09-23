@@ -240,7 +240,7 @@ function renderOverlays(Farm) {
                     Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
                     Farm.buildBuildingMesh.position.set(
                         (rectX2) - 0.5 * Farm.blockSize,
-                        0,
+                        0.01,
                         (rectZ2) - 0.5 * Farm.blockSize
                     );
                 }

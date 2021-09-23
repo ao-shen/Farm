@@ -96,6 +96,9 @@ export let Farm = {
     buildBuildingMesh: null,
     buildBuildingMaterial: null,
 
+    // Water Flow
+    waterUpdateList: {},
+
     // BUILDINGS -----------------------------------------------
 
     // Meshes
@@ -226,6 +229,7 @@ export let Farm = {
         ],
     }],
     GROUND_STATES_NAMES: {
+        CLEAR: 3,
         WATER: 4
     },
 
@@ -264,6 +268,10 @@ export let Farm = {
         category: "ground",
         build_mode: "line",
         price: 0,
+        size: {
+            x: 1,
+            z: 1,
+        },
         thumbnail: 'assets/textures/water_thumbnail.png',
         models: [
             'assets/models/trench0.glb',
@@ -373,6 +381,7 @@ export let Farm = {
         name: "Stone Path",
         category: "buildings",
         build_mode: "area",
+        onWater: true,
         price: 2,
         size: {
             x: 1,
