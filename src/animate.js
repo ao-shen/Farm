@@ -22,12 +22,12 @@ export function onAnimationFrame(Farm, newtime) {
         // Also, adjust for fpsInterval not being multiple of 16.67
         then = now - (elapsed % fpsInterval);
 
-        animate(Farm);
+        animate(Farm, elapsed);
     }
 
 }
 
-export function animate(Farm) {
+export function animate(Farm, elapsed) {
 
     Farm.stats.begin();
 
@@ -76,6 +76,13 @@ export function animate(Farm) {
     Farm.shadowLight.target.position.set(Farm.controls.target.x, 0, Farm.controls.target.z);
 
     //Farm.shadowLight.shadow.camera.position.set(Farm.controls.target.x, 10, Farm.controls.target.y);
+
+    // Update grass blades
+
+    //Farm.grassBladeMaterial.uniforms.posX.value = Farm.controls.target.x;
+    //Farm.grassBladeMaterial.uniforms.posZ.value = Farm.controls.target.z;
+    Farm.grassBladeMaterial.uniforms.time.value = (Math.sin(now * 0.1) + 2 * now * 0.1) * 0.03;
+    //Farm.grassBladeMesh.position.set(Farm.controls.target.x, 0, Farm.controls.target.z);
 
     render(Farm);
 

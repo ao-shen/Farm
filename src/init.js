@@ -18,6 +18,7 @@ import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown } from '
 import { BLOCK, Block } from './block.js';
 import { NineSlicePlane } from './nine_slice.js';
 import { onUpdateWater } from './water_update.js';
+import { initGrassBlades } from './grass_blades.js';
 
 export function init(Farm) {
 
@@ -41,6 +42,9 @@ export function init(Farm) {
 
     // Init World
     initWorld(Farm);
+
+    // Init Grass Blades
+    initGrassBlades(Farm);
 
     // Init Overlays
     initOverlays(Farm);
@@ -67,7 +71,7 @@ function initScene(Farm) {
     Farm.scene.background = new THREE.Color(0xcccccc);
     Farm.scene.fog = new THREE.FogExp2(0xcccccc, 0.0001);
 
-    Farm.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, logarithmicDepthBuffer: true });
+    Farm.renderer = new THREE.WebGL1Renderer({ antialias: true, alpha: true, logarithmicDepthBuffer: true });
     Farm.renderer.setPixelRatio(window.devicePixelRatio);
     Farm.renderer.setSize(window.innerWidth, window.innerHeight);
     Farm.renderer.setClearColor(0x000000, 0);
@@ -78,6 +82,8 @@ function initScene(Farm) {
     document.body.appendChild(Farm.renderer.domElement);
 
     Farm.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);
+
+    Farm.renderer.getContext().getExtension('EXT_frag_depth');
 
     // controls
 
@@ -138,6 +144,8 @@ function initScene(Farm) {
     Farm.sun = sun;
 
     Farm.renderer.toneMappingExposure = effectController.exposure;
+
+    Farm.effectController = effectController;
 
     // Environment 
     /*geometry = new THREE.PlaneGeometry(1000, 1000);
