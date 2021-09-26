@@ -6,7 +6,7 @@ import { grassVertexShader } from './grassVertex';
 var joints = 2;
 var bladeWidth = 0.15 * 2;
 var bladeHeight = 1.0 * 1.5;
-var instances = 2000000;
+var instances = 15;
 
 //Define the bend of the grass blade as the combination of three quaternion rotations
 let vertex = new THREE.Vector3();
@@ -83,43 +83,46 @@ export function initGrassBlades(Farm) {
     // Show grass base geometry
     //Farm.scene.add(baseBlade);
 
-    let grass = new THREE.InstancedMesh(grassBaseGeometry, phongMaterial, instances);
+    let grass = new THREE.InstancedMesh(grassBaseGeometry, phongMaterial, instances * Farm.numBlocks.x * Farm.numBlocks.z);
 
     const matrix = new THREE.Matrix4();
 
-    //For each instance of the grass blade
-    for (let i = 0; i < instances; i++) {
-
-        //Offset of the roots
-        x = Math.random() * width - Farm.blockSize * 0.5;
-        z = Math.random() * width - Farm.blockSize * 0.5;
-        y = 0;
-
-        //Random orientation
-        let angle = Math.PI - (Math.random() * Math.PI) * 2;
-
-        //Define variety in height
-        let scale = 1;
-        if (i % 3 != 0) {
-            scale = 2.0 + Math.random() * 1.25;
-        } else {
-            scale = 2.0 + Math.random();
-        }
-
-        matrix.set(
-            x, y, z, scale,
-            angle * 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-        );
-
-        grass.setMatrixAt(i, matrix);
-
-    }
-
-    grass.receiveShadow = true;
+    let curMatrixIdx = 0;
 
     for (const curBlockIdx in Farm.blocks) {
         let curBlock = Farm.blocks[curBlockIdx];
+
+        //For each instance of the grass blade
+        for (let i = 0; i < instances; i++) {
+
+            //Offset of the roots
+            x = (curBlock.x + Math.random() - 0.5) * Farm.blockSize;
+            z = (curBlock.z + Math.random() - 0.5) * Farm.blockSize;
+            y = 0;
+
+            //Random orientation
+            let angle = Math.PI - (Math.random() * Math.PI) * 2;
+
+            //Define variety in height
+            let scale = 1;
+            if (i % 3 != 0) {
+                scale = 2.0 + Math.random() * 0.5 * 1.25;
+            } else {
+                scale = 2.0 + Math.random() * 0.5;
+            }
+
+            matrix.set(
+                x, y, z, scale,
+                angle * 0.5, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            );
+
+            grass.setMatrixAt(curMatrixIdx, matrix);
+            curBlock.grassBladeIdx.push(curMatrixIdx);
+            curMatrixIdx++;
+        }
     }
+
+    grass.receiveShadow = true;
 
     Farm.scene.add(grass);
 

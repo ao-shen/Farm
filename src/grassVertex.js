@@ -219,7 +219,7 @@ void main() {
 
 	#ifdef USE_INSTANCING
 
-		mat4 decodedInstanceMatrix = mat4(instanceMatrix[3][0], 0.0, 0.0, 0.0,  0.0, instanceMatrix[3][0], 0.0, 0.0,  0.0, 0.0, instanceMatrix[3][0], 0.0,  instanceMatrix[0][0], instanceMatrix[1][0], instanceMatrix[2][0], 1.0);
+		mat4 decodedInstanceMatrix = mat4(instanceMatrix[3][0]*instanceMatrix[1][1], 0.0, 0.0, 0.0,  0.0, instanceMatrix[3][0]*instanceMatrix[1][1], 0.0, 0.0,  0.0, 0.0, instanceMatrix[3][0]*instanceMatrix[1][1], 0.0,  instanceMatrix[0][0], instanceMatrix[1][0], instanceMatrix[2][0], 1.0);
 
 		vec2 decodedOffset = vec2(instanceMatrix[0][0], instanceMatrix[2][0]);
 		float decodedRotation = instanceMatrix[0][1];

@@ -81,6 +81,10 @@ export let Farm = {
     groundGeometry: null,
     groundUVs: null,
 
+    grassBladeMesh: null,
+    grassBladeMaterial: null,
+    grassBladeMeshNeedsUpdate: false,
+
     blockLine: null,
 
     texGroundBlock: null,

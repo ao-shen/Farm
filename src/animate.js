@@ -44,6 +44,11 @@ export function animate(Farm, elapsed) {
     }
     Farm.plantTypeAwaitingMeshUpdate = new Set();
 
+    if (Farm.grassBladeMeshNeedsUpdate) {
+        Farm.grassBladeMesh.instanceMatrix.needsUpdate = true;
+        Farm.grassBladeMeshNeedsUpdate = false;
+    }
+
     for (const building in Farm.buildings) {
         Farm.buildings[building].update();
     }

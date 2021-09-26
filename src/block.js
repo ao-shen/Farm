@@ -8,6 +8,8 @@ export class Block {
         this.z = z;
 
         this.groundState = 0;
+        this.grassBladeIdx = [];
+        this.isGrassBladeVisible = true;
 
         this.type = type;
         this.plants = [];
@@ -20,6 +22,33 @@ export class Block {
         this.wetness = 0;
 
         this.hash = xmur3(x + "+" + z)();
+    }
+
+    updateGrassBlades() {
+
+        const matrix = new THREE.Matrix4();
+
+        if (this.type == BLOCK.GRASS && this.plants.length == 0 && this.buildings.length == 0) {
+            if (!this.isGrassBladeVisible) {
+                this.isGrassBladeVisible = true;
+                for (let idx of this.grassBladeIdx) {
+                    this.Farm.grassBladeMesh.getMatrixAt(idx, matrix);
+                    matrix.elements[5] = 1;
+                    this.Farm.grassBladeMesh.setMatrixAt(idx, matrix);
+                }
+                this.Farm.grassBladeMeshNeedsUpdate = true;
+            }
+        } else {
+            if (this.isGrassBladeVisible) {
+                this.isGrassBladeVisible = false;
+                for (let idx of this.grassBladeIdx) {
+                    this.Farm.grassBladeMesh.getMatrixAt(idx, matrix);
+                    matrix.elements[5] = 0;
+                    this.Farm.grassBladeMesh.setMatrixAt(idx, matrix);
+                }
+                this.Farm.grassBladeMeshNeedsUpdate = true;
+            }
+        }
     }
 
     updateWetness() {
