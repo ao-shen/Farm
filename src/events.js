@@ -321,6 +321,7 @@ function createNewSoil(Farm) {
                 !blockingBuildings &&
                 curBlock.groundState <= Farm.GROUND_STATES_NAMES.CLEAR) {
                 curBlock.type = BLOCK.SOIL;
+                curBlock.updateGrassBlades();
 
                 newSoil = true;
             }
@@ -405,6 +406,7 @@ function createNewTrench(Farm) {
 
                 let building = new BuildingObjects.BuildingWaterCarrier(Farm, Farm.buildingIdx, x, z, buildingType, Farm.buildBuildingSide);
                 curBlock.buildings.push(building);
+                curBlock.updateGrassBlades();
 
                 Farm.buildings[Farm.buildingIdx] = building;
                 Farm.buildingIdx++;
@@ -459,6 +461,7 @@ function createNewPlant(Farm) {
             if (curBlock.type == BLOCK.SOIL &&
                 curBlock.plants.length == 0) {
                 curBlock.plants.push(new Plant(Farm, plantType, curBlock));
+                curBlock.updateGrassBlades();
                 newPlant = true;
             }
         }
@@ -599,6 +602,7 @@ function createSingleNewBuilding(Farm) {
 
         for (const block of foundationBlocks) {
             block.buildings.push(building);
+            block.updateGrassBlades();
             building.foundationBlocks.push(block);
         }
 
@@ -689,7 +693,7 @@ function remove(Farm) {
                     }
                     for (let foundationBlock of curBuilding.foundationBlocks) {
                         var index = foundationBlock.buildings.indexOf(curBuilding);
-                        if (index !== -1) {
+                        if (index !== -1 && foundationBlock != curBlock) {
                             foundationBlock.buildings.splice(index, 1);
                         }
                     }
@@ -719,8 +723,9 @@ function remove(Farm) {
                         Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
                     }
                 }
-
             }
+
+            curBlock.updateGrassBlades();
         }
     }
 
@@ -739,7 +744,6 @@ function remove(Farm) {
                     if (curBuilding.type == buildingType) {
                         curBuilding.meshIdx = buildingBuffer.length;
                         buildingBuffer.push({ block: Farm.blocks[curBlockIdx], building: curBuilding });
-                        break;
                     }
                 }
             }

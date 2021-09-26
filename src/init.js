@@ -81,6 +81,7 @@ function initScene(Farm) {
     Farm.renderer.shadowMap.enabled = true;
     document.body.appendChild(Farm.renderer.domElement);
 
+    //Farm.camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, 0.1, 10000);
     Farm.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);
 
     Farm.renderer.getContext().getExtension('EXT_frag_depth');
@@ -622,6 +623,19 @@ function initWorld(Farm) {
         side: THREE.DoubleSide,
         transparent: true,
     });
+
+    let depthMaterial = new THREE.MeshDepthMaterial({
+        side: THREE.DoubleSide,
+        transparent: true,
+    });
+
+    let phongMaterial = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        side: THREE.DoubleSide,
+        transparent: true,
+    });
+
+    //Farm.scene.overrideMaterial = phongMaterial;
 
     Farm.groundMesh = new THREE.Mesh(Farm.groundGeometry, groundMaterial);
 

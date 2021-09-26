@@ -136,7 +136,9 @@ export class Building {
             this.Farm.groupInfoable.remove(this.mesh);
         }
 
-        delete this.Farm.buildings[this.idx];
+        if (this.Farm.buildings[this.idx] == this) {
+            delete this.Farm.buildings[this.idx];
+        }
 
         this.isRemoved = true;
     }
