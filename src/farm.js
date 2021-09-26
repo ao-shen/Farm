@@ -59,6 +59,7 @@ export let Farm = {
     // Info box
     infoBoxRaycaster: new THREE.Raycaster(),
     groupInfoable: new THREE.Group(),
+    groupNonInfoable: new THREE.Group(),
 
     materialInfoBoxBackground: null,
 
@@ -338,6 +339,7 @@ export let Farm = {
         category: "buildings",
         build_mode: "single",
         price: 50,
+        infoable: true,
         inventorySlots: 5,
         size: {
             x: 1,
@@ -355,6 +357,7 @@ export let Farm = {
         category: "buildings",
         build_mode: "single",
         price: 200,
+        infoable: true,
         inventorySlots: 30,
         size: {
             x: 2,

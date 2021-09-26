@@ -15,6 +15,7 @@ export class Building {
         this.side = side;
         this.variation = 0;
         this.foundationBlocks = [];
+        this.infoable = this.Farm.BUILDINGS[this.type].infoable;
 
         if (this.Farm.BUILDINGS[this.type].instanced) {
             this.instanced = true;
@@ -23,7 +24,11 @@ export class Building {
             this.mesh = this.Farm.BUILDINGS[this.type].meshes[this.variation].clone();
             this.mesh.owner = this;
             this.mesh.name = this.name;
-            Farm.groupInfoable.add(this.mesh);
+            if (this.infoable) {
+                Farm.groupInfoable.add(this.mesh);
+            } else {
+                Farm.groupNonInfoable.add(this.mesh);
+            }
             this.mesh.rotateY(-(this.side - 1) * Math.PI / 2);
         }
 
@@ -58,11 +63,21 @@ export class Building {
         if (this.instanced) {
             this.updateInstancedMesh();
         } else {
+            if (this.infoable) {
+                this.Farm.groupInfoable.remove(this.mesh);
+            } else {
+                this.Farm.groupNonInfoable.remove(this.mesh);
+            }
             this.Farm.groupInfoable.remove(this.mesh);
             this.mesh = this.Farm.BUILDINGS[this.type].meshes[variation].clone();
             this.mesh.owner = this;
             this.mesh.name = this.name;
-            this.Farm.groupInfoable.add(this.mesh);
+
+            if (this.infoable) {
+                this.Farm.groupInfoable.add(this.mesh);
+            } else {
+                this.Farm.groupNonInfoable.add(this.mesh);
+            }
             this.mesh.rotateY(-(this.side - 1) * Math.PI / 2);
         }
     }
@@ -133,7 +148,11 @@ export class Building {
         } else {
             this.mesh.geometry.dispose();
             this.mesh.material.dispose();
-            this.Farm.groupInfoable.remove(this.mesh);
+            if (this.infoable) {
+                this.Farm.groupInfoable.remove(this.mesh);
+            } else {
+                this.Farm.groupNonInfoable.remove(this.mesh);
+            }
         }
 
         if (this.Farm.buildings[this.idx] == this) {

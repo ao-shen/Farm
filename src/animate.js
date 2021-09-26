@@ -84,10 +84,8 @@ export function animate(Farm, elapsed) {
 
     // Update grass blades
 
-    //Farm.grassBladeMaterial.uniforms.posX.value = Farm.controls.target.x;
-    //Farm.grassBladeMaterial.uniforms.posZ.value = Farm.controls.target.z;
     Farm.grassBladeMaterial.uniforms.time.value = (Math.sin(now * 0.1) + 2 * now * 0.1) * 0.03;
-    //Farm.grassBladeMesh.position.set(Farm.controls.target.x, 0, Farm.controls.target.z);
+
 
     render(Farm);
 
@@ -134,9 +132,14 @@ function renderInfoBoxes(Farm) {
 
 function renderOverlays(Farm) {
 
+    Farm.mouseRaycaster.setFromCamera(Farm.mousePos, Farm.camera);
+    const intersects = Farm.mouseRaycaster.intersectObject(Farm.groundMesh);
+    if (intersects.length > 0) {
+        Farm.grassBladeMaterial.uniforms.mouse_pos_x.value = intersects[0].point.x;
+        Farm.grassBladeMaterial.uniforms.mouse_pos_z.value = intersects[0].point.z;
+    }
+
     if (Farm.lens == Farm.LENS.BUILD || Farm.lens == Farm.LENS.REMOVE) {
-        Farm.mouseRaycaster.setFromCamera(Farm.mousePos, Farm.camera);
-        const intersects = Farm.mouseRaycaster.intersectObject(Farm.groundMesh);
 
         Farm.hoveringBlock = null;
         if (intersects.length > 0) {

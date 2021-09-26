@@ -209,6 +209,7 @@ function initScene(Farm) {
     Farm.scene.add(Farm.groupSoilAndPlants);
 
     Farm.scene.add(Farm.groupInfoable);
+    Farm.scene.add(Farm.groupNonInfoable);
 
     // Lights
 

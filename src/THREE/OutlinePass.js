@@ -311,11 +311,20 @@ class OutlinePass extends Pass {
             const currentBackground = this.renderScene.background;
             this.renderScene.background = null;
 
+            let grassBladeMesh = this.renderScene.getObjectByName("GrassBladeMesh");
+            if (grassBladeMesh) {
+                grassBladeMesh.visible = false;
+            }
+
             // 1. Draw Non Selected objects in the depth buffer
             this.renderScene.overrideMaterial = this.depthMaterial;
             renderer.setRenderTarget(this.renderTargetDepthBuffer);
             renderer.clear();
             renderer.render(this.renderScene, this.renderCamera);
+
+            if (grassBladeMesh) {
+                grassBladeMesh.visible = true;
+            }
 
             // Make selected objects visible
             this.changeVisibilityOfSelectedObjects(true);

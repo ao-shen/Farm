@@ -205,6 +205,8 @@ vec2 equirectUv( in vec3 dir ) {
 #endif
 
 uniform float time;
+uniform float mouse_pos_x;
+uniform float mouse_pos_z;
 
 vec3 rotateVectorByQuaternion(vec3 v, vec4 q){
     return 2.0 * cross(q.xyz, v * q.w + cross(q.xyz, v)) + v;
@@ -238,6 +240,15 @@ void main() {
 		//Rotate blade and normals according to the wind
 		vec4 directionGrass = normalize(vec4(sin(halfAngle), 0.0, -sin(halfAngle), cos(halfAngle)));
 
+		vec3 mouseDistanceVector = vec3(decodedOffset.x - mouse_pos_x, 0, decodedOffset.y - mouse_pos_z);
+		vec3 mouseRotationDirection = normalize(cross(mouseDistanceVector, vec3(0, 1, 0)));
+
+		float mouseDistance = 0.01 * (dot(mouseDistanceVector, mouseDistanceVector));
+		// mouseDistance = - 0.2 * max(1.0 + cos(min(0.005 * mouseDistance, PI)), 0.0);
+		mouseDistance = - 1.0 / ( exp2( mouseDistance ) + exp2( -mouseDistance ) );
+		
+		vec4 directionMouseGrass = normalize(vec4(mouseRotationDirection * sin(mouseDistance), cos(mouseDistance)));
+
 	#endif
 
 #ifdef USE_UV
@@ -269,6 +280,7 @@ vec3 transformedNormal = objectNormal;
 	transformedNormal /= vec3( dot( m[ 0 ], m[ 0 ] ), dot( m[ 1 ], m[ 1 ] ), dot( m[ 2 ], m[ 2 ] ) );
 	transformedNormal = m * transformedNormal;
 	transformedNormal = rotateVectorByQuaternion(transformedNormal, rotateY);
+	transformedNormal = rotateVectorByQuaternion(transformedNormal, directionMouseGrass);
 	transformedNormal = rotateVectorByQuaternion(transformedNormal, directionGrass);
 #endif
 
@@ -301,6 +313,7 @@ vec4 mvPosition = vec4( transformed, 1.0 );
 
 	vec3 pos = mvPosition.xyz;
 	pos = rotateVectorByQuaternion(pos, rotateY);
+	pos = rotateVectorByQuaternion(pos, directionMouseGrass);
 	pos = rotateVectorByQuaternion(pos, directionGrass);
 	mvPosition = vec4(vec3(pos.x, pos.y, pos.z), mvPosition.w);
 
@@ -333,6 +346,7 @@ vHighPrecisionZW = gl_Position.zw;
 	vec4 worldPosition = vec4( transformed, 1.0 );
 	#ifdef USE_INSTANCING
 		transformed = rotateVectorByQuaternion(transformed, rotateY);
+		transformed = rotateVectorByQuaternion(transformed, directionMouseGrass);
 		transformed = rotateVectorByQuaternion(transformed, directionGrass);
 		worldPosition = vec4( transformed, 1.0 );
 		worldPosition = decodedInstanceMatrix * worldPosition;
