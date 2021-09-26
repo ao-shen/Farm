@@ -81,7 +81,7 @@ export function animate(Farm, elapsed) {
 
     //Farm.grassBladeMaterial.uniforms.posX.value = Farm.controls.target.x;
     //Farm.grassBladeMaterial.uniforms.posZ.value = Farm.controls.target.z;
-    //Farm.grassBladeMaterial.uniforms.time.value = (Math.sin(now * 0.1) + 2 * now * 0.1) * 0.03;
+    Farm.grassBladeMaterial.uniforms.time.value = (Math.sin(now * 0.1) + 2 * now * 0.1) * 0.03;
     //Farm.grassBladeMesh.position.set(Farm.controls.target.x, 0, Farm.controls.target.z);
 
     render(Farm);

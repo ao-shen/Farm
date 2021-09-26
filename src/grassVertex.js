@@ -1,63 +1,4 @@
-precision highp float;
-precision highp int;
-#define HIGH_PRECISION
-#define SHADER_NAME ShaderMaterial
-#define USE_INSTANCING
-#define VERTEX_TEXTURES
-#define GAMMA_FACTOR 2
-#define MAX_BONES 0
-#define BONE_TEXTURE
-#define DOUBLE_SIDED
-#define USE_SHADOWMAP
-#define SHADOWMAP_TYPE_PCF
-#define USE_LOGDEPTHBUF
-#define USE_LOGDEPTHBUF_EXT
-uniform mat4 modelMatrix;
-uniform mat4 modelViewMatrix;
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat3 normalMatrix;
-uniform vec3 cameraPosition;
-uniform bool isOrthographic;
-#ifdef USE_INSTANCING
-	attribute mat4 instanceMatrix;
-#endif
-#ifdef USE_INSTANCING_COLOR
-	attribute vec3 instanceColor;
-#endif
-attribute vec3 position;
-attribute vec3 normal;
-attribute vec2 uv;
-#ifdef USE_TANGENT
-	attribute vec4 tangent;
-#endif
-#if defined( USE_COLOR_ALPHA )
-	attribute vec4 color;
-#elif defined( USE_COLOR )
-	attribute vec3 color;
-#endif
-#ifdef USE_MORPHTARGETS
-	attribute vec3 morphTarget0;
-	attribute vec3 morphTarget1;
-	attribute vec3 morphTarget2;
-	attribute vec3 morphTarget3;
-	#ifdef USE_MORPHNORMALS
-		attribute vec3 morphNormal0;
-		attribute vec3 morphNormal1;
-		attribute vec3 morphNormal2;
-		attribute vec3 morphNormal3;
-	#else
-		attribute vec3 morphTarget4;
-		attribute vec3 morphTarget5;
-		attribute vec3 morphTarget6;
-		attribute vec3 morphTarget7;
-	#endif
-#endif
-#ifdef USE_SKINNING
-	attribute vec4 skinIndex;
-	attribute vec4 skinWeight;
-#endif
-
+export const grassVertexShader = `
 
 #define PHONG
 varying vec3 vViewPosition;
@@ -269,7 +210,36 @@ vec3 rotateVectorByQuaternion(vec3 v, vec4 q){
     return 2.0 * cross(q.xyz, v * q.w + cross(q.xyz, v)) + v;
 }
 
+// This is used for computing an equivalent of gl_FragCoord.z that is as high precision as possible.
+// Some platforms compute gl_FragCoord at a lower precision which makes the manually computed value better for
+// depth-based postprocessing effects. Reproduced on iPad with A10 processor / iPadOS 13.3.1.
+varying vec2 vHighPrecisionZW;
+
 void main() {
+
+	#ifdef USE_INSTANCING
+
+		mat4 decodedInstanceMatrix = mat4(instanceMatrix[3][0], 0.0, 0.0, 0.0,  0.0, instanceMatrix[3][0], 0.0, 0.0,  0.0, 0.0, instanceMatrix[3][0], 0.0,  instanceMatrix[0][0], instanceMatrix[1][0], instanceMatrix[2][0], 1.0);
+
+		vec2 decodedOffset = vec2(instanceMatrix[0][0], instanceMatrix[2][0]);
+		float decodedRotation = instanceMatrix[0][1];
+
+		vec4 rotateY = vec4(0, sin(decodedRotation), 0, cos(decodedRotation));
+
+		vec2 fractionalPos = decodedOffset * 0.03;
+
+		//Wind is sine waves in time. 
+		float noise = 0.35 * sin(fractionalPos.x + time) + 0.35 * sin(fractionalPos.x*0.27 + time*0.737) + 0.6 * sin(fractionalPos.x*0.57 + time*0.937);
+		float halfAngle = noise * 0.1;
+		noise = 0.35 + 0.35 * cos(fractionalPos.y + 0.25 * time) + 0.35 * cos(fractionalPos.y*0.23 + 0.25 * time*0.837) + 0.35 * cos(fractionalPos.y*0.53 + 0.25 * time*0.67);
+		halfAngle -= noise * 0.2;
+		halfAngle *= (position.y + 7.0) / 7.0;
+
+		//Rotate blade and normals according to the wind
+		vec4 directionGrass = normalize(vec4(sin(halfAngle), 0.0, -sin(halfAngle), cos(halfAngle)));
+
+	#endif
+
 #ifdef USE_UV
 	vUv = ( uvTransform * vec3( uv, 1 ) ).xy;
 #endif
@@ -291,47 +261,30 @@ vec3 objectNormal = vec3( normal );
 #ifdef USE_TANGENT
 	vec3 objectTangent = vec3( tangent.xyz );
 #endif
-#ifdef USE_MORPHNORMALS
-	objectNormal *= morphTargetBaseInfluence;
-	objectNormal += morphNormal0 * morphTargetInfluences[ 0 ];
-	objectNormal += morphNormal1 * morphTargetInfluences[ 1 ];
-	objectNormal += morphNormal2 * morphTargetInfluences[ 2 ];
-	objectNormal += morphNormal3 * morphTargetInfluences[ 3 ];
-#endif
-#ifdef USE_SKINNING
-	mat4 boneMatX = getBoneMatrix( skinIndex.x );
-	mat4 boneMatY = getBoneMatrix( skinIndex.y );
-	mat4 boneMatZ = getBoneMatrix( skinIndex.z );
-	mat4 boneMatW = getBoneMatrix( skinIndex.w );
-#endif
-#ifdef USE_SKINNING
-	mat4 skinMatrix = mat4( 0.0 );
-	skinMatrix += skinWeight.x * boneMatX;
-	skinMatrix += skinWeight.y * boneMatY;
-	skinMatrix += skinWeight.z * boneMatZ;
-	skinMatrix += skinWeight.w * boneMatW;
-	skinMatrix = bindMatrixInverse * skinMatrix * bindMatrix;
-	objectNormal = vec4( skinMatrix * vec4( objectNormal, 0.0 ) ).xyz;
-	#ifdef USE_TANGENT
-		objectTangent = vec4( skinMatrix * vec4( objectTangent, 0.0 ) ).xyz;
-	#endif
-#endif
+
 vec3 transformedNormal = objectNormal;
+
 #ifdef USE_INSTANCING
-	mat3 m = mat3( instanceMatrix );
+	mat3 m = mat3( decodedInstanceMatrix );
 	transformedNormal /= vec3( dot( m[ 0 ], m[ 0 ] ), dot( m[ 1 ], m[ 1 ] ), dot( m[ 2 ], m[ 2 ] ) );
 	transformedNormal = m * transformedNormal;
+	transformedNormal = rotateVectorByQuaternion(transformedNormal, rotateY);
+	transformedNormal = rotateVectorByQuaternion(transformedNormal, directionGrass);
 #endif
+
 transformedNormal = normalMatrix * transformedNormal;
+
 #ifdef FLIP_SIDED
 	transformedNormal = - transformedNormal;
 #endif
+
 #ifdef USE_TANGENT
 	vec3 transformedTangent = ( modelViewMatrix * vec4( objectTangent, 0.0 ) ).xyz;
 	#ifdef FLIP_SIDED
 		transformedTangent = - transformedTangent;
 	#endif
 #endif
+
 #ifndef FLAT_SHADED
 	vNormal = normalize( transformedNormal );
 	#ifdef USE_TANGENT
@@ -339,38 +292,25 @@ transformedNormal = normalMatrix * transformedNormal;
 		vBitangent = normalize( cross( vNormal, vTangent ) * tangent.w );
 	#endif
 #endif
+
 vec3 transformed = vec3( position );
-#ifdef USE_MORPHTARGETS
-	transformed *= morphTargetBaseInfluence;
-	transformed += morphTarget0 * morphTargetInfluences[ 0 ];
-	transformed += morphTarget1 * morphTargetInfluences[ 1 ];
-	transformed += morphTarget2 * morphTargetInfluences[ 2 ];
-	transformed += morphTarget3 * morphTargetInfluences[ 3 ];
-	#ifndef USE_MORPHNORMALS
-		transformed += morphTarget4 * morphTargetInfluences[ 4 ];
-		transformed += morphTarget5 * morphTargetInfluences[ 5 ];
-		transformed += morphTarget6 * morphTargetInfluences[ 6 ];
-		transformed += morphTarget7 * morphTargetInfluences[ 7 ];
-	#endif
-#endif
-#ifdef USE_SKINNING
-	vec4 skinVertex = bindMatrix * vec4( transformed, 1.0 );
-	vec4 skinned = vec4( 0.0 );
-	skinned += boneMatX * skinVertex * skinWeight.x;
-	skinned += boneMatY * skinVertex * skinWeight.y;
-	skinned += boneMatZ * skinVertex * skinWeight.z;
-	skinned += boneMatW * skinVertex * skinWeight.w;
-	transformed = ( bindMatrixInverse * skinned ).xyz;
-#endif
-#ifdef USE_DISPLACEMENTMAP
-	transformed += normalize( objectNormal ) * ( texture2D( displacementMap, vUv ).x * displacementScale + displacementBias );
-#endif
+
 vec4 mvPosition = vec4( transformed, 1.0 );
+
 #ifdef USE_INSTANCING
-	mvPosition = instanceMatrix * mvPosition;
+
+	vec3 pos = mvPosition.xyz;
+	pos = rotateVectorByQuaternion(pos, rotateY);
+	pos = rotateVectorByQuaternion(pos, directionGrass);
+	mvPosition = vec4(vec3(pos.x, pos.y, pos.z), mvPosition.w);
+
+	mvPosition = decodedInstanceMatrix * mvPosition;
+
 #endif
+
 mvPosition = modelViewMatrix * mvPosition;
 gl_Position = projectionMatrix * mvPosition;
+
 #ifdef USE_LOGDEPTHBUF
 	#ifdef USE_LOGDEPTHBUF_EXT
 		vFragDepth = 1.0 + gl_Position.w;
@@ -382,6 +322,9 @@ gl_Position = projectionMatrix * mvPosition;
 		}
 	#endif
 #endif
+
+vHighPrecisionZW = gl_Position.zw;
+
 #if 0 > 0
 	vClipPosition = - mvPosition.xyz;
 #endif
@@ -389,10 +332,14 @@ gl_Position = projectionMatrix * mvPosition;
 #if defined( USE_ENVMAP ) || defined( DISTANCE ) || defined ( USE_SHADOWMAP ) || defined ( USE_TRANSMISSION )
 	vec4 worldPosition = vec4( transformed, 1.0 );
 	#ifdef USE_INSTANCING
-		worldPosition = instanceMatrix * worldPosition;
+		transformed = rotateVectorByQuaternion(transformed, rotateY);
+		transformed = rotateVectorByQuaternion(transformed, directionGrass);
+		worldPosition = vec4( transformed, 1.0 );
+		worldPosition = decodedInstanceMatrix * worldPosition;
 	#endif
 	worldPosition = modelMatrix * worldPosition;
 #endif
+
 #ifdef USE_ENVMAP
 	#ifdef ENV_WORLDPOS
 		vWorldPosition = worldPosition.xyz;
@@ -411,6 +358,7 @@ gl_Position = projectionMatrix * mvPosition;
 		#endif
 	#endif
 #endif
+
 #ifdef USE_SHADOWMAP
 	#if 1 > 0 || 0 > 0 || 0 > 0
 		vec3 shadowWorldNormal = inverseTransformDirection( transformedNormal, viewMatrix );
@@ -429,24 +377,10 @@ gl_Position = projectionMatrix * mvPosition;
 	
 	#endif
 #endif
+
 #ifdef USE_FOG
 	vFogDepth = - mvPosition.z;
 #endif
 
-    vec3 pos = gl_Position.xyz;
-
-    vec2 fractionalPos = pos.xz * 0.1;
-
-    //Wind is sine waves in time. 
-    float noise = sin(fractionalPos.x + time);
-    float halfAngle = noise * 0.1;
-    noise = 0.5 + 0.5 * cos(fractionalPos.y + 0.25 * time);
-    halfAngle -= noise * 0.2;
-  
-    vec4 direction = normalize(vec4(sin(halfAngle), 0.0, -sin(halfAngle), cos(halfAngle)));
-  
-    //Rotate blade and normals according to the wind
-    //pos = rotateVectorByQuaternion(pos, direction);
-
-    gl_Position = vec4(vec3(pos.x, pos.y, pos.z), gl_Position.w);
-}
+    
+}`;
