@@ -408,7 +408,9 @@ function createNewTrench(Farm) {
                 curBlock.buildings.push(building);
                 curBlock.updateGrassBlades();
 
-                Farm.buildings[Farm.buildingIdx] = building;
+                if (Farm.BUILDINGS[buildingType].requireUpdates) {
+                    Farm.buildings[Farm.buildingIdx] = building;
+                }
                 Farm.buildingIdx++;
             }
         }
@@ -511,6 +513,8 @@ function createNewPlant(Farm) {
 }
 
 function createAreaOfNewBuildings(Farm) {
+    let buildingType = Farm.buildPaletteSelect;
+    let BUILDING = Farm.BUILDINGS[buildingType];
     let startX = Farm.buildAreaPoint1.x;
     let startZ = Farm.buildAreaPoint1.z;
     let endX = Farm.buildAreaPoint2.x;
@@ -519,12 +523,43 @@ function createAreaOfNewBuildings(Farm) {
         for (let z = startZ; z <= endZ; z++) {
             Farm.buildAreaPoint1.x = Farm.buildAreaPoint2.x = x;
             Farm.buildAreaPoint1.z = Farm.buildAreaPoint2.z = z;
-            createSingleNewBuilding(Farm);
+            createSingleNewBuilding(Farm, true);
+        }
+    }
+
+    if (BUILDING.instanced) {
+        let buildingBuffer = [];
+
+        for (const curBlockIdx in Farm.blocks) {
+            for (let curBuilding of Farm.blocks[curBlockIdx].buildings) {
+                if (curBuilding.type == buildingType) {
+                    curBuilding.meshIdx = buildingBuffer.length;
+                    buildingBuffer.push({ block: Farm.blocks[curBlockIdx], building: curBuilding });
+                    break;
+                }
+            }
+        }
+
+        for (let m = 0; m < BUILDING.meshes.length; m++) {
+            let curMesh = BUILDING.meshes[m];
+
+            Farm.scene.remove(curMesh);
+            curMesh.dispose();
+            curMesh = new THREE.InstancedMesh(BUILDING.geometries[m], BUILDING.materials[m], buildingBuffer.length);
+            curMesh.receiveShadow = true;
+            curMesh.castShadow = true;
+            Farm.scene.add(curMesh);
+
+            BUILDING.meshes[m] = curMesh;
+        }
+
+        for (let i = 0; i < buildingBuffer.length; i++) {
+            buildingBuffer[i].building.updateInstancedMesh();
         }
     }
 }
 
-function createSingleNewBuilding(Farm) {
+function createSingleNewBuilding(Farm, isArea = false) {
 
     let newBuilding = true;
     let buildingType = Farm.buildPaletteSelect;
@@ -606,8 +641,41 @@ function createSingleNewBuilding(Farm) {
             building.foundationBlocks.push(block);
         }
 
-        Farm.buildings[Farm.buildingIdx] = building;
+        if (BUILDING.requireUpdates) {
+            Farm.buildings[Farm.buildingIdx] = building;
+        }
         Farm.buildingIdx++;
+
+        if (BUILDING.instanced && !isArea) {
+            let buildingBuffer = [];
+
+            for (const curBlockIdx in Farm.blocks) {
+                for (let curBuilding of Farm.blocks[curBlockIdx].buildings) {
+                    if (curBuilding.type == buildingType) {
+                        curBuilding.meshIdx = buildingBuffer.length;
+                        buildingBuffer.push({ block: Farm.blocks[curBlockIdx], building: curBuilding });
+                        break;
+                    }
+                }
+            }
+
+            for (let m = 0; m < BUILDING.meshes.length; m++) {
+                let curMesh = BUILDING.meshes[m];
+
+                Farm.scene.remove(curMesh);
+                curMesh.dispose();
+                curMesh = new THREE.InstancedMesh(BUILDING.geometries[m], BUILDING.materials[m], buildingBuffer.length);
+                curMesh.receiveShadow = true;
+                curMesh.castShadow = true;
+                Farm.scene.add(curMesh);
+
+                BUILDING.meshes[m] = curMesh;
+            }
+
+            for (let i = 0; i < buildingBuffer.length; i++) {
+                buildingBuffer[i].building.updateInstancedMesh();
+            }
+        }
     }
 }
 

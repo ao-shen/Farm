@@ -392,6 +392,7 @@ export let Farm = {
         name: "Stone Path",
         category: "buildings",
         build_mode: "area",
+        instanced: true,
         onWater: true,
         price: 2,
         size: {

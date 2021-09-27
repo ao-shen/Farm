@@ -51,6 +51,8 @@ export class Building {
         this.infoBox = new InfoBox(this.Farm, this);
         this.infoBox.addText(this.name);
         this.infoBox.addInventory(this.inventory);
+
+        this.render();
     }
 
     updateMeshVariation(variation, side = -1) {
