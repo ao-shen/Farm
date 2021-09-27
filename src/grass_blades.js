@@ -22,6 +22,7 @@ export function initGrassBlades(Farm) {
     //grassTexture.encoding = THREE.sRGBEncoding;
     var alphaMap = textureLoader.load('assets/textures/grass_blades_alpha.png');
     alphaMap.encoding = THREE.sRGBEncoding;
+    var perlinMap = textureLoader.load('assets/textures/perlin_noise.png');
 
     let uniforms = THREE.UniformsUtils.merge([
         THREE.ShaderLib.phong.uniforms,
@@ -74,6 +75,8 @@ export function initGrassBlades(Farm) {
 
     uniforms.map.value = grassTexture;
     phongMaterial.map = grassTexture;
+    uniforms.displacementMap.value = perlinMap;
+    phongMaterial.displacementMap = perlinMap;
     //uniforms.alphaMap.value = alphaMap;
     //phongMaterial.alphaMap = alphaMap;
     //uniforms.lightPos = { value: Farm.shadowLight.position }

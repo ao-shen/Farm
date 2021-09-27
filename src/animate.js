@@ -84,8 +84,7 @@ export function animate(Farm, elapsed) {
 
     // Update grass blades
 
-    Farm.grassBladeMaterial.uniforms.time.value = (Math.sin(now * 0.1) + 2 * now * 0.1) * 0.03;
-
+    Farm.grassBladeMaterial.uniforms.time.value = now * 0.00005;
 
     render(Farm);
 

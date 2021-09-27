@@ -408,7 +408,7 @@ function createNewTrench(Farm) {
                 curBlock.buildings.push(building);
                 curBlock.updateGrassBlades();
 
-                if (Farm.BUILDINGS[buildingType].requireUpdates) {
+                if (Farm.BUILDINGS[buildingType].requireUpdates || Farm.BUILDINGS[buildingType].infoable) {
                     Farm.buildings[Farm.buildingIdx] = building;
                 }
                 Farm.buildingIdx++;
@@ -641,7 +641,7 @@ function createSingleNewBuilding(Farm, isArea = false) {
             building.foundationBlocks.push(block);
         }
 
-        if (BUILDING.requireUpdates) {
+        if (BUILDING.requireUpdates || BUILDING.infoable) {
             Farm.buildings[Farm.buildingIdx] = building;
         }
         Farm.buildingIdx++;

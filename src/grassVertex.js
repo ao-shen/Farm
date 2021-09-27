@@ -221,20 +221,21 @@ void main() {
 
 	#ifdef USE_INSTANCING
 
-		mat4 decodedInstanceMatrix = mat4(instanceMatrix[3][0]*instanceMatrix[1][1], 0.0, 0.0, 0.0,  0.0, instanceMatrix[3][0]*instanceMatrix[1][1], 0.0, 0.0,  0.0, 0.0, instanceMatrix[3][0]*instanceMatrix[1][1], 0.0,  instanceMatrix[0][0], instanceMatrix[1][0], instanceMatrix[2][0], 1.0);
-
 		vec2 decodedOffset = vec2(instanceMatrix[0][0], instanceMatrix[2][0]);
 		float decodedRotation = instanceMatrix[0][1];
 
+		float grassScale = instanceMatrix[3][0] * instanceMatrix[1][1];
+
+		mat4 decodedInstanceMatrix = mat4(grassScale, 0.0, 0.0, 0.0, 0.0, grassScale, 0.0, 0.0, 0.0, 0.0, grassScale, 0.0, instanceMatrix[0][0], instanceMatrix[1][0], instanceMatrix[2][0], 1.0);
+
 		vec4 rotateY = vec4(0, sin(decodedRotation), 0, cos(decodedRotation));
 
-		vec2 fractionalPos = decodedOffset * 0.03;
+		vec2 fractionalPos = mod(decodedOffset * 0.0005 + vec2(time, time), 1.0);
+		
+		vec4 perlin = texture2D( displacementMap, fractionalPos );
 
 		//Wind is sine waves in time. 
-		float noise = 0.35 * sin(fractionalPos.x + time) + 0.35 * sin(fractionalPos.x*0.27 + time*0.737) + 0.6 * sin(fractionalPos.x*0.57 + time*0.937);
-		float halfAngle = noise * 0.1;
-		noise = 0.35 + 0.35 * cos(fractionalPos.y + 0.25 * time) + 0.35 * cos(fractionalPos.y*0.23 + 0.25 * time*0.837) + 0.35 * cos(fractionalPos.y*0.53 + 0.25 * time*0.67);
-		halfAngle -= noise * 0.2;
+		float halfAngle = 0.3 - 0.9 * perlin.x; // sin(fractionalPos.x + time) + cos(fractionalPos.y + 0.25 * time);
 		halfAngle *= (position.y + 7.0) / 7.0;
 
 		//Rotate blade and normals according to the wind

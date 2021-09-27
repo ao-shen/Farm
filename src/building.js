@@ -48,9 +48,12 @@ export class Building {
 
         this.childEntities = [];
 
-        this.infoBox = new InfoBox(this.Farm, this);
-        this.infoBox.addText(this.name);
-        this.infoBox.addInventory(this.inventory);
+        console.log(this.infoable);
+        if (this.infoable) {
+            this.infoBox = new InfoBox(this.Farm, this);
+            this.infoBox.addText(this.name);
+            this.infoBox.addInventory(this.inventory);
+        }
 
         this.render();
     }
@@ -70,7 +73,6 @@ export class Building {
             } else {
                 this.Farm.groupNonInfoable.remove(this.mesh);
             }
-            this.Farm.groupInfoable.remove(this.mesh);
             this.mesh = this.Farm.BUILDINGS[this.type].meshes[variation].clone();
             this.mesh.owner = this;
             this.mesh.name = this.name;
@@ -134,7 +136,9 @@ export class Building {
     render() {
         if (!this.instanced && this.mesh) {
             this.mesh.position.set(this.center.x, 0, this.center.z);
-            this.infoBox.render();
+            if (this.infoable) {
+                this.infoBox.render();
+            }
         }
     }
 
@@ -143,7 +147,9 @@ export class Building {
             child.remove();
         }
 
-        this.infoBox.remove();
+        if (this.infoable) {
+            this.infoBox.remove();
+        }
 
         if (this.instanced) {
 
