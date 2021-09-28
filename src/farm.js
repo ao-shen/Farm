@@ -113,6 +113,10 @@ export let Farm = {
     geometrySoil: null,
     materialSoil: null,
 
+    // Restaurant
+    restaurantMesh: null,
+    restaurantInvMesh: null,
+
     // Ground
     blocks: {},
 

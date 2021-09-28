@@ -665,7 +665,7 @@ function initWorld(Farm) {
     });
     mesh = new THREE.InstancedMesh(geometry, material, numSides);
     mesh.receiveShadow = true;
-    for (let i = 0; i < numSides; i++) {
+    for (let i = 1; i < numSides; i++) {
         matrix.makeTranslation(
             ((i + 0.5) * blocksPerSize - 0.5) * Farm.blockSize,
             0,
@@ -696,9 +696,79 @@ function initWorld(Farm) {
     }
     Farm.scene.add(mesh);
 
+    // Parking Lot
+    geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
+    geometry.rotateX(Math.PI / 2);
+    geometry.rotateY(-Math.PI / 2);
+    texture = textureLoader.load('assets/textures/road_parking_lot.png');
+    texture.encoding = THREE.sRGBEncoding;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.NearestFilter;
+    material = new THREE.MeshStandardMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+    });
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.receiveShadow = true;
+    mesh.position.set(((0 + 0.5) * blocksPerSize - 0.5) * Farm.blockSize, 0, ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize);
+    Farm.scene.add(mesh);
+
+    // Bridge
+    geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
+    geometry.rotateX(Math.PI / 2);
+    geometry.rotateY(-Math.PI / 2);
+    texture = textureLoader.load('assets/textures/road_bridge.png');
+    texture.encoding = THREE.sRGBEncoding;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.NearestFilter;
+    material = new THREE.MeshStandardMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+    });
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.receiveShadow = true;
+    mesh.position.set(((-1 + 0.5) * blocksPerSize - 0.5) * Farm.blockSize, 0, ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize);
+    Farm.scene.add(mesh);
+
+    // Restaurant
+    initRestaurant(Farm);
+
     // Waiting Lists
 
     Farm.plantsAwaitingHarvest.init(Farm);
+}
+
+function initRestaurant(Farm) {
+
+    let modelLoader = new GLTFLoader();
+
+    const defaultBuildingTransform = new THREE.Matrix4()
+        .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
+
+    modelLoader.load("assets/models/vegetable_stand0.glb", function(gltf) {
+        let mesh = gltf.scene.children[0];
+
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
+
+        mesh.geometry.computeVertexNormals();
+        mesh.geometry.applyMatrix4(defaultBuildingTransform);
+
+        Farm.restaurantMesh = mesh.clone();
+        Farm.scene.add(Farm.restaurantMesh);
+    });
+    modelLoader.load("assets/models/vegetable_stand_inv0.glb", function(gltf) {
+        let mesh = gltf.scene.children[0];
+
+        mesh.receiveShadow = true;
+        mesh.castShadow = true;
+
+        mesh.geometry.computeVertexNormals();
+        mesh.geometry.applyMatrix4(defaultBuildingTransform);
+
+        Farm.restaurantInvMesh = mesh.clone();
+        Farm.scene.add(Farm.restaurantInvMesh);
+    });
 }
 
 function initOverlays(Farm) {

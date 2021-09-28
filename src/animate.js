@@ -105,6 +105,14 @@ function render(Farm) {
         Farm.entities[entity].render();
     }
 
+    // Restaurant
+    if (Farm.restaurantMesh) {
+        Farm.restaurantMesh.position.set(75, 0, -20);
+    }
+    if (Farm.restaurantInvMesh) {
+        Farm.restaurantInvMesh.position.set(75, 0, -20);
+    }
+
     Farm.renderer.clear();
     Farm.composer.render();
     //Farm.renderer.render(Farm.scene, Farm.camera);
