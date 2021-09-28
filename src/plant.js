@@ -12,8 +12,6 @@ export class Plant {
 
         this.meshIdx = 0;
 
-        this.actionCategory = "harvest";
-
         /*this.Farm.scheduler.addToSchedule(this.Farm.BUILDINGS[this.type].matureTime, , this);*/
         let thisPlant = this;
         this.growthTimeout = setTimeout(function() {

@@ -7,10 +7,11 @@ const TEXT = 0;
 const INVENTORY = 1;
 
 export class InfoBox {
-    constructor(Farm, owner) {
+    constructor(Farm, owner, ownerMeshProperty = "mesh") {
 
         this.Farm = Farm;
         this.owner = owner;
+        this.ownerMeshProperty = ownerMeshProperty;
 
         this.name = "InfoBox_" + owner.name;
 
@@ -117,7 +118,7 @@ export class InfoBox {
 
             this.meshBackground.position.set(this.pos.x, this.pos.y, -50);
 
-            let pos = this.Farm.posToScreenPos(this.Farm.getCenterPoint(this.owner.mesh), this.Farm.camera);
+            let pos = this.Farm.posToScreenPos(this.Farm.getCenterPoint(this.owner[this.ownerMeshProperty]), this.Farm.camera);
 
             let lineVertices = [pos.x, pos.y, -51];
 

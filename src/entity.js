@@ -18,6 +18,7 @@ export class Entity {
         this.path = null;
         this.pathMesh = null;
         this.goal = null;
+        this.targetActionCategory = "";
 
         this.parentBuilding = null;
 
@@ -53,8 +54,12 @@ export class Entity {
     logic() {
         if (this.inventory.isFull()) {
             if (this.isAtHome()) {
-                this.inventory.transferAllTo(this.parentBuilding.inventory);
-                return true;
+                if (this.Farm.restaurantObj.inventory.isFull()) {
+                    this.inventory.transferAllTo(this.parentBuilding.inventory);
+                    return true;
+                } else {
+                    return this.navigateToTarget("Restaurant");
+                }
             } else {
                 return this.navigateHome();
             }
@@ -86,19 +91,31 @@ export class Entity {
 
     }
 
-    navigateToTarget() {
+    navigateToTarget(target = "MaturePlant") {
 
         this.goal = null;
+        this.targetActionCategory = "";
 
         switch (this.Farm.ENTITIES[this.type].name) {
             case "Worker":
-                let goalPlant = this.findMaturePlant();
-                if (goalPlant != null) {
-                    goalPlant = goalPlant.element.obj;
-                    this.goal = goalPlant;
-                    this.path = this.pathFind(goalPlant.block);
+                if (target == "MaturePlant") {
+                    let goalPlant = this.findMaturePlant();
+                    if (goalPlant != null) {
+                        goalPlant = goalPlant.element.obj;
+                        this.goal = goalPlant;
+                        this.targetActionCategory = "harvest";
+                        this.path = this.pathFind(goalPlant.block);
+                        if (this.path != null) {
+                            goalPlant.harvestClaim(this);
+                            this.renderPath();
+                            return false;
+                        }
+                    }
+                } else if (target == "Restaurant") {
+                    this.goal = this.Farm.restaurantObj;
+                    this.targetActionCategory = "dropOff";
+                    this.path = this.pathFind(this.Farm.restaurantObj.dropOffPoint);
                     if (this.path != null) {
-                        goalPlant.harvestClaim(this);
                         this.renderPath();
                         return false;
                     }
@@ -142,12 +159,16 @@ export class Entity {
 
     performActionAtTarget() {
 
-        if (this.goal.actionCategory == "harvest") {
+        if (this.targetActionCategory == "harvest") {
             if (!this.goal.isRemoved) {
                 if (!this.inventory.isFull()) {
                     this.goal.harvest();
                     this.inventory.add(this.goal.type, 1);
                 }
+            }
+        } else if (this.targetActionCategory == "dropOff") {
+            if (!this.goal.isRemoved) {
+                this.inventory.transferAllTo(this.goal.inventory);
             }
         }
 
