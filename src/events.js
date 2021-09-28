@@ -288,7 +288,7 @@ export function onKeyDown(Farm, event) {
             Farm.shadowLight.shadow.normalBias += 0.0001;
             break;
         case 't':
-            console.log(Farm.hoveringBlock.wetness);
+            console.info(Farm.hoveringBlock.wetness);
             break;
     }
 

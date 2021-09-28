@@ -743,7 +743,7 @@ function initRestaurant(Farm) {
     let modelLoader = new GLTFLoader();
 
     const defaultBuildingTransform = new THREE.Matrix4()
-        .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
+        .multiply(new THREE.Matrix4().makeScale(3.5, 3.5, 3.5));
 
     modelLoader.load("assets/models/vegetable_stand0.glb", function(gltf) {
         let mesh = gltf.scene.children[0];

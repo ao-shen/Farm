@@ -450,5 +450,15 @@ export let Farm = {
         name: "Worker",
         inventorySlots: 1,
         models: ['assets/models/worker.glb'],
+    }, {
+        name: "Car",
+        inventorySlots: 1,
+        models: [
+            'assets/models/car0.glb',
+            'assets/models/car1.glb',
+            'assets/models/car2.glb',
+            'assets/models/car3.glb',
+            'assets/models/car4.glb',
+        ],
     }, ],
 };

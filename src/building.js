@@ -48,7 +48,6 @@ export class Building {
 
         this.childEntities = [];
 
-        console.log(this.infoable);
         if (this.infoable) {
             this.infoBox = new InfoBox(this.Farm, this);
             this.infoBox.addText(this.name);
