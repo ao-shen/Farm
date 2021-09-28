@@ -86,6 +86,11 @@ export function animate(Farm, elapsed) {
 
     Farm.grassBladeMaterial.uniforms.time.value = now * 0.00005;
 
+    // Restaurant
+    if (Farm.restaurantObj) {
+        Farm.restaurantObj.update();
+    }
+
     render(Farm);
 
     Farm.stats.end();
@@ -106,11 +111,8 @@ function render(Farm) {
     }
 
     // Restaurant
-    if (Farm.restaurantMesh) {
-        Farm.restaurantMesh.position.set(75, 0, -20);
-    }
-    if (Farm.restaurantInvMesh) {
-        Farm.restaurantInvMesh.position.set(75, 0, -20);
+    if (Farm.restaurantObj) {
+        Farm.restaurantObj.render();
     }
 
     Farm.renderer.clear();

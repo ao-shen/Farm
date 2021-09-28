@@ -71,4 +71,8 @@ export class Inventory {
     isFull() {
         return this.slots <= this.slotsFilled;
     }
+
+    getFillLevel() {
+        return this.slotsFilled / this.slots;
+    }
 }

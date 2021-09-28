@@ -114,8 +114,8 @@ export let Farm = {
     materialSoil: null,
 
     // Restaurant
-    restaurantMesh: null,
-    restaurantInvMesh: null,
+    restaurantType: 0,
+    restaurantObj: null,
 
     // Ground
     blocks: {},
@@ -451,8 +451,13 @@ export let Farm = {
         inventorySlots: 1,
         models: ['assets/models/worker.glb'],
     }, {
+        name: "Customer",
+        inventorySlots: 1,
+        models: ['assets/models/worker.glb'],
+    }, {
         name: "Car",
         inventorySlots: 1,
+        entitySlots: 5,
         models: [
             'assets/models/car0.glb',
             'assets/models/car1.glb',

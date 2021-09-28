@@ -19,6 +19,15 @@ import { BLOCK, Block } from './block.js';
 import { NineSlicePlane } from './nine_slice.js';
 import { onUpdateWater } from './water_update.js';
 import { initGrassBlades } from './grass_blades.js';
+import * as Restaurant from './restaurant';
+
+let GLTFModelLoader = new GLTFLoader();
+
+function asyncModelLoader(url) {
+    return new Promise((resolve, reject) => {
+        GLTFModelLoader.load(url, data => resolve(data), null, reject);
+    });
+}
 
 export function init(Farm) {
 
@@ -544,7 +553,7 @@ function loadEntitiesAssets(Farm) {
     }
 }
 
-function initWorld(Farm) {
+async function initWorld(Farm) {
 
     const textureLoader = new THREE.TextureLoader();
 
@@ -731,21 +740,20 @@ function initWorld(Farm) {
     Farm.scene.add(mesh);
 
     // Restaurant
-    initRestaurant(Farm);
+    await initRestaurant(Farm);
 
     // Waiting Lists
 
     Farm.plantsAwaitingHarvest.init(Farm);
 }
 
-function initRestaurant(Farm) {
-
-    let modelLoader = new GLTFLoader();
+async function initRestaurant(Farm) {
 
     const defaultBuildingTransform = new THREE.Matrix4()
         .multiply(new THREE.Matrix4().makeScale(3.5, 3.5, 3.5));
 
-    modelLoader.load("assets/models/vegetable_stand0.glb", function(gltf) {
+    async function loadRestaurantMesh(url) {
+        let gltf = await asyncModelLoader(url);
         let mesh = gltf.scene.children[0];
 
         mesh.receiveShadow = true;
@@ -754,21 +762,17 @@ function initRestaurant(Farm) {
         mesh.geometry.computeVertexNormals();
         mesh.geometry.applyMatrix4(defaultBuildingTransform);
 
-        Farm.restaurantMesh = mesh.clone();
-        Farm.scene.add(Farm.restaurantMesh);
-    });
-    modelLoader.load("assets/models/vegetable_stand_inv0.glb", function(gltf) {
-        let mesh = gltf.scene.children[0];
+        return mesh.clone();
+    }
 
-        mesh.receiveShadow = true;
-        mesh.castShadow = true;
+    switch (Farm.restaurantType) {
+        case 0:
+            let restaurantStandMesh = await loadRestaurantMesh("assets/models/vegetable_stand0.glb");
+            let restaurantStandInvMesh = await loadRestaurantMesh("assets/models/vegetable_stand_inv0.glb");
+            Farm.restaurantObj = new Restaurant.Stand(Farm, restaurantStandMesh, restaurantStandInvMesh);
+            break;
+    }
 
-        mesh.geometry.computeVertexNormals();
-        mesh.geometry.applyMatrix4(defaultBuildingTransform);
-
-        Farm.restaurantInvMesh = mesh.clone();
-        Farm.scene.add(Farm.restaurantInvMesh);
-    });
 }
 
 function initOverlays(Farm) {
