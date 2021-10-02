@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import { Farm } from './farm.js';
 import { init } from './init.js';
 import { animate, onAnimationFrame } from './animate.js';

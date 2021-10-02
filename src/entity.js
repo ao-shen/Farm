@@ -8,22 +8,29 @@ import { InfoBox } from './info_box';
 import { Inventory } from './inventory';
 
 export class Entity {
-    constructor(Farm, idx, x, z, type) {
+    constructor(Farm, idx, x, z, type, variation = 0) {
         this.Farm = Farm;
         this.idx = idx;
         this.pos = new THREE.Vector3(x, 0, z);
         this.type = type;
         this.name = "Entity_" + this.idx;;
+        this.meshRotationOffset = 0;
 
         this.path = null;
         this.pathMesh = null;
         this.goal = null;
         this.targetActionCategory = "";
+        this.movementSpeed = this.Farm.ENTITIES[this.type].movementSpeed;
+
+        if (this.Farm.ENTITIES[this.type].meshRotationOffset) {
+            this.meshRotationOffset = this.Farm.ENTITIES[this.type].meshRotationOffset;
+        }
 
         this.parentBuilding = null;
+        this.parentEntitiy = null;
 
-        this.mesh = this.Farm.ENTITIES[this.type].meshes[0].clone();
-        this.mesh.center = this.Farm.ENTITIES[this.type].meshes[0].center;
+        this.mesh = this.Farm.ENTITIES[this.type].meshes[variation].clone();
+        this.mesh.center = this.Farm.ENTITIES[this.type].meshes[variation].center;
         this.mesh.owner = this;
         this.mesh.name = this.name;
         this.Farm.groupInfoable.add(this.mesh);
@@ -205,6 +212,10 @@ export class Entity {
                 allowedDeviationFromPathSquared = 1;
             }
 
+            if (this.path[0].allowedDeviation) {
+                allowedDeviationFromPathSquared = this.path[0].allowedDeviation;
+            }
+
             if (Math.pow(this.path[0].x * Farm.blockSize - this.pos.x, 2) + Math.pow(this.path[0].z * Farm.blockSize - this.pos.z, 2) < allowedDeviationFromPathSquared) {
                 this.path.shift();
                 if (this.path.length == 0) {
@@ -223,12 +234,23 @@ export class Entity {
             }
 
             let velocity = new Vector3((this.path[0].x) * this.Farm.blockSize - this.pos.x, 0, (this.path[0].z) * this.Farm.blockSize - this.pos.z);
+            let dist = velocity.length();
             velocity.normalize();
-            velocity.multiplyScalar(1);
+
+            let curMovementSpeed = this.movementSpeed;
+            if (this.path[0].speedLimit) {
+                curMovementSpeed = this.path[0].speedLimit;
+            }
+            if (dist < curMovementSpeed) {
+                velocity.multiplyScalar(dist);
+            } else {
+                velocity.multiplyScalar(curMovementSpeed);
+            }
 
             this.pos.x += velocity.x;
             this.pos.z += velocity.z;
             this.mesh.lookAt(this.pos);
+            this.mesh.rotateY(this.meshRotationOffset);
         }
     }
 

@@ -20,6 +20,7 @@ import { NineSlicePlane } from './nine_slice.js';
 import { onUpdateWater } from './water_update.js';
 import { initGrassBlades } from './grass_blades.js';
 import * as Restaurant from './restaurant';
+import { spawnCustomers } from './customer.js';
 
 let GLTFModelLoader = new GLTFLoader();
 
@@ -66,6 +67,9 @@ export function init(Farm) {
 
     // Start Water Updates
     setInterval(function() { onUpdateWater(Farm); }, 50);
+
+    // Start Spawning Customers
+    setTimeout(function() { spawnCustomers(Farm); }, 1000);
 
     return Farm;
 }
@@ -773,6 +777,18 @@ async function initRestaurant(Farm) {
             break;
     }
 
+    for (let i = 0; i < 5; i++) {
+        Farm.parkingLot.push({
+            x: 10.1,
+            z: (-104 - i * 50) / 512 * 16 - 0.5,
+            vehicle: null,
+        });
+        Farm.parkingLot.push({
+            x: 4.9,
+            z: (-104 - i * 50) / 512 * 16 - 0.5,
+            vehicle: null,
+        });
+    }
 }
 
 function initOverlays(Farm) {

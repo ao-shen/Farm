@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { cloneDeep } from 'lodash';
 
 export class Inventory {
 
@@ -65,7 +65,7 @@ export class Inventory {
     }
 
     transferAllTo(other) {
-        return this.transferTo(other, _.cloneDeep(this.inventory));
+        return this.transferTo(other, cloneDeep(this.inventory));
     }
 
     isFull() {

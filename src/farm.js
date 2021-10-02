@@ -1,5 +1,3 @@
-import { zip } from "lodash";
-
 import * as THREE from 'three';
 import { Vector3, Vector2 } from "three";
 
@@ -116,6 +114,9 @@ export let Farm = {
     // Restaurant
     restaurantType: 0,
     restaurantObj: null,
+
+    // Parking lot
+    parkingLot: [],
 
     // Ground
     blocks: {},
@@ -449,15 +450,19 @@ export let Farm = {
     ENTITIES: [{
         name: "Worker",
         inventorySlots: 1,
+        movementSpeed: 1,
         models: ['assets/models/worker.glb'],
     }, {
         name: "Customer",
         inventorySlots: 1,
+        movementSpeed: 1,
         models: ['assets/models/worker.glb'],
     }, {
         name: "Car",
         inventorySlots: 1,
-        entitySlots: 5,
+        movementSpeed: 3,
+        entitySlots: 2,
+        meshRotationOffset: Math.PI,
         models: [
             'assets/models/car0.glb',
             'assets/models/car1.glb',
