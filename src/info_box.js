@@ -180,6 +180,11 @@ export class InfoBox {
             this.hide();
         }
 
+        for (let info of this.infos) {
+            this.meshBackground.remove(info.mesh);
+            info.mesh.dispose();
+        }
+
         this.meshBackground.geometry.dispose();
 
         this.isRemoved = true;

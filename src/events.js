@@ -110,7 +110,7 @@ export function onMouseDown(Farm, event) {
                         Farm.lens = Farm.LENS.BUILD;
                         Farm.textBuildButton.text = 'CANCEL';
                         Farm.textBuildButton.fontSize = 35;
-                        Farm.textBuildButton.outlineColor = 0x0099FF;
+                        //Farm.textBuildButton.outlineColor = 0x0099FF;
                         Farm.spriteBuildButton.material.map = Farm.texStopBuildButton;
                         Farm.groupBuildPalette.visible = true;
                         Farm.spriteBuildPaletteSelect.position.set(-window.innerWidth * 0.5 + 20 + (Farm.buildPaletteSelect + 0.5) * (Farm.thumbnailSize + 20), Farm.thumbnailY, 2);
@@ -135,7 +135,7 @@ export function onMouseDown(Farm, event) {
                         Farm.overlay = Farm.OVERLAY.DEFAULT;
                         Farm.textBuildButton.text = 'BUILD';
                         Farm.textBuildButton.fontSize = 45;
-                        Farm.textBuildButton.outlineColor = 0xFF9900;
+                        //Farm.textBuildButton.outlineColor = 0xFF9900;
                         Farm.spriteBuildButton.material.map = Farm.texBuildButton;
                         Farm.groupBuildPalette.visible = false;
                         Farm.buildPaletteSelect = 0;

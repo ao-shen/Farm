@@ -69,7 +69,7 @@ export function init(Farm) {
     setInterval(function() { onUpdateWater(Farm); }, 50);
 
     // Start Spawning Customers
-    setTimeout(function() { spawnCustomers(Farm); }, 1000);
+    setTimeout(function() { spawnCustomers(Farm); }, 2000);
 
     return Farm;
 }
@@ -282,9 +282,9 @@ function initHudScene(Farm) {
     Farm.textBuildButton.text = 'BUILD';
     Farm.textBuildButton.font = 'assets/fonts/carrot.otf';
     Farm.textBuildButton.fontSize = 45;
-    Farm.textBuildButton.outlineWidth = 5;
-    Farm.textBuildButton.outlineColor = 0xFF9900;
-    Farm.textBuildButton.color = 0xFFFFFF;
+    //Farm.textBuildButton.outlineWidth = 5;
+    //Farm.textBuildButton.outlineColor = 0xFF9900;
+    Farm.textBuildButton.color = 0x12101f;
     Farm.textBuildButton.anchorX = 'center';
     Farm.textBuildButton.anchorY = 'middle';
     Farm.textBuildButton.textAlign = 'center';
@@ -331,13 +331,13 @@ function initHudScene(Farm) {
         let spriteTabInactive = Farm.buildingPaletteCategories[i].spriteTabInactive = new THREE.Sprite(material);
 
         spriteTab.center.set(0.5, 0.5);
-        spriteTab.scale.set(calculatedBuildPaletteHeight * 0.5, calculatedBuildPaletteHeight / 256 * 90, 1);
-        spriteTab.position.set(-window.innerWidth * 0.5 + (i + 1) * calculatedBuildPaletteHeight * 0.5, -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 1.04, 2);
+        spriteTab.scale.set(calculatedBuildPaletteHeight * 0.5, calculatedBuildPaletteHeight / 256 * 64, 1);
+        spriteTab.position.set(-window.innerWidth * 0.5 + (i + 1) * calculatedBuildPaletteHeight * 0.51, -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 1.1, 2);
         spriteTab.name = "BuildPaletteTabCur";
         Farm.buildingPaletteCategories[i].group.add(spriteTab);
         spriteTabInactive.center.set(0.5, 0.5);
-        spriteTabInactive.scale.set(calculatedBuildPaletteHeight * 0.5, calculatedBuildPaletteHeight / 256 * 90, 1);
-        spriteTabInactive.position.set(-window.innerWidth * 0.5 + (i + 1) * calculatedBuildPaletteHeight * 0.5, -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 1.04, -2);
+        spriteTabInactive.scale.set(calculatedBuildPaletteHeight * 0.5, calculatedBuildPaletteHeight / 256 * 64, 1);
+        spriteTabInactive.position.set(-window.innerWidth * 0.5 + (i + 1) * calculatedBuildPaletteHeight * 0.51, -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 1.1, -2);
         spriteTabInactive.name = "BuildPaletteTab_" + i;
     }
     Farm.buildingPaletteCategories[0].group.visible = true;
