@@ -293,6 +293,10 @@ function initHudScene(Farm) {
     Farm.hudScene.add(Farm.textBuildButton);
 
     // Build Palette
+    let texMoney = textureLoader.load("assets/textures/money.png");
+    texMoney.encoding = THREE.sRGBEncoding;
+    let materialMoney = new THREE.SpriteMaterial({ map: texMoney });
+
     textureLoader.load("assets/textures/palette.png", function(texture) {
         texture.encoding = THREE.sRGBEncoding;
 
@@ -350,10 +354,10 @@ function initHudScene(Farm) {
         }
     }
 
-    let selectSize = calculatedBuildPaletteHeight - 35;
+    let selectSize = calculatedBuildPaletteHeight * 0.71;
 
-    let thumbnailSize = calculatedBuildPaletteHeight - 40;
-    let thumbnailY = -window.innerHeight * 0.5 + calculatedBuildPaletteHeight * 0.5;
+    let thumbnailSize = calculatedBuildPaletteHeight * 0.69;
+    let thumbnailY = -window.innerHeight * 0.5 + thumbnailSize * 0.58;
 
     Farm.selectSize = selectSize;
     Farm.thumbnailSize = thumbnailSize;
@@ -394,8 +398,52 @@ function initHudScene(Farm) {
             category.group.add(curBuilding.spriteThumbnail);
             curBuilding.spriteThumbnail.position.set(-window.innerWidth * 0.5 + 20 + (categoryIdx + 0.5) * (thumbnailSize + 20), thumbnailY, 2);
             curBuilding.spriteThumbnail.name = "BuildPalette_" + curBuilding.name;
+
+            let strPrice = `${curBuilding.price}`;
+
+            let totalPriceWidth = strPrice.length * 0.09 + 0.07 + 0.2;
+
+            let textPrice = new Text();
+            textPrice.text = strPrice;
+            textPrice.font = 'assets/fonts/carrot.otf';
+            textPrice.fontSize = 0.15;
+            textPrice.color = 0xd0a060;
+            textPrice.outlineWidth = 0.005;
+            textPrice.outlineColor = 0x302010;
+            textPrice.anchorX = 'center';
+            textPrice.anchorY = 'middle';
+            textPrice.textAlign = 'center';
+            textPrice.position.set(-totalPriceWidth * 0.5 + strPrice.length * 0.09 * 0.5, 0.65, 4);
+            textPrice.frustumCulled = false;
+            textPrice.name = "BuildPalette_" + curBuilding.name;
+            curBuilding.spriteThumbnail.add(textPrice);
+
+            let spriteMoney = new THREE.Sprite(materialMoney);
+            spriteMoney.center.set(0.5, 0.5);
+            spriteMoney.scale.set(0.3, 0.3, 1);
+            spriteMoney.position.set(+totalPriceWidth * 0.5 - 0.2 * 0.5, 0.65, 3);
+            spriteMoney.name = "BuildPalette_" + curBuilding.name;
+            curBuilding.spriteThumbnail.add(spriteMoney);
         });
     }
+
+    // HUD Top
+
+    textureLoader.load("assets/textures/hud_top.png", function(texture) {
+        texture.encoding = THREE.sRGBEncoding;
+
+        Farm.texHudTop = texture;
+
+        material = new THREE.SpriteMaterial({ map: Farm.texHudTop });
+
+        Farm.spriteHudTop = new THREE.Sprite(material);
+        Farm.spriteHudTop.center.set(0.5, 0.5);
+        Farm.spriteHudTop.scale.set(window.innerWidth, window.innerWidth / 16, 1);
+        Farm.groupBuildPalette.add(Farm.spriteHudTop);
+        Farm.spriteHudTop.position.set(0, window.innerHeight * 0.5 - window.innerWidth / 16 * 0.5, 1);
+        Farm.spriteHudTop.name = "HudTop";
+        Farm.hudScene.add(Farm.spriteHudTop);
+    });
 }
 
 function loadBuildingAssets(Farm) {

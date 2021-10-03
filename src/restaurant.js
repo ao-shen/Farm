@@ -39,6 +39,7 @@ export class Stand extends Restaurant {
 
         Farm.groupInfoable.add(this.restaurantStandMesh);
         this.restaurantStandMesh.owner = this;
+        this.restaurantStandInvMesh.owner = this;
         this.restaurantStandMesh.add(this.restaurantStandInvMesh);
 
         this.infoBox = new InfoBox(this.Farm, this, "restaurantStandMesh");

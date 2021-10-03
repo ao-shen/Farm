@@ -48,6 +48,9 @@ export let Farm = {
 
     ignoreNextMouseUp: false,
 
+    texHudTop: null,
+    spriteHudTop: null,
+
     // Building Raycaster
     mouseRaycaster: new THREE.Raycaster(),
     mousePos: new THREE.Vector2(),
@@ -281,7 +284,7 @@ export let Farm = {
         category: "ground",
         build_mode: "line",
         instanced: true,
-        price: 0,
+        price: 10,
         size: {
             x: 1,
             z: 1,

@@ -100,7 +100,13 @@ export function onMouseDown(Farm, event) {
 
             for (let intersect of intersects) {
 
-                if (!intersect.object.visible || !intersect.object.parent.visible) {
+                if (!intersect.object.visible) {
+                    continue;
+                }
+                if (intersect.object.parent && !intersect.object.parent.visible) {
+                    continue;
+                }
+                if (intersect.object.parent && intersect.object.parent.parent && !intersect.object.parent.parent.visible) {
                     continue;
                 }
 
@@ -195,6 +201,9 @@ export function onMouseDown(Farm, event) {
 
                         updateBuildPaletteSelect(Farm);
 
+                        Farm.ignoreNextMouseUp = true;
+                        return;
+                    } else if (intersect.object.name.startsWith("BuildPalette")) {
                         Farm.ignoreNextMouseUp = true;
                         return;
                     }
