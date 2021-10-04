@@ -1,5 +1,10 @@
 import { cloneDeep } from 'lodash';
 
+var randomKey = function(obj) {
+    var keys = Object.keys(obj);
+    return keys[keys.length * Math.random() << 0];
+};
+
 export class Inventory {
 
     constructor(slots) {
@@ -47,6 +52,15 @@ export class Inventory {
         }
     }
 
+    removeRandom(amount = 1) {
+        let removedInventory = {};
+        for (let i = 0; i < amount && this.getFillLevel() > 0; i++) {
+            let type = randomKey(this.inventory);
+            removedInventory[type] = this.remove(type);
+        }
+        return removedInventory;
+    }
+
     transferTo(other, transaction) {
         let total = 0;
         for (let type in transaction) {
@@ -74,5 +88,9 @@ export class Inventory {
 
     getFillLevel() {
         return this.slotsFilled / this.slots;
+    }
+
+    getSlotsFilled() {
+        return this.slotsFilled;
     }
 }

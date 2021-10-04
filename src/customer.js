@@ -26,7 +26,7 @@ export class CustomerCar extends Vehicle {
     constructor(Farm, idx) {
 
         const variation = Math.floor(Math.random() * Farm.ENTITIES[2].models.length);
-        const lane = Math.floor(Math.random() * 2);
+        const lane = Math.random() < 0.8 ? 0 : 1;
 
         const Lane0Z = -136.6;
         const ParkingStartZ = -106.6;
@@ -38,7 +38,7 @@ export class CustomerCar extends Vehicle {
         this.secondHalfPath = [];
         this.parkingIdx = -1;
 
-        if (this.lane == 0 && Math.random() < 0.5) {
+        if (this.lane == 0 && Math.random() < 0.8) {
 
             let parkingIdx = -1;
             for (let i = 0; i < Farm.parkingLot.length; i++) {
@@ -96,6 +96,13 @@ export class CustomerCar extends Vehicle {
             this.remove();
         } else {
             setTimeout(() => {
+
+                let removedInventory = this.Farm.restaurantObj.inventory.removeRandom(Math.floor(1 + (Math.random() * 0.5 + 0.5) * this.Farm.restaurantObj.inventory.getSlotsFilled()));
+
+                for (let type in removedInventory) {
+                    this.Farm.money += this.Farm.BUILDINGS[type].sellPrice * removedInventory[type];
+                }
+
                 this.path = this.secondHalfPath;
                 this.Farm.parkingLot[this.parkingIdx].vehicle = null;
             }, 2000 + Math.random() * 5000);

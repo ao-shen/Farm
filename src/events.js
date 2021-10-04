@@ -397,6 +397,7 @@ function createWater(Farm) {
 function createNewTrench(Farm) {
 
     let buildingType = Farm.buildPaletteSelect;
+    let potentialBlocks = [];
 
     for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x; x++) {
         for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z; z++) {
@@ -408,23 +409,37 @@ function createNewTrench(Farm) {
                 curBlock.buildings.length == 0 &&
                 curBlock.groundState < Farm.GROUND_STATES_NAMES.CLEAR) {
 
-                curBlock.groundState = Farm.GROUND_STATES_NAMES.CLEAR;
-
-                let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
-                for (let i = 0; i < 8; i++) {
-                    Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
-                }
-
-                let building = new BuildingObjects.BuildingWaterCarrier(Farm, Farm.buildingIdx, x, z, buildingType, Farm.buildBuildingSide);
-                curBlock.buildings.push(building);
-                curBlock.updateGrassBlades();
-
-                if (Farm.BUILDINGS[buildingType].requireUpdates || Farm.BUILDINGS[buildingType].infoable) {
-                    Farm.buildings[Farm.buildingIdx] = building;
-                }
-                Farm.buildingIdx++;
+                potentialBlocks.push({ x: x, z: z });
             }
         }
+    }
+
+    if (potentialBlocks.length * Farm.BUILDINGS[buildingType].price > Farm.money) {
+        return;
+    }
+    Farm.money -= potentialBlocks.length * Farm.BUILDINGS[buildingType].price;
+
+    for (let potentialBlock of potentialBlocks) {
+        let x = potentialBlock.x;
+        let z = potentialBlock.z;
+        let curBlock = Farm.blocks[x + ',' + z];
+
+        curBlock.groundState = Farm.GROUND_STATES_NAMES.CLEAR;
+
+        let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
+        for (let i = 0; i < 8; i++) {
+            Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
+        }
+
+        let building = new BuildingObjects.BuildingWaterCarrier(Farm, Farm.buildingIdx, x, z, buildingType, Farm.buildBuildingSide);
+        curBlock.buildings.push(building);
+        curBlock.updateGrassBlades();
+
+        if (Farm.BUILDINGS[buildingType].requireUpdates || Farm.BUILDINGS[buildingType].infoable) {
+            Farm.buildings[Farm.buildingIdx] = building;
+        }
+        Farm.buildingIdx++;
+
     }
     Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
 
@@ -463,8 +478,8 @@ function createNewTrench(Farm) {
 
 function createNewPlant(Farm) {
 
-    let newPlant = false;
     let plantType = Farm.buildPaletteSelect;
+    let potentialBlocks = [];
 
     for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x; x++) {
         for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z; z++) {
@@ -473,14 +488,27 @@ function createNewPlant(Farm) {
 
             if (curBlock.type == BLOCK.SOIL &&
                 curBlock.plants.length == 0) {
-                curBlock.plants.push(new Plant(Farm, plantType, curBlock));
-                curBlock.updateGrassBlades();
-                newPlant = true;
+                potentialBlocks.push({ x: x, z: z });
+
             }
         }
     }
 
-    if (newPlant) {
+    if (potentialBlocks.length * Farm.BUILDINGS[plantType].price > Farm.money) {
+        return;
+    }
+    Farm.money -= potentialBlocks.length * Farm.BUILDINGS[plantType].price;
+
+    for (let potentialBlock of potentialBlocks) {
+        let x = potentialBlock.x;
+        let z = potentialBlock.z;
+        let curBlock = Farm.blocks[x + ',' + z];
+
+        curBlock.plants.push(new Plant(Farm, plantType, curBlock));
+        curBlock.updateGrassBlades();
+    }
+
+    if (potentialBlocks.length > 0) {
 
         let plantBuffer = [];
         let plantBuilding = Farm.BUILDINGS[plantType];
@@ -627,6 +655,11 @@ function createSingleNewBuilding(Farm, isArea = false) {
     }
 
     if (newBuilding) {
+
+        if (Farm.BUILDINGS[buildingType].price > Farm.money) {
+            return;
+        }
+        Farm.money -= Farm.BUILDINGS[buildingType].price;
 
         let building;
 

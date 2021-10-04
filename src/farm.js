@@ -51,6 +51,8 @@ export let Farm = {
     texHudTop: null,
     spriteHudTop: null,
 
+    textMoney: null,
+
     // Building Raycaster
     mouseRaycaster: new THREE.Raycaster(),
     mousePos: new THREE.Vector2(),
@@ -158,6 +160,10 @@ export let Farm = {
     plantTypeAwaitingMeshUpdate: new Set(),
 
     plantsAwaitingHarvest: new WaitingList(),
+
+    // GAME -----------------------------------------------
+
+    money: 1000,
 
     // UTILS -----------------------------------------------
 
@@ -303,6 +309,7 @@ export let Farm = {
         category: "plants",
         build_mode: "area",
         price: 10,
+        sellPrice: 20,
         matureTime: 100,
         thumbnail: 'assets/textures/carrot_thumbnail.png',
         models: [
@@ -316,6 +323,7 @@ export let Farm = {
         category: "plants",
         build_mode: "area",
         price: 5,
+        sellPrice: 10,
         matureTime: 5000,
         thumbnail: 'assets/textures/potato_thumbnail.png',
         models: [
@@ -330,6 +338,7 @@ export let Farm = {
         category: "plants",
         build_mode: "area",
         price: 20,
+        sellPrice: 40,
         matureTime: 5000,
         thumbnail: 'assets/textures/corn_thumbnail.png',
         models: [

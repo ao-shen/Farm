@@ -91,6 +91,11 @@ export function animate(Farm, elapsed) {
         Farm.restaurantObj.update();
     }
 
+    // Update HUD
+
+    //Farm.money += 12345;
+    Farm.textMoney.text = `${Farm.money}`;
+
     render(Farm);
 
     Farm.stats.end();

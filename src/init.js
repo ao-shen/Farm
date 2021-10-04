@@ -429,6 +429,10 @@ function initHudScene(Farm) {
 
     // HUD Top
 
+    const hudTopY = window.innerHeight * 0.5 - window.innerWidth / 16 * 0.25;
+    const hudTopWidth = window.innerWidth;
+    const hudTopHeight = hudTopWidth / 16 * 0.5;
+
     textureLoader.load("assets/textures/hud_top.png", function(texture) {
         texture.encoding = THREE.sRGBEncoding;
 
@@ -438,12 +442,34 @@ function initHudScene(Farm) {
 
         Farm.spriteHudTop = new THREE.Sprite(material);
         Farm.spriteHudTop.center.set(0.5, 0.5);
-        Farm.spriteHudTop.scale.set(window.innerWidth, window.innerWidth / 16, 1);
+        Farm.spriteHudTop.scale.set(hudTopWidth, hudTopHeight * 2, 1);
         Farm.groupBuildPalette.add(Farm.spriteHudTop);
-        Farm.spriteHudTop.position.set(0, window.innerHeight * 0.5 - window.innerWidth / 16 * 0.5, 1);
+        Farm.spriteHudTop.position.set(0, hudTopY - window.innerWidth / 16 * 0.25, 1);
         Farm.spriteHudTop.name = "HudTop";
         Farm.hudScene.add(Farm.spriteHudTop);
     });
+
+    // HUD Money
+    let textPrice = new Text();
+    textPrice.text = `${Farm.money}`;
+    textPrice.font = 'assets/fonts/carrot.otf';
+    textPrice.fontSize = 24;
+    textPrice.color = 0xd0a060;
+    textPrice.outlineWidth = 0.5;
+    textPrice.outlineColor = 0x302010;
+    textPrice.anchorX = 'right';
+    textPrice.anchorY = 'middle';
+    textPrice.textAlign = 'right';
+    textPrice.position.set(0.25 * hudTopWidth, hudTopY, 3);
+    textPrice.frustumCulled = false;
+    Farm.hudScene.add(textPrice);
+    Farm.textMoney = textPrice;
+
+    let spriteMoney = new THREE.Sprite(materialMoney);
+    spriteMoney.center.set(0.5, 0.5);
+    spriteMoney.scale.set(hudTopHeight * 1.2, hudTopHeight * 1.2, 1);
+    spriteMoney.position.set(0.27 * hudTopWidth, hudTopY, 3);
+    Farm.hudScene.add(spriteMoney);
 }
 
 function loadBuildingAssets(Farm) {
