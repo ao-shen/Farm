@@ -7,14 +7,14 @@ export function spawnCustomers(Farm) {
     let customerCar = new CustomerCar(Farm, newIdx);
     Farm.entities[newIdx] = customerCar;
 
-    setTimeout(function() { spawnCustomers(Farm); }, Math.random() * 1000 + 500);
+    setTimeout(function() { spawnCustomers(Farm); }, Math.random() * 2000 + 1000);
 }
 
 export class Customer extends Entity {
     constructor(Farm, idx, x, z, type, variation) {
         super(Farm, idx, x, z, type, variation);
 
-
+        this.isCustomer = true;
     }
 
     logic() {
@@ -37,6 +37,8 @@ export class CustomerCar extends Vehicle {
         this.path = [];
         this.secondHalfPath = [];
         this.parkingIdx = -1;
+
+        this.isCustomer = true;
 
         if (this.lane == 0 && Math.random() < 0.8) {
 

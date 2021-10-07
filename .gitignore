@@ -149,3 +149,4 @@ out
 .cache
 .eslintcache
 package-lock.json
+dist/config.js

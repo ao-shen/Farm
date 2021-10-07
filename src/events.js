@@ -1,9 +1,12 @@
+import { signOut, getAuth } from "firebase/auth";
+
 import * as THREE from 'three';
 
 import { Plant } from './plant.js';
 import { BLOCK, Block } from './block.js';
 import * as BuildingObjects from './building.js';
 import { updateConnectibleConnections } from './water_update.js';
+import { save } from './load_save.js';
 
 
 export function onWindowResize(Farm) {
@@ -300,6 +303,13 @@ export function onKeyDown(Farm, event) {
             break;
         case 't':
             console.info(Farm.hoveringBlock.wetness);
+            break;
+        case 's':
+            save(Farm);
+            break;
+        case 'x':
+            signOut(getAuth());
+            console.log("gehe");
             break;
     }
 
