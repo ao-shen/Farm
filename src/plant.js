@@ -45,7 +45,9 @@ export class Plant {
 
         if (this.block.wetness > 0) {
 
-            this.stage = this.stage + 1;
+            if (!this.isMature()) {
+                this.stage = this.stage + 1;
+            }
 
             this.updateMesh();
 

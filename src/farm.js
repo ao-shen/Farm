@@ -127,9 +127,10 @@ export let Farm = {
     blocks: {},
 
     // Buildings
-    buildingIdx: 0,
+    buildingIdx: 1,
     buildings: {},
-    entityIdx: 0,
+    updatableBuildings: {},
+    entityIdx: 1,
     entities: {},
 
     // GUI -----------------------------------------------

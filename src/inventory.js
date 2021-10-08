@@ -32,6 +32,12 @@ export class Inventory {
         }
     }
 
+    addMultiple(transaction) {
+        for (let type in transaction) {
+            this.add(type, transaction[type], true);
+        }
+    }
+
     remove(type, amount = 1) {
         if (this.inventory[type]) {
             if (this.inventory[type] >= amount) {
@@ -84,6 +90,10 @@ export class Inventory {
 
     isFull() {
         return this.slots <= this.slotsFilled;
+    }
+
+    isEmpty() {
+        return this.slotsFilled == 0;
     }
 
     getFillLevel() {

@@ -6,7 +6,8 @@ import { Plant } from './plant.js';
 import { BLOCK, Block } from './block.js';
 import * as BuildingObjects from './building.js';
 import { updateConnectibleConnections } from './water_update.js';
-import { save } from './load_save.js';
+import { load, save } from './load_save.js';
+import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh } from "./update_instanced_meshes.js";
 
 
 export function onWindowResize(Farm) {
@@ -289,23 +290,14 @@ export function onKeyDown(Farm, event) {
                 Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
             }
             break;
-        case 'k':
-            Farm.shadowLight.shadow.bias -= 0.00001;
-            break;
-        case 'l':
-            Farm.shadowLight.shadow.bias += 0.00001;
-            break;
-        case 'i':
-            Farm.shadowLight.shadow.normalBias -= 0.0001;
-            break;
-        case 'o':
-            Farm.shadowLight.shadow.normalBias += 0.0001;
-            break;
         case 't':
             console.info(Farm.hoveringBlock.wetness);
             break;
         case 's':
             save(Farm);
+            break;
+        case 'l':
+            load(Farm);
             break;
         case 'x':
             signOut(getAuth());
@@ -350,33 +342,7 @@ function createNewSoil(Farm) {
     }
 
     if (newSoil) {
-
-        let buildingBuffer = [];
-        let buildingBuilding = Farm.BUILDINGS[0];
-
-        for (const curBlockIdx in Farm.blocks) {
-            if (Farm.blocks[curBlockIdx].type == BLOCK.SOIL) {
-                Farm.blocks[curBlockIdx].soilMeshIdx = buildingBuffer.length;
-                buildingBuffer.push(Farm.blocks[curBlockIdx]);
-            }
-        }
-
-        for (let m = 0; m < buildingBuilding.meshes.length; m++) {
-            let curMesh = buildingBuilding.meshes[m];
-
-            Farm.groupSoilAndPlants.remove(curMesh);
-            curMesh.dispose();
-            curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length);
-            curMesh.receiveShadow = true;
-            curMesh.castShadow = true;
-            Farm.groupSoilAndPlants.add(curMesh);
-
-            buildingBuilding.meshes[m] = curMesh;
-        }
-
-        for (let i = 0; i < buildingBuffer.length; i++) {
-            buildingBuffer[i].updateSoilMesh();
-        }
+        updateSoilMesh(Farm);
     }
 }
 
@@ -446,44 +412,15 @@ function createNewTrench(Farm) {
         curBlock.updateGrassBlades();
 
         if (Farm.BUILDINGS[buildingType].requireUpdates || Farm.BUILDINGS[buildingType].infoable) {
-            Farm.buildings[Farm.buildingIdx] = building;
+            Farm.updatableBuildings[Farm.buildingIdx] = building;
         }
+        Farm.buildings[Farm.buildingIdx] = building;
         Farm.buildingIdx++;
 
     }
     Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
 
-    let buildingBuffer = [];
-    let buildingBuilding = Farm.BUILDINGS[buildingType];
-
-    for (const curBlockIdx in Farm.blocks) {
-        for (let curBuilding of Farm.blocks[curBlockIdx].buildings) {
-            if (curBuilding.type == buildingType) {
-                curBuilding.meshIdx = buildingBuffer.length;
-                buildingBuffer.push({ block: Farm.blocks[curBlockIdx], building: curBuilding });
-                break;
-            }
-        }
-    }
-
-    for (let m = 0; m < buildingBuilding.meshes.length; m++) {
-        let curMesh = buildingBuilding.meshes[m];
-
-        Farm.scene.remove(curMesh);
-        curMesh.dispose();
-        curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length);
-        curMesh.receiveShadow = true;
-        curMesh.castShadow = true;
-        Farm.scene.add(curMesh);
-
-        buildingBuilding.meshes[m] = curMesh;
-    }
-
-    updateConnectibleConnections(Farm, buildingType, Farm.buildAreaPoint1, Farm.buildAreaPoint2);
-
-    for (let i = 0; i < buildingBuffer.length; i++) {
-        buildingBuffer[i].building.updateInstancedMesh();
-    }
+    updateInstancedBuildingMesh(Farm, buildingType);
 }
 
 function createNewPlant(Farm) {
@@ -519,45 +456,7 @@ function createNewPlant(Farm) {
     }
 
     if (potentialBlocks.length > 0) {
-
-        let plantBuffer = [];
-        let plantBuilding = Farm.BUILDINGS[plantType];
-
-        for (const curBlockIdx in Farm.blocks) {
-            for (let curPlant of Farm.blocks[curBlockIdx].plants) {
-                if (curPlant.type == plantType) {
-                    curPlant.meshIdx = plantBuffer.length;
-                    plantBuffer.push({ block: Farm.blocks[curBlockIdx], plant: curPlant });
-                    break;
-                }
-            }
-        }
-
-        for (let m = 0; m < plantBuilding.meshes.length; m++) {
-            let curMesh = plantBuilding.meshes[m];
-
-            Farm.groupSoilAndPlants.remove(curMesh);
-            curMesh.dispose();
-            curMesh = new THREE.InstancedMesh(plantBuilding.geometries[m], plantBuilding.materials[m], plantBuffer.length * 4);
-            if (plantBuilding.customDepthMaterial[m]) {
-                curMesh.customDepthMaterial = plantBuilding.customDepthMaterial[m];
-            }
-            curMesh.receiveShadow = true;
-            curMesh.castShadow = true;
-            Farm.groupSoilAndPlants.add(curMesh);
-
-            plantBuilding.meshes[m] = curMesh;
-        }
-
-        for (let i = 0; i < plantBuffer.length; i++) {
-
-            plantBuffer[i].plant.updateMesh();
-
-        }
-
-        /*for (let m = 0; m < plantBuilding.meshes.length; m++) {
-            plantBuilding.meshes[m].needsUpdate = true;
-        }*/
+        updatePlantMesh(Farm, plantType);
     }
 }
 
@@ -577,34 +476,7 @@ function createAreaOfNewBuildings(Farm) {
     }
 
     if (BUILDING.instanced) {
-        let buildingBuffer = [];
-
-        for (const curBlockIdx in Farm.blocks) {
-            for (let curBuilding of Farm.blocks[curBlockIdx].buildings) {
-                if (curBuilding.type == buildingType) {
-                    curBuilding.meshIdx = buildingBuffer.length;
-                    buildingBuffer.push({ block: Farm.blocks[curBlockIdx], building: curBuilding });
-                    break;
-                }
-            }
-        }
-
-        for (let m = 0; m < BUILDING.meshes.length; m++) {
-            let curMesh = BUILDING.meshes[m];
-
-            Farm.scene.remove(curMesh);
-            curMesh.dispose();
-            curMesh = new THREE.InstancedMesh(BUILDING.geometries[m], BUILDING.materials[m], buildingBuffer.length);
-            curMesh.receiveShadow = true;
-            curMesh.castShadow = true;
-            Farm.scene.add(curMesh);
-
-            BUILDING.meshes[m] = curMesh;
-        }
-
-        for (let i = 0; i < buildingBuffer.length; i++) {
-            buildingBuffer[i].building.updateInstancedMesh();
-        }
+        updateInstancedBuildingMesh(Farm, buildingType);
     }
 }
 
@@ -696,39 +568,13 @@ function createSingleNewBuilding(Farm, isArea = false) {
         }
 
         if (BUILDING.requireUpdates || BUILDING.infoable) {
-            Farm.buildings[Farm.buildingIdx] = building;
+            Farm.updatableBuildings[Farm.buildingIdx] = building;
         }
+        Farm.buildings[Farm.buildingIdx] = building;
         Farm.buildingIdx++;
 
         if (BUILDING.instanced && !isArea) {
-            let buildingBuffer = [];
-
-            for (const curBlockIdx in Farm.blocks) {
-                for (let curBuilding of Farm.blocks[curBlockIdx].buildings) {
-                    if (curBuilding.type == buildingType) {
-                        curBuilding.meshIdx = buildingBuffer.length;
-                        buildingBuffer.push({ block: Farm.blocks[curBlockIdx], building: curBuilding });
-                        break;
-                    }
-                }
-            }
-
-            for (let m = 0; m < BUILDING.meshes.length; m++) {
-                let curMesh = BUILDING.meshes[m];
-
-                Farm.scene.remove(curMesh);
-                curMesh.dispose();
-                curMesh = new THREE.InstancedMesh(BUILDING.geometries[m], BUILDING.materials[m], buildingBuffer.length);
-                curMesh.receiveShadow = true;
-                curMesh.castShadow = true;
-                Farm.scene.add(curMesh);
-
-                BUILDING.meshes[m] = curMesh;
-            }
-
-            for (let i = 0; i < buildingBuffer.length; i++) {
-                buildingBuffer[i].building.updateInstancedMesh();
-            }
+            updateInstancedBuildingMesh(Farm, buildingType);
         }
     }
 }
@@ -817,6 +663,7 @@ function remove(Farm) {
                         var index = foundationBlock.buildings.indexOf(curBuilding);
                         if (index !== -1 && foundationBlock != curBlock) {
                             foundationBlock.buildings.splice(index, 1);
+                            foundationBlock.updateGrassBlades();
                         }
                     }
                     curBuilding.remove();
@@ -856,101 +703,18 @@ function remove(Farm) {
         //Farm.buildings = Farm.buildings.filter(building => building);
         //Farm.entities = Farm.entities.filter(entity => entity);
         removedBuildingTypes.forEach(function(buildingType) {
-            let buildingBuffer = [];
-            let buildingBuilding = Farm.BUILDINGS[buildingType];
-
-            updateConnectibleConnections(Farm, buildingType, Farm.buildAreaPoint1, Farm.buildAreaPoint2);
-
-            for (const curBlockIdx in Farm.blocks) {
-                for (let curBuilding of Farm.blocks[curBlockIdx].buildings) {
-                    if (curBuilding.type == buildingType) {
-                        curBuilding.meshIdx = buildingBuffer.length;
-                        buildingBuffer.push({ block: Farm.blocks[curBlockIdx], building: curBuilding });
-                    }
-                }
-            }
-
-            for (let m = 0; m < buildingBuilding.meshes.length; m++) {
-                let curMesh = buildingBuilding.meshes[m];
-
-                Farm.scene.remove(curMesh);
-                curMesh.dispose();
-                curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length * 4);
-                curMesh.receiveShadow = true;
-                curMesh.castShadow = true;
-                Farm.scene.add(curMesh);
-
-                buildingBuilding.meshes[m] = curMesh;
-            }
-
-            for (let i = 0; i < buildingBuffer.length; i++) {
-                buildingBuffer[i].building.updateInstancedMesh();
-            }
+            updateInstancedBuildingMesh(Farm, buildingType);
         });
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
         removedPlantTypes.forEach(function(plantType) {
-            let plantBuffer = [];
-            let plantBuilding = Farm.BUILDINGS[plantType];
-
-            for (const curBlockIdx in Farm.blocks) {
-                for (let curPlant of Farm.blocks[curBlockIdx].plants) {
-                    if (curPlant.type == plantType) {
-                        curPlant.meshIdx = plantBuffer.length;
-                        plantBuffer.push({ block: Farm.blocks[curBlockIdx], plant: curPlant });
-                        break;
-                    }
-                }
-            }
-
-            for (let m = 0; m < plantBuilding.meshes.length; m++) {
-                let curMesh = plantBuilding.meshes[m];
-
-                Farm.groupSoilAndPlants.remove(curMesh);
-                curMesh.dispose();
-                curMesh = new THREE.InstancedMesh(plantBuilding.geometries[m], plantBuilding.materials[m], plantBuffer.length * 4);
-                curMesh.receiveShadow = true;
-                curMesh.castShadow = true;
-                Farm.groupSoilAndPlants.add(curMesh);
-
-                plantBuilding.meshes[m] = curMesh;
-            }
-
-            for (let i = 0; i < plantBuffer.length; i++) {
-                plantBuffer[i].plant.updateMesh();
-            }
+            updatePlantMesh(Farm, plantType);
         });
-
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Soil" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
-        let buildingBuffer = [];
-        let buildingBuilding = Farm.BUILDINGS[0];
-
-        for (const curBlockIdx in Farm.blocks) {
-            if (Farm.blocks[curBlockIdx].type == BLOCK.SOIL) {
-                Farm.blocks[curBlockIdx].soilMeshIdx = buildingBuffer.length;
-                buildingBuffer.push(Farm.blocks[curBlockIdx]);
-            }
-        }
-
-        for (let m = 0; m < buildingBuilding.meshes.length; m++) {
-            let curMesh = buildingBuilding.meshes[m];
-
-            Farm.groupSoilAndPlants.remove(curMesh);
-            curMesh.dispose();
-            curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length * 4);
-            curMesh.receiveShadow = true;
-            curMesh.castShadow = true;
-            Farm.groupSoilAndPlants.add(curMesh);
-
-            buildingBuilding.meshes[m] = curMesh;
-        }
-
-        for (let i = 0; i < buildingBuffer.length; i++) {
-            buildingBuffer[i].updateSoilMesh();
-        }
+        updateSoilMesh(Farm);
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Water" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
@@ -958,10 +722,3 @@ function remove(Farm) {
     }
 
 }
-
-const DIRECTIONS = [
-    { x: 1, z: 0 },
-    { x: 0, z: 1 },
-    { x: -1, z: 0 },
-    { x: 0, z: -1 },
-];

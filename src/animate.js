@@ -49,8 +49,8 @@ export function animate(Farm, elapsed) {
         Farm.grassBladeMeshNeedsUpdate = false;
     }
 
-    for (const building in Farm.buildings) {
-        Farm.buildings[building].update();
+    for (const building in Farm.updatableBuildings) {
+        Farm.updatableBuildings[building].update();
     }
 
     for (const entity in Farm.entities) {

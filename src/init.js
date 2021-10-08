@@ -21,6 +21,7 @@ import { onUpdateWater } from './water_update.js';
 import { initGrassBlades } from './grass_blades.js';
 import * as Restaurant from './restaurant';
 import { spawnCustomers } from './customer.js';
+import { load } from './load_save.js';
 
 let GLTFModelLoader = new GLTFLoader();
 
@@ -30,7 +31,7 @@ function asyncModelLoader(url) {
     });
 }
 
-export function init(Farm) {
+export async function init(Farm) {
 
     // STATS
 
@@ -44,6 +45,9 @@ export function init(Farm) {
     // Init 2D Scene
     initHudScene(Farm);
 
+    // Init Info Boxes
+    initInfoBoxes(Farm);
+
     // Load Buildings
     loadBuildingAssets(Farm);
 
@@ -51,7 +55,7 @@ export function init(Farm) {
     loadEntitiesAssets(Farm);
 
     // Init World
-    initWorld(Farm);
+    await initWorld(Farm);
 
     // Init Grass Blades
     initGrassBlades(Farm);
@@ -59,8 +63,8 @@ export function init(Farm) {
     // Init Overlays
     initOverlays(Farm);
 
-    // Init Info Boxes
-    initInfoBoxes(Farm);
+    // Load the map before any events happen
+    await load(Farm);
 
     // Init Events
     initEvents(Farm);

@@ -9,9 +9,9 @@ import { animate, onAnimationFrame } from './animate.js';
 
 let loginButton = document.getElementById("login-button");
 
-function startGame() {
+async function startGame() {
     loginButton.style.display = "none";
-    init(Farm);
+    await init(Farm);
     onAnimationFrame(Farm);
 }
 

@@ -164,6 +164,7 @@ export class Building {
 
         if (this.Farm.buildings[this.idx] == this) {
             delete this.Farm.buildings[this.idx];
+            delete this.Farm.updatableBuildings[this.idx];
         }
 
         this.isRemoved = true;
@@ -171,15 +172,17 @@ export class Building {
 }
 
 export class BuildingWorkersHouse extends Building {
-    constructor(Farm, idx, x, z, type, side) {
+    constructor(Farm, idx, x, z, type, side, createEntities = true) {
         super(Farm, idx, x, z, type, side);
 
-        for (let entityType of this.Farm.BUILDINGS[this.type].entities) {
-            let workerEntity = new Entity(Farm, this.Farm.entityIdx, this.center.x, this.center.z, entityType);
-            workerEntity.parentBuilding = this;
-            this.childEntities.push(workerEntity);
-            this.Farm.entities[this.Farm.entityIdx] = workerEntity;
-            this.Farm.entityIdx++;
+        if (createEntities) {
+            for (let entityType of this.Farm.BUILDINGS[this.type].entities) {
+                let workerEntity = new Entity(Farm, this.Farm.entityIdx, this.center.x, this.center.z, entityType);
+                workerEntity.parentBuilding = this;
+                this.childEntities.push(workerEntity);
+                this.Farm.entities[this.Farm.entityIdx] = workerEntity;
+                this.Farm.entityIdx++;
+            }
         }
     }
 }

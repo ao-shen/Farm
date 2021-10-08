@@ -1,4 +1,12 @@
+import { getDatabase, ref, set, child, get } from "firebase/database";
+
+import * as THREE from 'three';
+
 import { LZMA } from './lzma/lzma-min';
+import { Plant } from "./plant";
+import * as BuildingObjects from './building.js';
+import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh } from "./update_instanced_meshes";
+import { Entity } from "./entity";
 
 var Base64Binary = {
     _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -66,6 +74,8 @@ export function save(Farm) {
         buildings: [],
         entities: [],
         blocks: [],
+        money: Farm.money,
+        restaurantInv: Farm.restaurantObj.inventory.inventory,
     }
 
     for (const curBuildingIdx in Farm.buildings) {
@@ -80,8 +90,12 @@ export function save(Farm) {
         buildingData.v = curBuilding.variation;
         buildingData.f = [];
 
+        if (curBuilding.inventory && !curBuilding.inventory.isEmpty()) {
+            buildingData.n = curBuilding.inventory.inventory;
+        }
+
         for (let curBlock of curBuilding.foundationBlocks) {
-            buildingData.f.push([curBlock.x, curBlock.z]);
+            buildingData.f.push({ x: curBlock.x, z: curBlock.z });
         }
 
         data.buildings.push(buildingData);
@@ -96,9 +110,12 @@ export function save(Farm) {
 
         entityData.i = curEntity.idx;
         entityData.t = curEntity.type;
-        entityData.p = { x: curEntity.pos.x, z: curEntity.pos.z };
-        entityData.s = curEntity.side;
+        entityData.p = { x: Math.round(curEntity.pos.x), z: Math.round(curEntity.pos.z) };
         entityData.v = curEntity.variation;
+
+        if (curEntity.inventory && !curEntity.inventory.isEmpty()) {
+            entityData.n = curEntity.inventory.inventory;
+        }
 
         if (curEntity.parentBuilding) entityData.b = curEntity.parentBuilding.idx;
         if (curEntity.parentEntitiy) entityData.e = curEntity.parentEntitiy.idx;
@@ -168,15 +185,167 @@ export function save(Farm) {
 
             console.log(result.length);
 
-            LZMA.decompress(result, function(result) {
-                console.log(result.length);
-            }, function(percent) {});
+            const base64String = btoa(String.fromCharCode(...new Uint8Array(result)));
+
+            const db = getDatabase();
+            set(ref(db, 'users/' + Farm.auth.currentUser.uid), true);
+            set(ref(db, 'maps/' + Farm.auth.currentUser.uid), base64String);
+
         } else {
             console.error(error);
         }
     }, function(percent) {});
 }
 
-export function load(Farm) {
+export async function load(Farm) {
+    return new Promise((resolve, reject) => {
+        const db = getDatabase();
+        const dbRef = ref(db);
+        get(child(dbRef, 'maps/' + Farm.auth.currentUser.uid)).then((snapshot) => {
+            if (snapshot.exists()) {
 
+                const data = snapshot.val();
+
+                let decoded = new Uint8Array(Base64Binary.decodeArrayBuffer(data));
+
+                LZMA.decompress(decoded, function(result) {
+
+                    let loadedPlantTypes = new Set();
+                    let loadedBuildingTypes = new Set();
+
+                    const data = JSON.parse(result);
+                    console.log(data);
+
+                    Farm.money = data.money;
+                    Farm.restaurantObj.inventory.addMultiple(data.restaurantInv);
+
+                    let lastX = 0;
+                    let lastZ = 0;
+
+                    for (let blockData of data.blocks) {
+
+                        let x = typeof blockData.x !== 'undefined' ? (lastX + blockData.x) : (lastX);
+                        let z = typeof blockData.z !== 'undefined' ? (lastZ + blockData.z) : (lastZ + 1);
+
+                        lastX = x;
+                        lastZ = z;
+
+                        let curBlock = Farm.blocks[x + ',' + z];
+
+                        if (blockData.g) {
+                            curBlock.groundState = blockData.g
+                            let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
+                            for (let i = 0; i < 8; i++) {
+                                Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
+                            }
+                        }
+                        if (blockData.t) { curBlock.type = blockData.t };
+                        if (blockData.p) {
+                            for (let plantData of blockData.p) {
+                                let curPlant = new Plant(Farm, plantData.t, curBlock);
+                                loadedPlantTypes.add(plantData.t);
+                                curPlant.stage = plantData.s;
+                                curBlock.plants.push(curPlant);
+                            }
+                        };
+                        curBlock.updateGrassBlades();
+                    }
+
+                    for (let buildingData of data.buildings) {
+
+                        let building;
+                        let buildingType = buildingData.t;
+                        if (Farm.BUILDINGS[buildingType].instanced) {
+                            loadedBuildingTypes.add(buildingType);
+                        }
+
+                        switch (Farm.BUILDINGS[buildingType].name) {
+                            case "Trench":
+                                building = new BuildingObjects.BuildingWaterCarrier(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
+                                break;
+                            case "Worker's House":
+                            case "Big Worker's House":
+                                building = new BuildingObjects.BuildingWorkersHouse(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s, false);
+                                break;
+                            case "Fence":
+                                building = new BuildingObjects.BuildingWall(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
+                                break;
+                            case "Stone Path":
+                                building = new BuildingObjects.BuildingPath(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
+                                break;
+                            default:
+                                building = new BuildingObjects.Building(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
+                                break;
+                        }
+
+                        if (buildingData.v > 0) { building.updateMeshVariation(buildingData.v) };
+
+                        if (buildingData.n) {
+                            building.inventory.addMultiple(buildingData.n);
+                        }
+
+                        if (buildingData.f.length == 0) {
+                            let curBlock = Farm.blocks[buildingData.p[0] + ',' + buildingData.p[1]];
+                            curBlock.buildings.push(building);
+                            curBlock.updateGrassBlades();
+                        } else {
+                            for (let foundationBlock of buildingData.f) {
+                                let curBlock = Farm.blocks[foundationBlock.x + ',' + foundationBlock.z];
+                                building.foundationBlocks.push(curBlock);
+                                curBlock.buildings.push(building);
+                                curBlock.updateGrassBlades();
+                            }
+                        }
+
+                        if (Farm.BUILDINGS[buildingType].requireUpdates || Farm.BUILDINGS[buildingType].infoable) {
+                            Farm.updatableBuildings[buildingData.i] = building;
+                        }
+                        Farm.buildings[buildingData.i] = building;
+                        Farm.buildingIdx = Math.max(Farm.buildingIdx, buildingData.i + 1);
+                    }
+
+                    for (let entityData of data.entities) {
+
+                        let curEntity = new Entity(Farm, entityData.i, entityData.p.x, entityData.p.z, entityData.t, entityData.v);
+
+                        if (entityData.n) {
+                            curEntity.inventory.addMultiple(entityData.n);
+                        }
+
+                        Farm.entities[entityData.i] = curEntity;
+                        Farm.entityIdx = Math.max(Farm.entityIdx, entityData.i + 1);
+                    }
+
+                    for (let entityData of data.entities) {
+                        let curEntity = Farm.entities[entityData.i];
+                        if (typeof entityData.b !== 'undefined') {
+                            curEntity.parentBuilding = Farm.buildings[entityData.b];
+                            Farm.buildings[entityData.b].childEntities.push(curEntity);
+                        }
+                        if (typeof entityData.e !== 'undefined') {
+                            curEntity.parentEntitiy = Farm.entities[entityData.e];
+                            Farm.entities[entityData.e].childEntities.push(curEntity);
+                        }
+                    }
+
+                    Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
+                    updateSoilMesh(Farm);
+                    loadedPlantTypes.forEach(function(plantType) {
+                        updatePlantMesh(Farm, plantType);
+                    });
+                    loadedBuildingTypes.forEach(function(buildingType) {
+                        updateInstancedBuildingMesh(Farm, buildingType);
+                    });
+
+                    resolve();
+
+                }, function(percent) {});
+
+            } else {
+                //console.error("No data available");
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    });
 }

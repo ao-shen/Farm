@@ -112,6 +112,7 @@ export class InfoBox {
                             curYOffset -= 30;
                         }
                         mesh.text = str;
+
                         break;
                 }
             }
