@@ -33,6 +33,11 @@ function asyncModelLoader(url) {
 
 export async function init(Farm) {
 
+    if (Farm.alreadyLoaded) {
+        return;
+    }
+    Farm.alreadyLoaded = true;
+
     // STATS
 
     Farm.stats = new Stats();
