@@ -5,6 +5,7 @@ import { NineSlicePlane } from './nine_slice';
 
 const TEXT = 0;
 const INVENTORY = 1;
+const BUTTON = 2;
 
 const ITEM_SIZE = 48;
 
@@ -25,6 +26,9 @@ export class InfoBox {
         this.showing = false;
 
         this.infos = [];
+
+        this.onClick = {};
+        this.buttonIdx = 0;
 
         this.meshBackground = new NineSlicePlane(Farm.materialInfoBoxBackground, {
             width: this.width,
@@ -58,17 +62,36 @@ export class InfoBox {
     }
 
     addInventory(inventory) {
-
         this.infos.push({ type: INVENTORY, inventory: inventory, mesh: {} });
+    }
 
-        /*let textMesh = new Text();
-        textMesh.text = "Inventory";
+    addButton(text, onClick) {
+
+        let textMesh = new Text();
+        textMesh.text = text;
         textMesh.fontSize = 24;
-        textMesh.color = 0xFFFFFF;
-        textMesh.name = this.name;
+        textMesh.font = 'assets/fonts/carrot.otf';
+        textMesh.color = 0x12101f;
+        textMesh.outlineWidth = 0.5;
+        textMesh.outlineColor = 0x06050f;
+        textMesh.name = this.name + "_Button_" + this.buttonIdx;
+        textMesh.anchorX = 'center';
+        textMesh.anchorY = 'middle';
+        textMesh.textAlign = 'center';
         this.meshBackground.add(textMesh);
 
-        this.infos.push({ type: INVENTORY, inventory: inventory, mesh: textMesh });*/
+        let buttonMesh = new NineSlicePlane(new THREE.MeshBasicMaterial({ map: this.Farm.texBuildButton, color: 0xc0c0c0, transparent: true }), {
+            width: this.width - 20,
+            height: 38,
+            border: 12
+        });
+        buttonMesh.name = this.name + "_Button_" + this.buttonIdx;
+        this.meshBackground.add(buttonMesh);
+
+        this.onClick[this.buttonIdx] = onClick;
+        this.buttonIdx++;
+
+        this.infos.push({ type: BUTTON, mesh: buttonMesh, textMesh: textMesh });
     }
 
     updatePosition(x, y) {
@@ -109,15 +132,6 @@ export class InfoBox {
                         curYOffset -= 30;
                         break;
                     case INVENTORY:
-                        /*mesh.position.set(curXOffset, curYOffset, 1);
-                        let str = "Inventory:\n";
-                        curYOffset -= 30;
-                        for (let type in info.inventory.inventory) {
-                            str += this.owner.Farm.BUILDINGS[type].name + " x" + info.inventory.inventory[type] + "\n";
-                            curYOffset -= 30;
-                        }
-                        mesh.text = str;*/
-
                         for (let type in info.mesh) {
                             if (typeof info.inventory.inventory[type] == "undefined") {
                                 this.meshBackground.remove(info.mesh[type].sprite);
@@ -156,7 +170,11 @@ export class InfoBox {
                             curItem++;
                         }
                         curYOffset -= Math.floor((curItem - 1) / 4 + 1) * ITEM_SIZE;
-
+                        break;
+                    case BUTTON:
+                        mesh.position.set(0, curYOffset - 25, 1);
+                        info.textMesh.position.set(0, curYOffset - 25, 2);
+                        curYOffset -= 50;
                         break;
                 }
             }

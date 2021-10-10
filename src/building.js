@@ -175,6 +175,10 @@ export class BuildingWorkersHouse extends Building {
     constructor(Farm, idx, x, z, type, side, createEntities = true) {
         super(Farm, idx, x, z, type, side);
 
+        this.infoBox.addButton("Set Storage", () => {
+            console.log("ooo");
+        });
+
         if (createEntities) {
             for (let entityType of this.Farm.BUILDINGS[this.type].entities) {
                 let workerEntity = new Entity(Farm, this.Farm.entityIdx, this.center.x, this.center.z, entityType);

@@ -158,21 +158,33 @@ export function onMouseDown(Farm, event) {
                     }
                 } else if (intersect.object.name.startsWith("InfoBox_")) {
                     let infoBoxOwnerName = intersect.object.name.substring("InfoBox_".length)
-                    let curInfoBox, infoBoxOwnerIdx;
+                    let curInfoBox, infoBoxOwnerIdx, infoBoxChildName;
                     if (infoBoxOwnerName.startsWith("Building_")) {
                         infoBoxOwnerIdx = infoBoxOwnerName.substring("Building_".length);
+                        let tmp = infoBoxOwnerIdx.indexOf("_");
+                        infoBoxChildName = tmp == -1 ? "" : infoBoxOwnerIdx.substring(tmp + 1);
+                        infoBoxOwnerIdx = tmp == -1 ? infoBoxOwnerIdx : infoBoxOwnerIdx.substring(0, infoBoxOwnerIdx.indexOf("_"));
                         curInfoBox = Farm.buildings[infoBoxOwnerIdx].infoBox;
                     } else if (infoBoxOwnerName.startsWith("Entity_")) {
                         infoBoxOwnerIdx = infoBoxOwnerName.substring("Entity_".length);
+                        let tmp = infoBoxOwnerIdx.indexOf("_");
+                        infoBoxChildName = tmp == -1 ? "" : infoBoxOwnerIdx.substring(tmp + 1);
+                        infoBoxOwnerIdx = tmp == -1 ? infoBoxOwnerIdx : infoBoxOwnerIdx.substring(0, infoBoxOwnerIdx.indexOf("_"));
                         curInfoBox = Farm.entities[infoBoxOwnerIdx].infoBox;
                     } else if (infoBoxOwnerName.startsWith("Restaurant")) {
                         curInfoBox = Farm.restaurantObj.infoBox;
                     } else {
                         continue;
                     }
-                    Farm.draggingInfoBox = curInfoBox;
-                    Farm.draggingInfoBoxStartPos = curInfoBox.pos.clone();
-                    Farm.draggingInfoBoxStartMousePos = Farm.mousePos.clone();
+
+                    if (infoBoxChildName.startsWith("Button_")) {
+                        let buttonIdx = infoBoxChildName.substring("Button_".length)
+                        curInfoBox.onClick[buttonIdx]();
+                    } else {
+                        Farm.draggingInfoBox = curInfoBox;
+                        Farm.draggingInfoBoxStartPos = curInfoBox.pos.clone();
+                        Farm.draggingInfoBoxStartMousePos = Farm.mousePos.clone();
+                    }
 
                     return;
                 } else if (Farm.lens == Farm.LENS.BUILD || Farm.lens == Farm.LENS.REMOVE) {
