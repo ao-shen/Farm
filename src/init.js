@@ -206,7 +206,7 @@ function initScene(Farm) {
 
     Farm.shadowLight = light;
     Farm.shadowLight.shadow.bias = -0.000001;
-    Farm.shadowLight.shadow.normalBias = 0.0;
+    Farm.shadowLight.shadow.normalBias = 0.1
 
     // Render Passes
     Farm.composer = new EffectComposer(Farm.renderer);

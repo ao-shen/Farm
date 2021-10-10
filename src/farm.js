@@ -423,6 +423,26 @@ export let Farm = {
             'assets/models/stone_path0.glb',
         ],
     }, {
+        name: "Storage",
+        category: "buildings",
+        build_mode: "single",
+        price: 100,
+        infoable: true,
+        inventorySlots: 200,
+        size: {
+            x: 2,
+            z: 2,
+        },
+        entities: [],
+        thumbnail: 'assets/textures/storage_thumbnail.png',
+        models: [
+            'assets/models/storage0.glb',
+            'assets/models/storage1.glb',
+            'assets/models/storage2.glb',
+            'assets/models/storage3.glb',
+            'assets/models/storage4.glb',
+        ],
+    }, {
         name: "Remove All",
         category: "remove",
         build_mode: "remove",
