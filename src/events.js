@@ -556,6 +556,9 @@ function createSingleNewBuilding(Farm, isArea = false) {
             case "Stone Path":
                 building = new BuildingObjects.BuildingPath(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
+            case "Storage":
+                building = new BuildingObjects.Storage(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                break;
             default:
                 building = new BuildingObjects.Building(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;

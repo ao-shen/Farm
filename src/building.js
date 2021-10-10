@@ -187,6 +187,13 @@ export class BuildingWorkersHouse extends Building {
     }
 }
 
+export class Storage extends Building {
+    constructor(Farm, idx, x, z, type, side) {
+        super(Farm, idx, x, z, type, side);
+
+    }
+}
+
 export class BuildingWall extends Building {
     constructor(Farm, idx, x, z, type, side) {
         super(Farm, idx, x, z, type, side);

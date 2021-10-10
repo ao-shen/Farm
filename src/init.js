@@ -400,6 +400,7 @@ function initHudScene(Farm) {
             texture.encoding = THREE.sRGBEncoding;
 
             material = new THREE.SpriteMaterial({ map: texture });
+            curBuilding.materialThumbnail = material;
 
             curBuilding.spriteThumbnail = new THREE.Sprite(material);
             curBuilding.spriteThumbnail.center.set(0.5, 0.5);

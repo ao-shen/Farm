@@ -6,6 +6,8 @@ import { NineSlicePlane } from './nine_slice';
 const TEXT = 0;
 const INVENTORY = 1;
 
+const ITEM_SIZE = 48;
+
 export class InfoBox {
     constructor(Farm, owner, ownerMeshProperty = "mesh") {
 
@@ -20,6 +22,10 @@ export class InfoBox {
 
         this.pos = new Vector2();
 
+        this.showing = false;
+
+        this.infos = [];
+
         this.meshBackground = new NineSlicePlane(Farm.materialInfoBoxBackground, {
             width: this.width,
             height: this.height,
@@ -28,26 +34,23 @@ export class InfoBox {
 
         this.meshBackground.name = this.name;
 
-        this.showing = false;
-
         let geometry = new THREE.BufferGeometry();
 
-        let lineVertices = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(lineVertices), 3));
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0]), 3));
 
         let material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, linewidth: 3 });
 
         this.lineMesh = new THREE.Line(geometry, material);
-
-        this.infos = [];
     }
 
     addText(text) {
         let textMesh = new Text();
         textMesh.text = text;
         textMesh.fontSize = 24;
-        textMesh.color = 0xFFFFFF;
+        textMesh.font = 'assets/fonts/carrot.otf';
+        textMesh.color = 0xd0a060;
+        textMesh.outlineWidth = 0.5;
+        textMesh.outlineColor = 0x302010;
         textMesh.name = this.name;
         this.meshBackground.add(textMesh);
 
@@ -56,14 +59,16 @@ export class InfoBox {
 
     addInventory(inventory) {
 
-        let textMesh = new Text();
+        this.infos.push({ type: INVENTORY, inventory: inventory, mesh: {} });
+
+        /*let textMesh = new Text();
         textMesh.text = "Inventory";
         textMesh.fontSize = 24;
         textMesh.color = 0xFFFFFF;
         textMesh.name = this.name;
         this.meshBackground.add(textMesh);
 
-        this.infos.push({ type: INVENTORY, inventory: inventory, mesh: textMesh });
+        this.infos.push({ type: INVENTORY, inventory: inventory, mesh: textMesh });*/
     }
 
     updatePosition(x, y) {
@@ -104,14 +109,53 @@ export class InfoBox {
                         curYOffset -= 30;
                         break;
                     case INVENTORY:
-                        mesh.position.set(curXOffset, curYOffset, 1);
+                        /*mesh.position.set(curXOffset, curYOffset, 1);
                         let str = "Inventory:\n";
                         curYOffset -= 30;
                         for (let type in info.inventory.inventory) {
                             str += this.owner.Farm.BUILDINGS[type].name + " x" + info.inventory.inventory[type] + "\n";
                             curYOffset -= 30;
                         }
-                        mesh.text = str;
+                        mesh.text = str;*/
+
+                        for (let type in info.mesh) {
+                            if (typeof info.inventory.inventory[type] == "undefined") {
+                                this.meshBackground.remove(info.mesh[type].sprite);
+                                this.meshBackground.remove(info.mesh[type].text);
+                                //info.mesh[type].sprite.dispose();
+                                info.mesh[type].text.dispose();
+                                delete info.mesh[type];
+                            }
+                        }
+                        let curItem = 0;
+                        for (let type in info.inventory.inventory) {
+                            if (typeof mesh[type] == "undefined") {
+                                let sprite = new THREE.Sprite(this.Farm.BUILDINGS[type].materialThumbnail);
+                                sprite.center.set(0, 1);
+                                sprite.scale.set(ITEM_SIZE - 3, ITEM_SIZE - 3, 1);
+                                sprite.name = this.name;
+                                this.meshBackground.add(sprite);
+
+                                let textMesh = new Text();
+                                textMesh.fontSize = 20;
+                                textMesh.font = 'assets/fonts/carrot.otf';
+                                textMesh.color = 0xd0a060;
+                                textMesh.outlineWidth = 0.5;
+                                textMesh.outlineColor = 0x302010;
+                                textMesh.anchorX = 'center';
+                                textMesh.anchorY = 'middle';
+                                textMesh.textAlign = 'right';
+                                textMesh.name = this.name;
+                                this.meshBackground.add(textMesh);
+
+                                mesh[type] = { sprite: sprite, text: textMesh };
+                            }
+                            mesh[type].sprite.position.set(curXOffset + curItem % 4 * ITEM_SIZE - 3, curYOffset + Math.floor(curItem / 4) * ITEM_SIZE, 1);
+                            mesh[type].text.position.set(curXOffset + curItem % 4 * ITEM_SIZE - 3 + ITEM_SIZE - 10, curYOffset + Math.floor(curItem / 4) * ITEM_SIZE - ITEM_SIZE + 10, 2);
+                            mesh[type].text.text = `${info.inventory.inventory[type]}`;
+                            curItem++;
+                        }
+                        curYOffset -= Math.floor((curItem - 1) / 4 + 1) * ITEM_SIZE;
 
                         break;
                 }
@@ -182,8 +226,20 @@ export class InfoBox {
         }
 
         for (let info of this.infos) {
-            this.meshBackground.remove(info.mesh);
-            info.mesh.dispose();
+            switch (info.type) {
+                case TEXT:
+                    this.meshBackground.remove(info.mesh);
+                    info.mesh.dispose();
+                    break;
+                case INVENTORY:
+                    for (let type in info.mesh) {
+                        this.meshBackground.remove(info.mesh[type].sprite);
+                        this.meshBackground.remove(info.mesh[type].text);
+                        //info.mesh[type].sprite.dispose();
+                        info.mesh[type].text.dispose();
+                    }
+                    break;
+            }
         }
 
         this.meshBackground.geometry.dispose();
