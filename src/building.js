@@ -16,6 +16,9 @@ export class Building {
         this.variation = 0;
         this.foundationBlocks = [];
         this.infoable = this.Farm.BUILDINGS[this.type].infoable;
+        this.importTargets = [];
+        this.exportTargets = [];
+        this.curExportTargets = 0;
 
         if (this.Farm.BUILDINGS[this.type].instanced) {
             this.instanced = true;
@@ -46,6 +49,8 @@ export class Building {
             z: Math.floor(this.center.z / this.Farm.blockSize)
         };
 
+        this.dropOffPoint = this.centerBlock;
+
         this.childEntities = [];
 
         if (this.infoable) {
@@ -54,7 +59,24 @@ export class Building {
             this.infoBox.addInventory(this.inventory);
         }
 
+        this.findImportExportTargets();
+
         this.render();
+    }
+
+    findImportExportTargets() {
+
+    }
+
+    getNextExportTarget() {
+        for (let i = 0; i < this.exportTargets.length; i++) {
+            let tmp = this.curExportTargets % this.exportTargets.length;
+            this.curExportTargets = (this.curExportTargets + 1) % this.exportTargets.length;
+            if (!this.exportTargets[tmp].inventory.isFull()) {
+                return this.exportTargets[tmp];
+            }
+        }
+        return null;
     }
 
     updateMeshVariation(variation, side = -1) {
@@ -146,6 +168,13 @@ export class Building {
             child.remove();
         }
 
+        for (let target of this.exportTargets) {
+            target.importTargets.splice(target.importTargets.indexOf(this), 1);
+        }
+        for (let target of this.importTargets) {
+            target.exportTargets.splice(target.exportTargets.indexOf(this), 1);
+        }
+
         if (this.infoable) {
             this.infoBox.remove();
         }
@@ -175,6 +204,8 @@ export class BuildingWorkersHouse extends Building {
     constructor(Farm, idx, x, z, type, side, createEntities = true) {
         super(Farm, idx, x, z, type, side);
 
+        this.canExportToStorage = true;
+
         this.infoBox.addButton("Set Storage", () => {
             console.log("ooo");
         });
@@ -189,12 +220,58 @@ export class BuildingWorkersHouse extends Building {
             }
         }
     }
+
+    findImportExportTargets() {
+        for (let x = this.pos.x - 10; x <= this.pos.x + 10; x++) {
+            for (let z = this.pos.z - 10; z <= this.pos.z + 10; z++) {
+                let curBlock = this.Farm.blocks[x + ',' + z];
+                if (typeof curBlock === 'undefined') continue;
+
+                for (let curBuilding of curBlock.buildings) {
+                    if (curBuilding.isStorage) {
+                        if (!curBuilding.importTargets.includes(this)) {
+                            curBuilding.importTargets.push(this);
+                        }
+                        if (!this.exportTargets.includes(curBuilding)) {
+                            this.exportTargets.push(curBuilding);
+                        }
+                    }
+                }
+            }
+        }
+        if (Math.abs(this.Farm.restaurantObj.dropOffPoint.x - this.pos.x) <= 10 && Math.abs(this.Farm.restaurantObj.dropOffPoint.z - this.pos.z) <= 10) {
+            if (!this.exportTargets.includes(this.Farm.restaurantObj)) {
+                this.exportTargets.push(this.Farm.restaurantObj);
+            }
+        }
+    }
 }
 
 export class Storage extends Building {
     constructor(Farm, idx, x, z, type, side) {
         super(Farm, idx, x, z, type, side);
 
+        this.isStorage = true;
+    }
+
+    findImportExportTargets() {
+        for (let x = this.pos.x - 10; x <= this.pos.x + 10; x++) {
+            for (let z = this.pos.z - 10; z <= this.pos.z + 10; z++) {
+                let curBlock = this.Farm.blocks[x + ',' + z];
+                if (typeof curBlock === 'undefined') continue;
+
+                for (let curBuilding of curBlock.buildings) {
+                    if (curBuilding.canExportToStorage) {
+                        if (!this.importTargets.includes(curBuilding)) {
+                            this.importTargets.push(curBuilding);
+                        }
+                        if (!curBuilding.exportTargets.includes(this)) {
+                            curBuilding.exportTargets.push(this);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -99,11 +99,11 @@ export class CustomerCar extends Vehicle {
         } else {
             setTimeout(() => {
 
-                /*let removedInventory = this.Farm.restaurantObj.inventory.removeRandom(Math.floor(1 + (Math.random() * 0.5 + 0.5) * this.Farm.restaurantObj.inventory.getSlotsFilled()));
+                let removedInventory = this.Farm.restaurantObj.inventory.removeRandom(Math.floor(1 + (Math.random() * 0.25) * this.Farm.restaurantObj.inventory.getSlotsFilled()));
 
                 for (let type in removedInventory) {
                     this.Farm.money += this.Farm.BUILDINGS[type].sellPrice * removedInventory[type];
-                }*/
+                }
 
                 this.path = this.secondHalfPath;
                 this.Farm.parkingLot[this.parkingIdx].vehicle = null;

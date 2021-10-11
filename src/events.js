@@ -173,6 +173,7 @@ export function onMouseDown(Farm, event) {
                         curInfoBox = Farm.entities[infoBoxOwnerIdx].infoBox;
                     } else if (infoBoxOwnerName.startsWith("Restaurant")) {
                         curInfoBox = Farm.restaurantObj.infoBox;
+                        infoBoxChildName = infoBoxOwnerName.substring("Restaurant_".length)
                     } else {
                         continue;
                     }

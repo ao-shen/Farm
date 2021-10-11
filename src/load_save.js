@@ -112,6 +112,7 @@ export function save(Farm) {
         entityData.t = curEntity.type;
         entityData.p = { x: Math.round(curEntity.pos.x), z: Math.round(curEntity.pos.z) };
         entityData.v = curEntity.variation;
+        entityData.s = curEntity.state;
 
         if (curEntity.inventory && !curEntity.inventory.isEmpty()) {
             entityData.n = curEntity.inventory.inventory;
@@ -273,6 +274,9 @@ export async function load(Farm) {
                             case "Stone Path":
                                 building = new BuildingObjects.BuildingPath(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
+                            case "Storage":
+                                building = new BuildingObjects.Storage(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
+                                break;
                             default:
                                 building = new BuildingObjects.Building(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
@@ -307,6 +311,7 @@ export async function load(Farm) {
                     for (let entityData of data.entities) {
 
                         let curEntity = new Entity(Farm, entityData.i, entityData.p.x, entityData.p.z, entityData.t, entityData.v);
+                        curEntity.state = entityData.s ? entityData.s : 0;
 
                         if (entityData.n) {
                             curEntity.inventory.addMultiple(entityData.n);

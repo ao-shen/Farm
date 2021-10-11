@@ -13,8 +13,10 @@ export class Entity {
         this.idx = idx;
         this.pos = new THREE.Vector3(x, 0, z);
         this.type = type;
-        this.name = "Entity_" + this.idx;;
+        this.name = "Entity_" + this.idx;
         this.meshRotationOffset = 0;
+
+        this.state = 0;
 
         this.path = null;
         this.pathMesh = null;
@@ -59,23 +61,20 @@ export class Entity {
     }
 
     logic() {
-        if (this.inventory.isFull()) {
-            if (this.isAtHome()) {
-                if (this.Farm.restaurantObj.inventory.isFull()) {
-                    this.inventory.transferAllTo(this.parentBuilding.inventory);
-                    return true;
+        switch (this.state) {
+            case 0:
+                if (this.inventory.isFull()) {
+                    if (this.Farm.restaurantObj.inventory.isFull()) {
+                        this.inventory.transferAllTo(this.parentBuilding.inventory);
+                        return true;
+                    } else {
+                        return this.navigateToTarget("Storage");
+                    }
                 } else {
-                    return this.navigateToTarget("Restaurant");
+                    return this.navigateToTarget();
                 }
-            } else {
+            case 1:
                 return this.navigateHome();
-            }
-        } else {
-            if (this.isAtHome()) {
-                return this.navigateToTarget();
-            } else {
-                return this.navigateHome();
-            }
         }
     }
 
@@ -118,13 +117,16 @@ export class Entity {
                             return false;
                         }
                     }
-                } else if (target == "Restaurant") {
-                    this.goal = this.Farm.restaurantObj;
-                    this.targetActionCategory = "dropOff";
-                    this.path = this.pathFind(this.Farm.restaurantObj.dropOffPoint);
-                    if (this.path != null) {
-                        this.renderPath();
-                        return false;
+                } else if (target == "Storage") {
+                    let exportTarget = this.parentBuilding.getNextExportTarget();
+                    if (exportTarget) {
+                        this.goal = exportTarget;
+                        this.targetActionCategory = "dropOff";
+                        this.path = this.pathFind(exportTarget.dropOffPoint);
+                        if (this.path != null) {
+                            this.renderPath();
+                            return false;
+                        }
                     }
                 }
                 break;
@@ -189,12 +191,14 @@ export class Entity {
         let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
         let thisEntity = this;
         if (this.goal == this.parentBuilding) {
+            this.state = 0;
             this.Farm.scheduler.addToSchedule(1000, function() {
                 return thisEntity.logic();
             }, this);
         } else {
             switch (this.Farm.ENTITIES[this.type].name) {
                 case "Worker":
+                    this.state = 1;
                     this.Farm.scheduler.addToSchedule(100, function() {
                         return thisEntity.performActionAtTarget();
                     }, this);
