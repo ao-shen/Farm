@@ -428,7 +428,7 @@ export let Farm = {
         build_mode: "single",
         price: 100,
         infoable: true,
-        inventorySlots: 200,
+        inventorySlots: 100,
         size: {
             x: 2,
             z: 2,

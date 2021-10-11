@@ -252,6 +252,11 @@ export class Storage extends Building {
         super(Farm, idx, x, z, type, side);
 
         this.isStorage = true;
+
+        this.inventory.onChange = () => {
+            let level = this.inventory.getFillLevel() * (this.Farm.BUILDINGS[this.type].meshes.length - 1);
+            this.updateMeshVariation(Math.ceil(level));
+        };
     }
 
     findImportExportTargets() {
