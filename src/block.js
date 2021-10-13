@@ -15,6 +15,8 @@ export class Block {
         this.plants = [];
         this.buildings = [];
 
+        this.entityVelocity = 1;
+
         this.mesh = null;
 
         this.soilVariation = 1;
@@ -33,6 +35,13 @@ export class Block {
         }
         if (updateAttribute) {
             this.Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(this.Farm.groundUVs), 2));
+        }
+
+        this.entityVelocity = 1;
+        if (2 <= this.groundState && this.groundState <= 7) {
+            this.entityVelocity = 0.5;
+        } else if (8 <= this.groundState && this.groundState <= 13) {
+            this.entityVelocity = 0.2;
         }
     }
 

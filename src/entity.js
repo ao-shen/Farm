@@ -158,7 +158,7 @@ export class Entity {
 
     findMaturePlant() {
 
-        let rangeRadius = 10;
+        let rangeRadius = 50;
         let curBlockPos = this.Farm.posToBlocks(this.pos.x, this.pos.z);
 
         let nearest = this.Farm.plantsAwaitingHarvest.findNearest(curBlockPos, rangeRadius);
@@ -283,6 +283,8 @@ export class Entity {
         this.isRemoved = true;
     }
 
+    // false = no collision
+    // true = collision
     isCollidingAt(curPos, direction, isTarget = false) {
 
         let x = curPos.x + direction.x;
@@ -293,10 +295,6 @@ export class Entity {
 
         let curBlock = this.Farm.blocks[x + ',' + z];
 
-        if (curBlock.buildings.length == 0) {
-            return false;
-        }
-
         let hasPath = false;
         for (let building of curBlock.buildings) {
             if (building.isPath) {
@@ -304,6 +302,16 @@ export class Entity {
                 break;
             }
         }
+
+        let isAtParent = false;
+        for (let otherBlock of this.parentBuilding.foundationBlocks) {
+            if (otherBlock == curBlock) {
+                isAtParent = true;
+                break;
+            }
+        }
+
+        if (!hasPath && curBlock.type != BLOCK.SOIL && !isTarget && !isAtParent) return true;
 
         for (let building of curBlock.buildings) {
             if (building.isWall) {
@@ -334,7 +342,7 @@ export class Entity {
             return max - min + min * 1.414;
         }
 
-        function heuristic(x, z, pathLength) {
+        function heuristic(x, z) {
             return chebyshevDist(x, z);
         }
 
@@ -345,12 +353,13 @@ export class Entity {
         let vis = {};
 
         let pq = new PriorityQueue(function(a, b) {
-            if (a.heuristic == b.heuristic) {
+            /*if (a.heuristic == b.heuristic) {
                 return a.pathLength < b.pathLength;
             }
-            return a.heuristic < b.heuristic;
+            return a.heuristic < b.heuristic;*/
+            return a.pathLength < b.pathLength;
         });
-        pq.push({ x: startX, z: startZ, pathLength: 0, parent: null, heuristic: heuristic(startX, startZ, 0) });
+        pq.push({ x: startX, z: startZ, pathLength: 0, parent: null, heuristic: heuristic(startX, startZ), velocity: 1 });
         vis[startX + ',' + startZ] = 1;
 
         while (!pq.isEmpty()) {
@@ -363,6 +372,7 @@ export class Entity {
                 // Collision tests
                 let selfCollide = false;
                 let curBlock = this.Farm.blocks[cur.x + ',' + cur.z];
+
                 for (let building of curBlock.buildings) {
                     if (building.isWall) {
                         if (direction.sides.includes(building.side)) {
@@ -378,13 +388,17 @@ export class Entity {
                     if (this.isCollidingAt(cur, direction.blocking[1])) continue;
                 }
 
+                let newBlockIdx = (newX + ',' + newZ);
+                let newBlock = this.Farm.blocks[newBlockIdx];
+                let velocity = (newBlock.entityVelocity + curBlock.entityVelocity) / 2;
+
                 // If target reached
                 if (newX == goal.x && newZ == goal.z) {
 
-                    let path = [{ x: newX, z: newZ }];
+                    let path = [{ x: newX, z: newZ, speedLimit: 1 / velocity }];
 
                     while (cur != null) {
-                        path.unshift({ x: cur.x, z: cur.z });
+                        path.unshift({ x: cur.x, z: cur.z, speedLimit: 1 / cur.velocity });
 
                         cur = cur.parent;
                     }
@@ -393,9 +407,9 @@ export class Entity {
                 }
 
                 // Otherwise
-                if (!((newX + ',' + newZ) in vis) && cur.pathLength + direction.length < 30) {
-                    pq.push({ x: newX, z: newZ, pathLength: cur.pathLength + direction.length, parent: cur, heuristic: heuristic(newX, newZ, cur.pathLength + 1) });
-                    vis[newX + ',' + newZ] = 1;
+                if (!(newBlockIdx in vis) && cur.pathLength < 30) {
+                    pq.push({ x: newX, z: newZ, pathLength: cur.pathLength + direction.length * velocity, parent: cur, heuristic: chebyshevDist(newX, newZ), velocity: velocity });
+                    vis[newBlockIdx] = 1;
                 }
             }
         }

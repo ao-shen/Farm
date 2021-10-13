@@ -255,7 +255,7 @@ export class BuildingWorkersHouse extends Building {
                 }
             }
         }
-        if (Math.abs(this.Farm.restaurantObj.dropOffPoint.x - this.pos.x) <= 10 && Math.abs(this.Farm.restaurantObj.dropOffPoint.z - this.pos.z) <= 10) {
+        if (Math.abs(this.Farm.restaurantObj.dropOffPoint.x - this.pos.x) <= 100 && Math.abs(this.Farm.restaurantObj.dropOffPoint.z - this.pos.z) <= 100) {
             if (!this.exportTargets.includes(this.Farm.restaurantObj)) {
                 this.exportTargets.push(this.Farm.restaurantObj);
             }
