@@ -662,7 +662,9 @@ function updateBuildingMeshPreview(Farm) {
     if (!Farm.BUILDINGS[Farm.buildPaletteSelect].noPreviewMesh && Farm.BUILDINGS[Farm.buildPaletteSelect].category != "remove") {
         Farm.buildBuildingMesh = new THREE.Mesh(Farm.BUILDINGS[Farm.buildPaletteSelect].geometries[0].clone(), Farm.buildBuildingMaterial);
         Farm.scene.add(Farm.buildBuildingMesh);
-        Farm.buildBuildingMesh.visible = true;
+        if (Farm.overlay != Farm.OVERLAY.BUILD_SINGLE) {
+            Farm.buildBuildingMesh.visible = false;
+        }
     }
 }
 

@@ -238,9 +238,9 @@ function renderOverlays(Farm) {
                 if (Farm.buildBuildingMesh != null) {
                     Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
                     Farm.buildBuildingMesh.position.set(
-                        (rectX2) - 0.5 * Farm.blockSize,
+                        (point.x) + 0.5 * Farm.blockSize,
                         0.01,
-                        (rectZ2) - 0.5 * Farm.blockSize
+                        (point.z) + 0.5 * Farm.blockSize
                     );
                 }
             } else if (Farm.overlay == Farm.OVERLAY.BUILD_LINE) {
@@ -278,9 +278,9 @@ function renderOverlays(Farm) {
                 if (Farm.buildBuildingMesh != null) {
                     Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
                     Farm.buildBuildingMesh.position.set(
-                        (rectX2) - 0.5 * Farm.blockSize,
+                        (point.x) + 0.5 * Farm.blockSize,
                         0.01,
-                        (rectZ2) - 0.5 * Farm.blockSize
+                        (point.z) + 0.5 * Farm.blockSize
                     );
                 }
             } else if (Farm.overlay == Farm.OVERLAY.BUILD_SINGLE) {
