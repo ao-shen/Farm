@@ -20,7 +20,14 @@ export class Building {
         this.exportTargets = [];
         this.curExportTargets = 0;
 
-        if (this.Farm.BUILDINGS[this.type].instanced) {
+        if (!this.size) {
+            this.size = { x: 1, z: 1 };
+        }
+
+        if (this.Farm.BUILDINGS[this.type].groundStateMutator) {
+            let curBlock = this.Farm.blocks[this.pos.x + ',' + this.pos.z];
+            curBlock.updateGroundState(this.Farm.BUILDINGS[this.type].groundStateMutator[0], this.side, false);
+        } else if (this.Farm.BUILDINGS[this.type].instanced) {
             this.instanced = true;
             this.updateInstancedMesh();
         } else {
@@ -85,8 +92,10 @@ export class Building {
         if (side != -1) {
             this.side = side;
         }
-
-        if (this.instanced) {
+        if (this.Farm.BUILDINGS[this.type].groundStateMutator) {
+            let curBlock = this.Farm.blocks[this.pos.x + ',' + this.pos.z];
+            curBlock.updateGroundState(this.Farm.BUILDINGS[this.type].groundStateMutator[variation % 6], this.side, false);
+        } else if (this.instanced) {
             this.updateInstancedMesh();
         } else {
             if (this.infoable) {
@@ -169,17 +178,24 @@ export class Building {
         }
 
         for (let target of this.exportTargets) {
-            target.importTargets.splice(target.importTargets.indexOf(this), 1);
+            if (target.importTargets) {
+                target.importTargets.splice(target.importTargets.indexOf(this), 1);
+            }
         }
         for (let target of this.importTargets) {
-            target.exportTargets.splice(target.exportTargets.indexOf(this), 1);
+            if (target.exportTargets) {
+                target.exportTargets.splice(target.exportTargets.indexOf(this), 1);
+            }
         }
 
         if (this.infoable) {
             this.infoBox.remove();
         }
 
-        if (this.instanced) {
+        if (this.Farm.BUILDINGS[this.type].groundStateMutator) {
+            let curBlock = this.Farm.blocks[this.pos.x + ',' + this.pos.z];
+            curBlock.updateGroundState(0, 0, false);
+        } else if (this.instanced) {
 
         } else {
             this.mesh.geometry.dispose();

@@ -60,6 +60,9 @@ export function onMouseUp(Farm, event) {
                 }
                 Farm.overlay = Farm.OVERLAY.DEFAULT;
                 Farm.buildAreaRect.visible = false;
+                if (Farm.buildBuildingMesh != null) {
+                    Farm.buildBuildingMesh.visible = false;
+                }
             } else if (Farm.overlay == Farm.OVERLAY.BUILD_LINE) {
                 if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Trench") {
                     createNewTrench(Farm);
@@ -488,8 +491,11 @@ function createAreaOfNewBuildings(Farm) {
         }
     }
 
-    if (BUILDING.instanced) {
-        updateInstancedBuildingMesh(Farm, buildingType);
+    if (BUILDING.instanced || BUILDING.connectible || BUILDING.connectibleGroup) {
+        updateInstancedBuildingMesh(Farm, buildingType, { x: startX, z: startZ }, { x: endX, z: endZ });
+    }
+    if (BUILDING.groundStateMutator || BUILDING.connectibleGroup) {
+        Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
     }
 }
 
@@ -499,7 +505,7 @@ function createSingleNewBuilding(Farm, isArea = false) {
     let buildingType = Farm.buildPaletteSelect;
     let BUILDING = Farm.BUILDINGS[buildingType];
     let isWall = BUILDING.name == "Fence";
-    let isPath = BUILDING.name == "Stone Path";
+    let isPath = BUILDING.name == "Concrete Slab" || BUILDING.name == "Dirt Path" || BUILDING.name == "Asphalt Road";
 
     let foundationBlocks = [];
 
@@ -566,7 +572,9 @@ function createSingleNewBuilding(Farm, isArea = false) {
             case "Fence":
                 building = new BuildingObjects.BuildingWall(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
-            case "Stone Path":
+            case "Concrete Slab":
+            case "Dirt Path":
+            case "Asphalt Road":
                 building = new BuildingObjects.BuildingPath(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "Storage":
@@ -589,8 +597,12 @@ function createSingleNewBuilding(Farm, isArea = false) {
         Farm.buildings[Farm.buildingIdx] = building;
         Farm.buildingIdx++;
 
-        if (BUILDING.instanced && !isArea) {
-            updateInstancedBuildingMesh(Farm, buildingType);
+        if ((BUILDING.instanced || BUILDING.connectible || BUILDING.connectibleGroup) && !isArea) {
+            updateInstancedBuildingMesh(Farm, buildingType, Farm.buildAreaPoint1, Farm.buildAreaPoint2);
+        }
+
+        if ((BUILDING.groundStateMutator || BUILDING.connectibleGroup) && !isArea) {
+            Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
         }
     }
 }
@@ -647,13 +659,10 @@ function updateBuildingMeshPreview(Farm) {
         Farm.buildBuildingMesh.geometry.dispose();
         Farm.buildBuildingMesh = null;
     }
-    if (Farm.overlay == Farm.OVERLAY.BUILD_SINGLE || Farm.overlay == Farm.OVERLAY.BUILD_LINE) {
+    if (!Farm.BUILDINGS[Farm.buildPaletteSelect].noPreviewMesh && Farm.BUILDINGS[Farm.buildPaletteSelect].category != "remove") {
         Farm.buildBuildingMesh = new THREE.Mesh(Farm.BUILDINGS[Farm.buildPaletteSelect].geometries[0].clone(), Farm.buildBuildingMaterial);
         Farm.scene.add(Farm.buildBuildingMesh);
         Farm.buildBuildingMesh.visible = true;
-    }
-    if (Farm.overlay == Farm.OVERLAY.BUILD_LINE) {
-        Farm.buildBuildingMesh.visible = false;
     }
 }
 
@@ -661,6 +670,7 @@ function remove(Farm) {
 
     let removedPlantTypes = new Set();
     let removedBuildingTypes = new Set();
+    let didRemovedGroundStateMutator = false;
 
     for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x; x++) {
         for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z; z++) {
@@ -672,9 +682,10 @@ function remove(Farm) {
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
                 for (let i = 0; i < curBlock.buildings.length; i++) {
                     let curBuilding = curBlock.buildings[i];
-                    if (curBuilding.instanced) {
-                        removedBuildingTypes.add(curBuilding.type);
+                    if (Farm.BUILDINGS[curBuilding.type].groundStateMutator) {
+                        didRemovedGroundStateMutator = true;
                     }
+                    removedBuildingTypes.add(curBuilding.type);
                     for (let foundationBlock of curBuilding.foundationBlocks) {
                         var index = foundationBlock.buildings.indexOf(curBuilding);
                         if (index !== -1 && foundationBlock != curBlock) {
@@ -719,8 +730,11 @@ function remove(Farm) {
         //Farm.buildings = Farm.buildings.filter(building => building);
         //Farm.entities = Farm.entities.filter(entity => entity);
         removedBuildingTypes.forEach(function(buildingType) {
-            updateInstancedBuildingMesh(Farm, buildingType);
+            updateInstancedBuildingMesh(Farm, buildingType, Farm.buildAreaPoint1, Farm.buildAreaPoint2);
         });
+        if (didRemovedGroundStateMutator) {
+            Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
+        }
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {

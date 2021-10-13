@@ -24,11 +24,23 @@ export class Block {
         this.hash = xmur3(x + "+" + z)();
     }
 
+    updateGroundState(state, side = 0, updateAttribute = true) {
+        this.groundState = (state + this.Farm.GROUND_STATES.length) % this.Farm.GROUND_STATES.length;
+
+        let curIdx = (this.x * this.Farm.numBlocks.z + this.z) * 8;
+        for (let i = 0; i < 8; i++) {
+            this.Farm.groundUVs[curIdx + i] = this.Farm.GROUND_STATES[this.groundState].uv[(i + 8 - 2 * side) % 8];
+        }
+        if (updateAttribute) {
+            this.Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(this.Farm.groundUVs), 2));
+        }
+    }
+
     updateGrassBlades() {
 
         const matrix = new THREE.Matrix4();
 
-        if (this.type == BLOCK.GRASS && this.plants.length == 0 && this.buildings.length == 0) {
+        if (this.type == BLOCK.GRASS && this.groundState == 0 && this.plants.length == 0 && this.buildings.length == 0) {
             if (!this.isGrassBladeVisible) {
                 this.isGrassBladeVisible = true;
                 for (let idx of this.grassBladeIdx) {

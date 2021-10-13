@@ -81,10 +81,21 @@ export function onUpdateWater(Farm) {
     waterUpdateCount++;
 }
 
-export function updateConnectibleConnections(Farm, buildingType, points) {
-    if (Farm.BUILDINGS[buildingType].name != "Trench") {
+export function updateConnectibleConnections(Farm, buildingType, points = null) {
+    if (!Farm.BUILDINGS[buildingType].connectible) {
         return;
     }
+    if (!points) {
+        points = new Set();
+        for (const curBuildingIdx in Farm.buildings) {
+            let curBuilding = Farm.buildings[curBuildingIdx];
+            if (curBuilding.type == buildingType) {
+                points.add(curBuilding.centerBlock.x + ',' + curBuilding.centerBlock.z);
+            }
+        }
+    }
+    let connectToRiver = Farm.BUILDINGS[buildingType].name == "Trench";
+    let connectibleGroup = Farm.BUILDINGS[buildingType].connectibleGroup;
     points.forEach(function(point) {
         let pointSplit = point.split(",");
         let x = parseInt(pointSplit[0]);
@@ -93,7 +104,7 @@ export function updateConnectibleConnections(Farm, buildingType, points) {
         if (typeof curBlock === 'undefined') return;
 
         for (let building of curBlock.buildings) {
-            if (building.type != buildingType) continue;
+            if (building.type != buildingType && (!Farm.BUILDINGS[building.type].connectible || Farm.BUILDINGS[building.type].connectibleGroup != connectibleGroup)) continue;
 
             let connections = [];
 
@@ -101,7 +112,7 @@ export function updateConnectibleConnections(Farm, buildingType, points) {
                 let direction = DIRECTIONS[i];
                 let otherBlock = Farm.blocks[(x + direction.x) + ',' + (z + direction.z)];
 
-                if ((x + direction.x) < 0) {
+                if ((x + direction.x) < 0 && connectToRiver) {
                     connections.push(i);
                     continue;
                 }
@@ -109,7 +120,7 @@ export function updateConnectibleConnections(Farm, buildingType, points) {
                 if (typeof otherBlock === 'undefined') continue;
 
                 for (let building of otherBlock.buildings) {
-                    if (building.type != buildingType) continue;
+                    if (building.type != buildingType && Farm.BUILDINGS[building.type].connectibleGroup != connectibleGroup) continue;
 
                     connections.push(i);
                     break;

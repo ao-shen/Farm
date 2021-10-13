@@ -233,6 +233,16 @@ function renderOverlays(Farm) {
                     rectScreenPoint4.x, rectScreenPoint4.y, -100,
                     rectScreenPoint1.x, rectScreenPoint1.y, -100,
                 ]), 3));
+
+                // update build building preview
+                if (Farm.buildBuildingMesh != null) {
+                    Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
+                    Farm.buildBuildingMesh.position.set(
+                        (rectX2) - 0.5 * Farm.blockSize,
+                        0.01,
+                        (rectZ2) - 0.5 * Farm.blockSize
+                    );
+                }
             } else if (Farm.overlay == Farm.OVERLAY.BUILD_LINE) {
 
                 let rectX1 = Math.min(point.x, Farm.buildAreaCorner.x);

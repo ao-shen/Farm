@@ -7,6 +7,7 @@ import { Plant } from "./plant";
 import * as BuildingObjects from './building.js';
 import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh } from "./update_instanced_meshes";
 import { Entity } from "./entity";
+import { updateConnectibleConnections } from "./water_update";
 
 var Base64Binary = {
     _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -212,7 +213,8 @@ export async function load(Farm) {
                 LZMA.decompress(decoded, function(result) {
 
                     let loadedPlantTypes = new Set();
-                    let loadedBuildingTypes = new Set();
+                    let loadedInstancedBuildingTypes = new Set();
+                    let loadedConnectibleBuildingTypes = new Set();
 
                     const data = JSON.parse(result);
                     console.log(data);
@@ -257,7 +259,9 @@ export async function load(Farm) {
                         let building;
                         let buildingType = buildingData.t;
                         if (Farm.BUILDINGS[buildingType].instanced) {
-                            loadedBuildingTypes.add(buildingType);
+                            loadedInstancedBuildingTypes.add(buildingType);
+                        } else if (Farm.BUILDINGS[buildingType].connectible) {
+                            loadedConnectibleBuildingTypes.add(buildingType);
                         }
 
                         switch (Farm.BUILDINGS[buildingType].name) {
@@ -271,7 +275,9 @@ export async function load(Farm) {
                             case "Fence":
                                 building = new BuildingObjects.BuildingWall(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
-                            case "Stone Path":
+                            case "Concrete Slab":
+                            case "Dirt Path":
+                            case "Asphalt Road":
                                 building = new BuildingObjects.BuildingPath(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
                             case "Storage":
@@ -338,9 +344,13 @@ export async function load(Farm) {
                     loadedPlantTypes.forEach(function(plantType) {
                         updatePlantMesh(Farm, plantType);
                     });
-                    loadedBuildingTypes.forEach(function(buildingType) {
+                    loadedInstancedBuildingTypes.forEach(function(buildingType) {
                         updateInstancedBuildingMesh(Farm, buildingType);
                     });
+                    loadedConnectibleBuildingTypes.forEach(function(buildingType) {
+                        updateInstancedBuildingMesh(Farm, buildingType);
+                    });
+                    Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
 
                     resolve();
 

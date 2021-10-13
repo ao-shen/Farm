@@ -648,14 +648,14 @@ async function initWorld(Farm) {
     // ground
 
     for (let state of Farm.GROUND_STATES) {
-        state.uv[0] += 0.01;
-        state.uv[1] += 0.01;
-        state.uv[2] -= 0.01;
-        state.uv[3] += 0.01;
-        state.uv[4] -= 0.01;
-        state.uv[5] -= 0.01;
-        state.uv[6] += 0.01;
-        state.uv[7] -= 0.01;
+        state.uv[0] += 0.001;
+        state.uv[1] += 0.001;
+        state.uv[2] -= 0.001;
+        state.uv[3] += 0.001;
+        state.uv[4] -= 0.001;
+        state.uv[5] -= 0.001;
+        state.uv[6] += 0.001;
+        state.uv[7] -= 0.001;
     }
 
     var quad_normals = [
@@ -831,8 +831,16 @@ async function initWorld(Farm) {
     await initRestaurant(Farm);
 
     // Waiting Lists
-
     Farm.plantsAwaitingHarvest.init(Farm);
+
+    // Connectible Groups
+    for (let i = 0; i < Farm.BUILDINGS.length; i++) {
+        let BUILDING = Farm.BUILDINGS[i];
+        if (!Farm.connectibleGroupMap[BUILDING.connectibleGroup]) {
+            Farm.connectibleGroupMap[BUILDING.connectibleGroup] = [];
+        }
+        Farm.connectibleGroupMap[BUILDING.connectibleGroup].push(i);
+    }
 }
 
 async function initRestaurant(Farm) {

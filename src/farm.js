@@ -214,44 +214,107 @@ export let Farm = {
     // CONFIGS -----------------------------------------------
 
     // Ground States
-    GROUND_STATES: [{
+    GROUND_STATES: [{ // GRASS
         uv: [
             0.0, 0.75,
-            0.5, 0.75,
-            0.5, 1.0,
+            0.125, 0.75,
+            0.125, 1.0,
             0.0, 1.0
         ],
-    }, {
-        uv: [
-            0.0, 0.5,
-            0.5, 0.5,
-            0.5, 0.75,
-            0.0, 0.75
-        ],
-    }, {
-        uv: [
-            0.0, 0.25,
-            0.5, 0.25,
-            0.5, 0.5,
-            0.0, 0.5
-        ],
-    }, {
+    }, { // CLEAR
         uv: [
             0.0, 0.0,
-            0.5, 0.0,
-            0.5, 0.25,
+            0.125, 0.0,
+            0.125, 0.25,
             0.0, 0.25
+        ],
+    }, { // BEGIN DIRT PATH
+        uv: [
+            0.25, 0.75,
+            0.375, 0.75,
+            0.375, 1.0,
+            0.25, 1.0
+        ],
+    }, {
+        uv: [
+            0.375, 0.75,
+            0.5, 0.75,
+            0.5, 1.0,
+            0.375, 1.0
         ],
     }, {
         uv: [
             0.5, 0.75,
+            0.625, 0.75,
+            0.625, 1.0,
+            0.5, 1.0
+        ],
+    }, {
+        uv: [
+            0.625, 0.75,
+            0.75, 0.75,
+            0.75, 1.0,
+            0.625, 1.0
+        ],
+    }, {
+        uv: [
+            0.75, 0.75,
+            0.875, 0.75,
+            0.875, 1.0,
+            0.75, 1.0
+        ],
+    }, {
+        uv: [
+            0.875, 0.75,
             1.0, 0.75,
             1.0, 1.0,
-            0.5, 1.0
+            0.875, 1.0
+        ],
+    }, { // BEGIN ASPHALT ROAD
+        uv: [
+            0.25, 0.5,
+            0.375, 0.5,
+            0.375, 0.75,
+            0.25, 0.75
+        ],
+    }, {
+        uv: [
+            0.375, 0.5,
+            0.5, 0.5,
+            0.5, 0.75,
+            0.375, 0.75
+        ],
+    }, {
+        uv: [
+            0.5, 0.5,
+            0.625, 0.5,
+            0.625, 0.75,
+            0.5, 0.75
+        ],
+    }, {
+        uv: [
+            0.625, 0.5,
+            0.75, 0.5,
+            0.75, 0.75,
+            0.625, 0.75
+        ],
+    }, {
+        uv: [
+            0.75, 0.5,
+            0.875, 0.5,
+            0.875, 0.75,
+            0.75, 0.75
+        ],
+    }, {
+        uv: [
+            0.875, 0.5,
+            1.0, 0.5,
+            1.0, 0.75,
+            0.875, 0.75
         ],
     }],
     GROUND_STATES_NAMES: {
-        CLEAR: 3,
+        CLEAR: 1,
         WATER: 4
     },
 
@@ -273,6 +336,8 @@ export let Farm = {
     }],
     curBuildingPaletteCategories: 0,
 
+    connectibleGroupMap: {},
+
     BUILDINGS: [{
         name: "Soil",
         category: "ground",
@@ -290,6 +355,8 @@ export let Farm = {
         name: "Trench",
         category: "ground",
         build_mode: "line",
+        connectible: true,
+        connectibleGroup: "water",
         instanced: true,
         price: 10,
         size: {
@@ -407,11 +474,12 @@ export let Farm = {
             'assets/models/fence0.glb',
         ],
     }, {
-        name: "Stone Path",
+        name: "Concrete Slab",
         category: "buildings",
         build_mode: "area",
         instanced: true,
         onWater: true,
+        connectibleGroup: "path",
         price: 2,
         size: {
             x: 1,
@@ -442,6 +510,28 @@ export let Farm = {
             'assets/models/storage3.glb',
             'assets/models/storage4.glb',
         ],
+    }, {
+        name: "Dirt Path",
+        category: "ground",
+        build_mode: "line",
+        connectible: true,
+        connectibleGroup: "path",
+        groundStateMutator: [2, 3, 4, 5, 6, 7],
+        noPreviewMesh: true,
+        price: 2,
+        thumbnail: 'assets/textures/soil_thumbnail.png',
+        models: [],
+    }, {
+        name: "Asphalt Road",
+        category: "ground",
+        build_mode: "line",
+        connectible: true,
+        connectibleGroup: "path",
+        groundStateMutator: [8, 9, 10, 11, 12, 13],
+        noPreviewMesh: true,
+        price: 10,
+        thumbnail: 'assets/textures/soil_thumbnail.png',
+        models: [],
     }, {
         name: "Remove All",
         category: "remove",

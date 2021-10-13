@@ -86,17 +86,19 @@ export function updateInstancedBuildingMesh(Farm, buildingType, point1 = null, p
         }
     }
 
-    for (let m = 0; m < buildingBuilding.meshes.length; m++) {
-        let curMesh = buildingBuilding.meshes[m];
+    if (buildingBuilding.instanced) {
+        for (let m = 0; m < buildingBuilding.meshes.length; m++) {
+            let curMesh = buildingBuilding.meshes[m];
 
-        Farm.scene.remove(curMesh);
-        curMesh.dispose();
-        curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length * 4);
-        curMesh.receiveShadow = true;
-        curMesh.castShadow = true;
-        Farm.scene.add(curMesh);
+            Farm.scene.remove(curMesh);
+            curMesh.dispose();
+            curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length * 4);
+            curMesh.receiveShadow = true;
+            curMesh.castShadow = true;
+            Farm.scene.add(curMesh);
 
-        buildingBuilding.meshes[m] = curMesh;
+            buildingBuilding.meshes[m] = curMesh;
+        }
     }
 
     let points = new Set();
@@ -119,7 +121,15 @@ export function updateInstancedBuildingMesh(Farm, buildingType, point1 = null, p
 
     updateConnectibleConnections(Farm, buildingType, points);
 
-    for (let i = 0; i < buildingBuffer.length; i++) {
-        buildingBuffer[i].building.updateInstancedMesh();
+    if (buildingBuilding.instanced) {
+        for (let i = 0; i < buildingBuffer.length; i++) {
+            buildingBuffer[i].building.updateInstancedMesh();
+        }
+    }
+
+    if (Farm.BUILDINGS[buildingType].connectibleGroup) {
+        for (let otherType of Farm.connectibleGroupMap[Farm.BUILDINGS[buildingType].connectibleGroup]) {
+            updateConnectibleConnections(Farm, otherType, points);
+        }
     }
 }
