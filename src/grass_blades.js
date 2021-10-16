@@ -28,6 +28,8 @@ export function initGrassBlades(Farm) {
         THREE.ShaderLib.phong.uniforms,
         { diffuse: { value: new THREE.Color(0x00ff00) } },
         { time: { value: 0.0 } },
+        { target_pos_x: { value: 0.0 } },
+        { target_pos_z: { value: 0.0 } },
         { mouse_pos_x: { value: 0.0 } },
         { mouse_pos_z: { value: 0.0 } },
         { specular: { value: new THREE.Color(0x000000) } },

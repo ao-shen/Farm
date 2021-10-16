@@ -207,6 +207,8 @@ vec2 equirectUv( in vec3 dir ) {
 uniform float time;
 uniform float mouse_pos_x;
 uniform float mouse_pos_z;
+uniform float target_pos_x;
+uniform float target_pos_z;
 
 vec3 rotateVectorByQuaternion(vec3 v, vec4 q){
     return 2.0 * cross(q.xyz, v * q.w + cross(q.xyz, v)) + v;
@@ -221,13 +223,13 @@ void main() {
 
 	#ifdef USE_INSTANCING
 
-		vec2 decodedOffset = vec2(instanceMatrix[0][0], instanceMatrix[2][0]);
+		vec2 decodedOffset = vec2(mod(instanceMatrix[0][0] - target_pos_x + 4096.0, 512.0) - 256.0 + target_pos_x, mod(instanceMatrix[2][0] - target_pos_z + 4096.0, 512.0) - 256.0 + target_pos_z);
 		float decodedRotation = instanceMatrix[0][1];
 
-		float grassScale = instanceMatrix[3][0] * instanceMatrix[1][1];
-		float grassScaleY = (instanceMatrix[3][0] + 10.0 * abs(texture2D( displacementMap, mod(decodedOffset * 0.002, 1.0) ).x - 0.5)) * instanceMatrix[1][1];
+		float grassScale = instanceMatrix[3][0] * instanceMatrix[1][1] * 0.5;
+		float grassScaleY = (instanceMatrix[3][0] + 5.0 * abs(texture2D( displacementMap, mod(decodedOffset * 0.002, 1.0) ).x - 0.5)) * instanceMatrix[1][1];
 
-		mat4 decodedInstanceMatrix = mat4(grassScale, 0.0, 0.0, 0.0, 0.0, grassScaleY, 0.0, 0.0, 0.0, 0.0, grassScale, 0.0, instanceMatrix[0][0], instanceMatrix[1][0], instanceMatrix[2][0], 1.0);
+		mat4 decodedInstanceMatrix = mat4(grassScale, 0.0, 0.0, 0.0, 0.0, grassScaleY, 0.0, 0.0, 0.0, 0.0, grassScale, 0.0, decodedOffset.x, instanceMatrix[1][0], decodedOffset.y, 1.0);
 
 		vec4 rotateY = vec4(0, sin(decodedRotation), 0, cos(decodedRotation));
 
