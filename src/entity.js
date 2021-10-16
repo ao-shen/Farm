@@ -2,11 +2,12 @@ import * as THREE from 'three';
 import { Farm } from './farm';
 import { PriorityQueue } from './priority_queue';
 import { BLOCK, Block } from './block.js';
-import { Vector3 } from 'three';
+import { Vector2, Vector3 } from 'three';
 import { Plant } from './plant';
 import { InfoBox } from './info_box';
 import { Inventory } from './inventory';
 
+const WORLD_Z = new Vector3(0, 0, 1);
 export class Entity {
     constructor(Farm, idx, x, z, type, variation = 0) {
         this.Farm = Farm;
@@ -15,6 +16,7 @@ export class Entity {
         this.type = type;
         this.name = "Entity_" + this.idx;
         this.meshRotationOffset = 0;
+        this.meshRotationY = 0;
 
         this.state = 0;
 
@@ -253,14 +255,20 @@ export class Entity {
 
             this.pos.x += velocity.x;
             this.pos.z += velocity.z;
-            this.mesh.lookAt(this.pos);
-            this.mesh.rotateY(this.meshRotationOffset);
+            this.meshRotationY = -Math.atan2(velocity.z, velocity.x);
+            //this.mesh.lookAt(this.pos);
+            //this.mesh.rotateY(this.meshRotationOffset);
         }
     }
 
     render() {
         if (this.mesh) {
-            this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+            let angle = this.pos.x * this.Farm.worldCurvature;
+            let radius = this.Farm.worldRadius - this.pos.y;
+            this.mesh.position.set(-radius * Math.sin(angle), Math.sign(this.Farm.worldCurvature) * (this.Farm.worldRadius - radius * Math.cos(angle)), this.pos.z);
+            this.mesh.rotation.set(0, this.meshRotationY + this.meshRotationOffset, 0);
+            this.mesh.rotateOnWorldAxis(WORLD_Z, angle);
+            //this.mesh.updateMatrix();
             this.infoBox.render();
         }
     }

@@ -662,6 +662,12 @@ async function initWorld(Farm) {
         0, 1, 0
     ];
 
+    function getCurvedPos(x, y, z) {
+        let angle = x * Farm.worldCurvature;
+        let radius = Farm.worldRadius - y;
+        return [-radius * Math.sin(angle), Math.sign(Farm.worldCurvature) * (Farm.worldRadius - radius * Math.cos(angle)), z]
+    }
+
     let groundVertices = [];
     let groundNormals = [];
     Farm.groundUVs = [];
@@ -671,18 +677,11 @@ async function initWorld(Farm) {
 
             Farm.blocks[x + ',' + z] = new Block(Farm, x, z);
 
-            groundVertices.push((x - 0.5) * Farm.blockSize);
-            groundVertices.push(0);
-            groundVertices.push((z - 0.5) * Farm.blockSize);
-            groundVertices.push((x + 0.5) * Farm.blockSize);
-            groundVertices.push(0);
-            groundVertices.push((z - 0.5) * Farm.blockSize);
-            groundVertices.push((x + 0.5) * Farm.blockSize);
-            groundVertices.push(0);
-            groundVertices.push((z + 0.5) * Farm.blockSize);
-            groundVertices.push((x - 0.5) * Farm.blockSize);
-            groundVertices.push(0);
-            groundVertices.push((z + 0.5) * Farm.blockSize);
+            groundVertices.push(...getCurvedPos((x - 0.5) * Farm.blockSize, 0, (z - 0.5) * Farm.blockSize));
+            groundVertices.push(...getCurvedPos((x + 0.5) * Farm.blockSize, 0, (z - 0.5) * Farm.blockSize));
+            groundVertices.push(...getCurvedPos((x + 0.5) * Farm.blockSize, 0, (z + 0.5) * Farm.blockSize));
+            groundVertices.push(...getCurvedPos((x - 0.5) * Farm.blockSize, 0, (z + 0.5) * Farm.blockSize));
+
             groundNormals.push(...quad_normals);
             groundNormals.push(...quad_normals);
             groundNormals.push(...quad_normals);

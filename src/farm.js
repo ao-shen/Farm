@@ -81,6 +81,9 @@ export let Farm = {
 
     blockSize: 10,
 
+    worldCurvature: -0.0005,
+    worldRadius: 2000,
+
     groundMesh: null,
     groundGeometry: null,
     groundUVs: null,
@@ -573,19 +576,21 @@ export let Farm = {
     ENTITIES: [{
         name: "Worker",
         inventorySlots: 1,
-        movementSpeed: 1,
+        movementSpeed: 0.1,
+        meshRotationOffset: Math.PI / 2,
         models: ['assets/models/worker.glb'],
     }, {
         name: "Customer",
         inventorySlots: 1,
-        movementSpeed: 1,
+        movementSpeed: 0.1,
+        meshRotationOffset: Math.PI / 2,
         models: ['assets/models/worker.glb'],
     }, {
         name: "Car",
         inventorySlots: 1,
         movementSpeed: 3,
         entitySlots: 2,
-        meshRotationOffset: Math.PI,
+        meshRotationOffset: -Math.PI / 2,
         models: [
             'assets/models/car0.glb',
             'assets/models/car1.glb',

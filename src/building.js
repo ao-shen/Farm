@@ -4,6 +4,7 @@ import { Entity } from './entity';
 import { InfoBox } from './info_box';
 import { Inventory } from './inventory';
 
+const WORLD_Z = new THREE.Vector3(0, 0, 1);
 export class Building {
     constructor(Farm, idx, x, z, type, side) {
         this.Farm = Farm;
@@ -165,7 +166,12 @@ export class Building {
 
     render() {
         if (!this.instanced && this.mesh) {
-            this.mesh.position.set(this.center.x, 0, this.center.z);
+            //this.mesh.position.set(this.center.x, 0, this.center.z);
+            let angle = this.center.x * this.Farm.worldCurvature;
+            let radius = this.Farm.worldRadius - 0;
+            this.mesh.position.set(-radius * Math.sin(angle), Math.sign(this.Farm.worldCurvature) * (this.Farm.worldRadius - radius * Math.cos(angle)), this.center.z);
+            this.mesh.rotation.set(0, -(this.side - 1) * Math.PI / 2, 0);
+            this.mesh.rotateOnWorldAxis(WORLD_Z, angle);
             if (this.infoable) {
                 this.infoBox.render();
             }

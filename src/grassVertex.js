@@ -227,7 +227,12 @@ void main() {
 		float grassScale = instanceMatrix[3][0] * instanceMatrix[1][1];
 		float grassScaleY = (instanceMatrix[3][0] + 10.0 * abs(texture2D( displacementMap, mod(decodedOffset * 0.002, 1.0) ).x - 0.5)) * instanceMatrix[1][1];
 
-		mat4 decodedInstanceMatrix = mat4(grassScale, 0.0, 0.0, 0.0, 0.0, grassScaleY, 0.0, 0.0, 0.0, 0.0, grassScale, 0.0, instanceMatrix[0][0], instanceMatrix[1][0], instanceMatrix[2][0], 1.0);
+		float angle = 0.0 + instanceMatrix[0][0] * 0.0005;
+        float radius = 2000.0 - instanceMatrix[1][0];
+		float decodedX = 0.0 - radius * sin(angle);
+		float decodedY = 0.0 - (2000.0 - radius * cos(angle));
+
+		mat4 decodedInstanceMatrix = mat4(grassScale, 0.0, 0.0, 0.0, 0.0, grassScaleY, 0.0, 0.0, 0.0, 0.0, grassScale, 0.0, decodedX, decodedY, instanceMatrix[2][0], 1.0);
 
 		vec4 rotateY = vec4(0, sin(decodedRotation), 0, cos(decodedRotation));
 
