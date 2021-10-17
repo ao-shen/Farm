@@ -606,6 +606,47 @@ function loadBuildingAssets(Farm) {
         side: THREE.DoubleSide,
     });
 
+    // Load trees
+    for (let i = 0; i < Farm.TREES.length; i++) {
+
+        let curTree = Farm.TREES[i];
+
+        modelLoader.load(curTree.model, function(gltf) {
+            let mesh = gltf.scene.children[0];
+
+            curTree.geometry = mesh.geometry.clone();
+
+            curTree.geometry.applyMatrix4(defaultBuildingTransform);
+
+            curTree.material = mesh.material;
+
+            curTree.mesh = new THREE.InstancedMesh(curTree.geometry, curTree.material, 0);
+
+            curTree.mesh.receiveShadow = true;
+            curTree.mesh.castShadow = true;
+
+            Farm.groupSoilAndPlants.add(curTree.mesh);
+        });
+
+        modelLoader.load(curTree.leafModel, function(gltf) {
+            let mesh = gltf.scene.children[0];
+
+            curTree.leafGeometry = mesh.geometry.clone();
+
+            curTree.leafGeometry.applyMatrix4(defaultBuildingTransform);
+
+            curTree.leafMaterial = new THREE.MeshBasicMaterial();
+
+            curTree.leafMesh = new THREE.InstancedMesh(curTree.leafGeometry, curTree.leafMaterial, 0);
+
+            curTree.leafMesh.receiveShadow = true;
+            curTree.leafMesh.castShadow = true;
+
+            Farm.groupSoilAndPlants.add(curTree.leafMesh);
+        });
+
+
+    }
 }
 
 function loadEntitiesAssets(Farm) {

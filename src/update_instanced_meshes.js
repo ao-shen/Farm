@@ -36,13 +36,11 @@ export function updatePlantMesh(Farm, plantType) {
     let plantBuffer = [];
     let plantBuilding = Farm.BUILDINGS[plantType];
 
-    for (const curBlockIdx in Farm.blocks) {
-        for (let curPlant of Farm.blocks[curBlockIdx].plants) {
-            if (curPlant.type == plantType) {
-                curPlant.meshIdx = plantBuffer.length;
-                plantBuffer.push({ block: Farm.blocks[curBlockIdx], plant: curPlant });
-                break;
-            }
+    for (const curPlantIdx in Farm.plants) {
+        let curPlant = Farm.plants[curPlantIdx];
+        if (curPlant.type == plantType) {
+            curPlant.meshIdx = plantBuffer.length;
+            plantBuffer.push(curPlant);
         }
     }
 
@@ -63,9 +61,7 @@ export function updatePlantMesh(Farm, plantType) {
     }
 
     for (let i = 0; i < plantBuffer.length; i++) {
-
-        plantBuffer[i].plant.updateMesh();
-
+        plantBuffer[i].updateMesh();
     }
 
     /*for (let m = 0; m < plantBuilding.meshes.length; m++) {
@@ -92,7 +88,7 @@ export function updateInstancedBuildingMesh(Farm, buildingType, point1 = null, p
 
             Farm.scene.remove(curMesh);
             curMesh.dispose();
-            curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length * 4);
+            curMesh = new THREE.InstancedMesh(buildingBuilding.geometries[m], buildingBuilding.materials[m], buildingBuffer.length);
             curMesh.receiveShadow = true;
             curMesh.castShadow = true;
             Farm.scene.add(curMesh);
@@ -132,4 +128,50 @@ export function updateInstancedBuildingMesh(Farm, buildingType, point1 = null, p
             updateConnectibleConnections(Farm, otherType, points);
         }
     }
+}
+
+
+export function updateTreeMesh(Farm) {
+    let plantBuffer = [];
+    for (let v = 0; v < Farm.TREES.length; v++) {
+        plantBuffer.push([]);
+    }
+
+    for (const curPlantIdx in Farm.plants) {
+        let curPlant = Farm.plants[curPlantIdx];
+        if (curPlant.isTree) {
+            curPlant.meshIdx = plantBuffer[curPlant.variation].length;
+            plantBuffer[curPlant.variation].push(curPlant);
+        }
+    }
+
+    for (let v = 0; v < Farm.TREES.length; v++) {
+        let curMesh = Farm.TREES[v].mesh;
+        let curTree = Farm.TREES[v];
+
+        Farm.groupSoilAndPlants.remove(curMesh);
+        curMesh.dispose();
+        curMesh = new THREE.InstancedMesh(curTree.geometry, curTree.material, plantBuffer[v].length);
+        curMesh.receiveShadow = true;
+        curMesh.castShadow = true;
+        Farm.groupSoilAndPlants.add(curMesh);
+
+        Farm.TREES[v].mesh = curMesh;
+
+        curMesh = Farm.TREES[v].leafMesh;
+
+        Farm.groupSoilAndPlants.remove(curMesh);
+        curMesh.dispose();
+        curMesh = new THREE.InstancedMesh(curTree.leafGeometry, curTree.leafMaterial, Farm.TREES[v].leaves.length * plantBuffer[v].length);
+        curMesh.receiveShadow = true;
+        curMesh.castShadow = true;
+        Farm.groupSoilAndPlants.add(curMesh);
+
+        Farm.TREES[v].leafMesh = curMesh;
+
+        for (let i = 0; i < plantBuffer[v].length; i++) {
+            plantBuffer[v][i].updateMesh();
+        }
+    }
+
 }

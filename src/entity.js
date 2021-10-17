@@ -110,7 +110,7 @@ export class Entity {
                         goalPlant = goalPlant.element.obj;
                         this.goal = goalPlant;
                         this.targetActionCategory = "harvest";
-                        this.path = this.pathFind(goalPlant.block);
+                        this.path = this.pathFind(goalPlant.harvestPoint);
                         if (this.path != null) {
                             goalPlant.harvestClaim(this);
                             this.renderPath();

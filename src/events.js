@@ -7,7 +7,7 @@ import { BLOCK, Block } from './block.js';
 import * as BuildingObjects from './building.js';
 import { updateConnectibleConnections } from './water_update.js';
 import { load, save } from './load_save.js';
-import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh } from "./update_instanced_meshes.js";
+import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh } from "./update_instanced_meshes.js";
 
 
 export function onWindowResize(Farm) {
@@ -50,7 +50,7 @@ export function onMouseUp(Farm, event) {
                     default:
                         switch (Farm.BUILDINGS[Farm.buildPaletteSelect].category) {
                             case "plants":
-                                createNewPlant(Farm);
+                                createNewAreaOfPlants(Farm);
                                 break;
                             case "buildings":
                                 createAreaOfNewBuildings(Farm);
@@ -75,7 +75,14 @@ export function onMouseUp(Farm, event) {
                     Farm.buildBuildingMesh.visible = false;
                 }
             } else if (Farm.overlay == Farm.OVERLAY.BUILD_SINGLE) {
-                createSingleNewBuilding(Farm);
+                switch (Farm.BUILDINGS[Farm.buildPaletteSelect].category) {
+                    case "plants":
+                        createSingleNewPlant(Farm);
+                        break;
+                    default:
+                        createSingleNewBuilding(Farm);
+                        break;
+                }
             } else if (Farm.lens == Farm.LENS.REMOVE) {
                 remove(Farm);
                 Farm.overlay = Farm.OVERLAY.DEFAULT;
@@ -439,7 +446,30 @@ function createNewTrench(Farm) {
     updateInstancedBuildingMesh(Farm, buildingType);
 }
 
-function createNewPlant(Farm) {
+function createNewAreaOfPlants(Farm) {
+
+    let plantType = Farm.buildPaletteSelect;
+
+    let startX = Farm.buildAreaPoint1.x;
+    let startZ = Farm.buildAreaPoint1.z;
+    let endX = Farm.buildAreaPoint2.x;
+    let endZ = Farm.buildAreaPoint2.z;
+    for (let x = startX; x <= endX; x++) {
+        for (let z = startZ; z <= endZ; z++) {
+            Farm.buildAreaPoint1.x = Farm.buildAreaPoint2.x = x;
+            Farm.buildAreaPoint1.z = Farm.buildAreaPoint2.z = z;
+            createSingleNewPlant(Farm, true);
+        }
+    }
+
+    if (Farm.BUILDINGS[plantType].tree) {
+        updateTreeMesh(Farm);
+    } else {
+        updatePlantMesh(Farm, plantType);
+    }
+}
+
+function createSingleNewPlant(Farm, isArea = false) {
 
     let plantType = Farm.buildPaletteSelect;
     let potentialBlocks = [];
@@ -449,30 +479,45 @@ function createNewPlant(Farm) {
             let curBlock = Farm.blocks[x + ',' + z];
             if (typeof curBlock === 'undefined') continue;
 
-            if (curBlock.type == BLOCK.SOIL &&
+            if ((curBlock.type == BLOCK.SOIL ? !Farm.BUILDINGS[plantType].tree : Farm.BUILDINGS[plantType].tree) &&
                 curBlock.plants.length == 0) {
-                potentialBlocks.push({ x: x, z: z });
-
+                potentialBlocks.push(curBlock);
+            } else {
+                return;
             }
         }
     }
 
-    if (potentialBlocks.length * Farm.BUILDINGS[plantType].price > Farm.money) {
+    if (Farm.BUILDINGS[plantType].size) {
+        if (potentialBlocks.length < Farm.BUILDINGS[plantType].size.x * Farm.BUILDINGS[plantType].size.z) {
+            return;
+        }
+    } else {
+        if (potentialBlocks.length == 0) {
+            return;
+        }
+    }
+
+    if (Farm.BUILDINGS[plantType].price > Farm.money) {
         return;
     }
-    Farm.money -= potentialBlocks.length * Farm.BUILDINGS[plantType].price;
+    Farm.money -= Farm.BUILDINGS[plantType].price;
+
+    let newPlant = new Plant(Farm, Farm.plantIdx, (Farm.buildAreaPoint1.x + Farm.buildAreaPoint2.x) / 2, (Farm.buildAreaPoint1.z + Farm.buildAreaPoint2.z) / 2, potentialBlocks, plantType);
+    Farm.plants[Farm.plantIdx] = newPlant;
+    Farm.plantIdx++;
 
     for (let potentialBlock of potentialBlocks) {
-        let x = potentialBlock.x;
-        let z = potentialBlock.z;
-        let curBlock = Farm.blocks[x + ',' + z];
-
-        curBlock.plants.push(new Plant(Farm, plantType, curBlock));
-        curBlock.updateGrassBlades();
+        potentialBlock.plants.push(newPlant);
+        potentialBlock.updateGrassBlades();
     }
 
-    if (potentialBlocks.length > 0) {
-        updatePlantMesh(Farm, plantType);
+    if (!isArea) {
+        if (Farm.BUILDINGS[plantType].tree) {
+            updateTreeMesh(Farm);
+        } else {
+            updatePlantMesh(Farm, plantType);
+        }
     }
 }
 
@@ -660,7 +705,11 @@ function updateBuildingMeshPreview(Farm) {
         Farm.buildBuildingMesh = null;
     }
     if (!Farm.BUILDINGS[Farm.buildPaletteSelect].noPreviewMesh && Farm.BUILDINGS[Farm.buildPaletteSelect].category != "remove") {
-        Farm.buildBuildingMesh = new THREE.Mesh(Farm.BUILDINGS[Farm.buildPaletteSelect].geometries[0].clone(), Farm.buildBuildingMaterial);
+        if (Farm.BUILDINGS[Farm.buildPaletteSelect].tree) {
+            Farm.buildBuildingMesh = new THREE.Mesh(Farm.TREES[0].geometry.clone(), Farm.buildBuildingMaterial);
+        } else {
+            Farm.buildBuildingMesh = new THREE.Mesh(Farm.BUILDINGS[Farm.buildPaletteSelect].geometries[0].clone(), Farm.buildBuildingMaterial);
+        }
         Farm.scene.add(Farm.buildBuildingMesh);
         if (Farm.overlay != Farm.OVERLAY.BUILD_SINGLE) {
             Farm.buildBuildingMesh.visible = false;
@@ -702,6 +751,13 @@ function remove(Farm) {
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
                 for (let i = 0; i < curBlock.plants.length; i++) {
+                    for (let foundationBlock of curBlock.plants[i].blocks) {
+                        var index = foundationBlock.plants.indexOf(curBlock.plants[i]);
+                        if (index !== -1 && foundationBlock != curBlock) {
+                            foundationBlock.plants.splice(index, 1);
+                            foundationBlock.updateGrassBlades();
+                        }
+                    }
                     removedPlantTypes.add(curBlock.plants[i].remove());
                 }
                 curBlock.plants = [];
@@ -740,9 +796,17 @@ function remove(Farm) {
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
+        let removedTrees = false;
         removedPlantTypes.forEach(function(plantType) {
-            updatePlantMesh(Farm, plantType);
+            if (Farm.BUILDINGS[plantType].tree) {
+                removedTrees = true;
+            } else {
+                updatePlantMesh(Farm, plantType);
+            }
         });
+        if (removedTrees) {
+            updateTreeMesh(Farm);
+        }
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Soil" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {

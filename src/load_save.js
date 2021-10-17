@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { LZMA } from './lzma/lzma-min';
 import { Plant } from "./plant";
 import * as BuildingObjects from './building.js';
-import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh } from "./update_instanced_meshes";
+import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh } from "./update_instanced_meshes";
 import { Entity } from "./entity";
 import { updateConnectibleConnections } from "./water_update";
 
@@ -74,6 +74,7 @@ export function save(Farm) {
     let data = {
         buildings: [],
         entities: [],
+        plants: [],
         blocks: [],
         money: Farm.money,
         restaurantInv: Farm.restaurantObj.inventory.inventory,
@@ -125,6 +126,24 @@ export function save(Farm) {
         data.entities.push(entityData);
     }
 
+    for (const curPlantIdx in Farm.plants) {
+
+        let curPlant = Farm.plants[curPlantIdx];
+        let plantData = {};
+
+        plantData.i = curPlant.idx;
+        plantData.t = curPlant.type;
+        plantData.p = { x: Math.round(curPlant.pos.x * 2), z: Math.round(curPlant.pos.z * 2) };
+        plantData.s = curPlant.stage;
+        plantData.b = [];
+
+        for (let curBlock of curPlant.blocks) {
+            plantData.b.push({ x: curBlock.x, z: curBlock.z });
+        }
+
+        data.plants.push(plantData);
+    }
+
     let lastX = 0;
     let lastZ = 0;
 
@@ -146,20 +165,6 @@ export function save(Farm) {
             if (curBlock.type != 0) {
                 isDefault = false;
                 blockData.t = curBlock.type;
-            }
-
-            if (curBlock.plants.length != 0) {
-                isDefault = false;
-                blockData.p = [];
-            }
-
-            for (let curPlant of curBlock.plants) {
-                let plantData = {};
-
-                plantData.t = curPlant.type;
-                plantData.s = curPlant.stage;
-
-                blockData.p.push(plantData);
             }
 
             if (!isDefault) {
@@ -243,14 +248,14 @@ export async function load(Farm) {
                             }
                         }
                         if (blockData.t) { curBlock.type = blockData.t };
-                        if (blockData.p) {
+                        /*if (blockData.p) {
                             for (let plantData of blockData.p) {
                                 let curPlant = new Plant(Farm, plantData.t, curBlock);
                                 loadedPlantTypes.add(plantData.t);
                                 curPlant.stage = plantData.s;
                                 curBlock.plants.push(curPlant);
                             }
-                        };
+                        };*/
                         curBlock.updateGrassBlades();
                     }
 
@@ -339,11 +344,34 @@ export async function load(Farm) {
                         }
                     }
 
+                    for (let plantData of data.plants) {
+
+                        let blocks = [];
+
+                        for (let foundationBlock of plantData.b) {
+                            let curBlock = Farm.blocks[foundationBlock.x + ',' + foundationBlock.z];
+                            blocks.push(curBlock);
+                        }
+
+                        let curPlant = new Plant(Farm, plantData.i, plantData.p.x / 2, plantData.p.z / 2, blocks, plantData.t);
+                        loadedPlantTypes.add(plantData.t);
+                        curPlant.stage = plantData.s;
+
+                        Farm.plants[plantData.i] = curPlant;
+                        Farm.plantIdx = Math.max(Farm.plantIdx, plantData.i + 1);
+
+                        for (let curBlock of blocks) {
+                            curBlock.plants.push(curPlant);
+                            curBlock.updateGrassBlades();
+                        }
+                    }
+
                     Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
                     updateSoilMesh(Farm);
                     loadedPlantTypes.forEach(function(plantType) {
                         updatePlantMesh(Farm, plantType);
                     });
+                    updateTreeMesh(Farm);
                     loadedInstancedBuildingTypes.forEach(function(buildingType) {
                         updateInstancedBuildingMesh(Farm, buildingType);
                     });

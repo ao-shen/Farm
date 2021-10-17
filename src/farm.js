@@ -132,6 +132,8 @@ export let Farm = {
     updatableBuildings: {},
     entityIdx: 1,
     entities: {},
+    plantIdx: 1,
+    plants: {},
 
     // GUI -----------------------------------------------
 
@@ -533,6 +535,20 @@ export let Farm = {
         thumbnail: 'assets/textures/soil_thumbnail.png',
         models: [],
     }, {
+        name: "Apple Tree",
+        category: "plants",
+        build_mode: "single",
+        tree: true,
+        price: 50,
+        sellPrice: 10,
+        matureTime: 1000,
+        size: {
+            x: 2,
+            z: 2,
+        },
+        thumbnail: 'assets/textures/corn_thumbnail.png',
+        models: [],
+    }, {
         name: "Remove All",
         category: "remove",
         build_mode: "remove",
@@ -594,4 +610,18 @@ export let Farm = {
             'assets/models/car4.glb',
         ],
     }, ],
+
+    // Tree models
+    TREES: [{
+        model: 'assets/models/tree_trunk0.glb',
+        leafModel: 'assets/models/tree_leaf.glb',
+        leaves: [
+            { x: 0, y: 4.04132, z: 0, rx: 0, ry: 0, rz: 0, s: 1 },
+            { x: 0.952564, y: 3.20367, z: -0.316133, rx: 13.4214, ry: 4.68841, rz: 36.9299, s: 1 },
+            { x: 0.65893, y: 2.8779, z: 0.951614, rx: -31.0819, ry: -4.54949, rz: 19.3118, s: 1 },
+            { x: -0.574136, y: 2.94996, z: 0.745024, rx: -29.446, ry: 4.82411, rz: -20.0928, s: 1 },
+            { x: -0.98264, y: 3.156, z: -0.311639, rx: 8.37496, ry: 1.54904, rz: -36.6947, s: 1 },
+            { x: -0.016184, y: 3.03883, z: -1.17517, rx: 37.2834, ry: 0.455456, rz: -0.783533, s: 1 },
+        ],
+    }, ]
 };
