@@ -22,6 +22,11 @@ import { initGrassBlades } from './grass_blades.js';
 import * as Restaurant from './restaurant';
 import { spawnCustomers } from './customer.js';
 import { load } from './load_save.js';
+import { leafVertexShader } from './shaders/leaf_vertex.js';
+import { grassFragmentShader } from './shaders/grass_fragment.js';
+import { leafFragmentShader } from './shaders/leaf_fragment.js';
+import { ShaderChunk } from 'three';
+import { leafDepthShader } from './shaders/leaf_depth.js';
 
 let GLTFModelLoader = new GLTFLoader();
 
@@ -103,7 +108,7 @@ function initScene(Farm) {
     Farm.renderer.shadowMap.enabled = true;
     document.body.appendChild(Farm.renderer.domElement);
 
-    //Farm.camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, 0.1, 10000);
+    //Farm.camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, 0.1, 100);
     Farm.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);
 
     Farm.renderer.getContext().getExtension('EXT_frag_depth');
@@ -607,6 +612,58 @@ function loadBuildingAssets(Farm) {
     });
 
     // Load trees
+    let leafTexture = textureLoader.load('assets/textures/tree_leaf.png');
+    leafTexture.encoding = THREE.sRGBEncoding;
+    let perlinMap = textureLoader.load('assets/textures/perlin_noise.png');
+
+    let uniforms = THREE.UniformsUtils.merge([
+        THREE.ShaderLib.phong.uniforms,
+        { diffuse: { value: new THREE.Color(0xffffff) } },
+        { time: { value: 0.0 } },
+        { perlinMap: { value: null } },
+        { specular: { value: new THREE.Color(0x000000) } },
+        { shininess: { value: 0.01 } }
+    ]);
+
+    let leafMaterial = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: leafVertexShader,
+        fragmentShader: leafFragmentShader,
+        side: THREE.DoubleSide,
+        lights: true,
+        transparent: true,
+        extensions: {
+            fragDepth: true,
+        },
+    });
+
+    let depthUniforms = THREE.UniformsUtils.merge([
+        THREE.ShaderLib.depth.uniforms,
+        { time: { value: 0.0 } },
+        { perlinMap: { value: null } },
+    ]);
+
+    let leafDepthMaterial = new THREE.ShaderMaterial({
+        uniforms: depthUniforms,
+        vertexShader: leafVertexShader,
+        fragmentShader: leafDepthShader,
+        side: THREE.DoubleSide,
+        extensions: {
+            fragDepth: true,
+        },
+    });
+
+    uniforms.map.value = leafTexture;
+    leafMaterial.map = leafTexture;
+    uniforms.perlinMap.value = perlinMap;
+    leafMaterial.perlinMap = perlinMap;
+
+    depthUniforms.perlinMap.value = perlinMap;
+    leafDepthMaterial.perlinMap = perlinMap;
+
+    Farm.leafMaterial = leafMaterial;
+    Farm.leafDepthMaterial = leafDepthMaterial;
+
     for (let i = 0; i < Farm.TREES.length; i++) {
 
         let curTree = Farm.TREES[i];
@@ -635,9 +692,10 @@ function loadBuildingAssets(Farm) {
 
             curTree.leafGeometry.applyMatrix4(defaultBuildingTransform);
 
-            curTree.leafMaterial = new THREE.MeshBasicMaterial();
+            curTree.leafMaterial = Farm.leafMaterial; //new THREE.MeshBasicMaterial();
 
             curTree.leafMesh = new THREE.InstancedMesh(curTree.leafGeometry, curTree.leafMaterial, 0);
+            curTree.leafMesh.customDepthMaterial = leafDepthMaterial;
 
             curTree.leafMesh.receiveShadow = true;
             curTree.leafMesh.castShadow = true;
@@ -645,6 +703,15 @@ function loadBuildingAssets(Farm) {
             Farm.groupSoilAndPlants.add(curTree.leafMesh);
         });
 
+        for (let j = 0; j < curTree.leaves.length; j++) {
+
+            curTree.leaves[j].rotationalMatrix = new THREE.Matrix4();
+            curTree.leaves[j].rotationalMatrix.makeRotationFromEuler(new THREE.Euler(
+                curTree.leaves[j].rx * Math.PI / 180,
+                curTree.leaves[j].ry * Math.PI / 180,
+                curTree.leaves[j].rz * Math.PI / 180
+            ));
+        }
 
     }
 }

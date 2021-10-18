@@ -85,6 +85,8 @@ export function animate(Farm, elapsed) {
     // Update grass blades
 
     Farm.grassBladeMaterial.uniforms.time.value = now * 0.00005;
+    Farm.leafMaterial.uniforms.time.value = now * 0.00005;
+    Farm.leafDepthMaterial.uniforms.time.value = now * 0.00005;
 
     // Restaurant
     if (Farm.restaurantObj) {

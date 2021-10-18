@@ -130,11 +130,25 @@ export class Plant {
 
         let Farm = this.Farm;
 
-        const matrix = new THREE.Matrix4();
+        let matrix = new THREE.Matrix4();
+        let matrixTranslate = new THREE.Matrix4();
 
         if (this.isTree) {
+
+            var rand = mulberry32(this.hash);
+
+            let randRotateY = rand() * 2 * Math.PI;
+            let randRotateYMatrix = new THREE.Matrix4();
+            randRotateYMatrix.makeRotationY(randRotateY);
+            let randRotateXMatrix = new THREE.Matrix4();
+            randRotateXMatrix.makeRotationX(Math.PI / 2);
+
+            let s = Math.sin(-randRotateY);
+            let c = Math.cos(-randRotateY);
+
             let curMesh = Farm.TREES[this.variation].mesh;
 
+            matrix.makeRotationY(randRotateY);
             matrix.setPosition(
                 (this.pos.x) * Farm.blockSize,
                 0,
@@ -147,11 +161,25 @@ export class Plant {
 
             for (let i = 0; i < Farm.TREES[this.variation].leaves.length; i++) {
 
+                matrix.identity();
+
                 matrix.setPosition(
-                    (this.pos.x) * Farm.blockSize + Farm.TREES[this.variation].leaves[i].x * 5,
-                    0 + Farm.TREES[this.variation].leaves[i].y * 5,
-                    (this.pos.z) * Farm.blockSize + Farm.TREES[this.variation].leaves[i].z * 5
+                    (this.pos.x) * Farm.blockSize,
+                    0,
+                    (this.pos.z) * Farm.blockSize
                 );
+
+                let newPoint = rotatePoint(s, c, -Farm.TREES[this.variation].leaves[i].x * 5, -Farm.TREES[this.variation].leaves[i].z * 5);
+
+                matrixTranslate.makeTranslation(
+                    newPoint.x,
+                    Farm.TREES[this.variation].leaves[i].y * 5,
+                    newPoint.z
+                );
+                matrix.multiply(matrixTranslate);
+                matrix.multiply(randRotateYMatrix);
+                //matrix.multiply(randRotateXMatrix);
+                matrix.multiply(Farm.TREES[this.variation].leaves[i].rotationalMatrix);
 
                 curLeafMesh.setMatrixAt(this.meshIdx * Farm.TREES[this.variation].leaves.length + i, matrix);
             }
@@ -212,4 +240,12 @@ function mulberry32(a) {
         t ^= t + Math.imul(t ^ t >>> 7, t | 61);
         return ((t ^ t >>> 14) >>> 0) / 4294967296;
     }
+}
+
+function rotatePoint(s, c, x, z, x0 = 0, z0 = 0) {
+
+    x -= x0;
+    z -= z0;
+
+    return { x: x * c - z * s + x0, z: x * s + z * c + z0 };
 }

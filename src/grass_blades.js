@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { grassFragmentShader } from './grassFragment';
-import { grassVertexShader } from './grassVertex';
+import { grassFragmentShader } from './shaders/grass_fragment';
+import { grassVertexShader } from './shaders/grass_vertex';
 
 //Variables for blade mesh
 var joints = 2;

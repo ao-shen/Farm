@@ -163,6 +163,7 @@ export function updateTreeMesh(Farm) {
         Farm.groupSoilAndPlants.remove(curMesh);
         curMesh.dispose();
         curMesh = new THREE.InstancedMesh(curTree.leafGeometry, curTree.leafMaterial, Farm.TREES[v].leaves.length * plantBuffer[v].length);
+        curMesh.customDepthMaterial = Farm.leafDepthMaterial;
         curMesh.receiveShadow = true;
         curMesh.castShadow = true;
         Farm.groupSoilAndPlants.add(curMesh);
