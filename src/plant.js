@@ -28,6 +28,7 @@ export class Plant {
         this.harvestClaimer = null;
 
         this.meshIdx = 0;
+        this.treeMeshIdx = 0;
 
         /*this.Farm.scheduler.addToSchedule(this.Farm.BUILDINGS[this.type].matureTime, , this);*/
         let thisPlant = this;
@@ -133,6 +134,8 @@ export class Plant {
         let matrix = new THREE.Matrix4();
         let matrixTranslate = new THREE.Matrix4();
 
+        let plantBuilding = Farm.BUILDINGS[this.type];
+
         if (this.isTree) {
 
             var rand = mulberry32(this.hash);
@@ -155,7 +158,7 @@ export class Plant {
                 (this.pos.z) * Farm.blockSize
             );
 
-            curMesh.setMatrixAt(this.meshIdx, matrix);
+            curMesh.setMatrixAt(this.treeMeshIdx, matrix);
 
             let curLeafMesh = Farm.TREES[this.variation].leafMesh;
 
@@ -181,11 +184,96 @@ export class Plant {
                 //matrix.multiply(randRotateXMatrix);
                 matrix.multiply(Farm.TREES[this.variation].leaves[i].rotationalMatrix);
 
-                curLeafMesh.setMatrixAt(this.meshIdx * Farm.TREES[this.variation].leaves.length + i, matrix);
+                curLeafMesh.setMatrixAt(this.treeMeshIdx * Farm.TREES[this.variation].leaves.length + i, matrix);
+            }
+
+            if (plantBuilding.customInstances) {
+
+                for (let m = 0; m < plantBuilding.meshes.length; m++) {
+
+                    let curMesh = plantBuilding.meshes[m];
+
+                    var rand = mulberry32(this.hash);
+
+                    let onCurStage = 0;
+
+                    if (this.stage == m) {
+                        onCurStage = 1;
+                    }
+
+                    let instanceAmount = 4;
+
+                    if (plantBuilding.customInstances[m].amount) {
+                        instanceAmount = plantBuilding.customInstances[m].amount;
+                    }
+
+                    for (let j = 0; j < instanceAmount; j++) {
+
+                        let i = j % (Farm.TREES[this.variation].leaves.length - 1);
+
+                        matrix.identity();
+
+                        if (plantBuilding.customInstances[m].isLeafRotator) {
+
+                            let hashedX = (0.5 + 0.5 * (rand() - 0.5)) * Math.PI;
+                            let hashedY = Farm.TREES[this.variation].leaves[i].rotationalY + randRotateY + 0.5 * (rand() - 0.5) * Math.PI;
+                            let hashedZ = rand() * 2 * Math.PI;
+
+                            matrix.setPosition(
+                                (this.pos.x) * Farm.blockSize,
+                                0,
+                                (this.pos.z) * Farm.blockSize
+                            );
+
+                            let newPoint = rotatePoint(s, c, -Farm.TREES[this.variation].leaves[i].x * 5, -Farm.TREES[this.variation].leaves[i].z * 5);
+
+                            matrixTranslate.makeTranslation(
+                                newPoint.x,
+                                Farm.TREES[this.variation].leaves[i].y * 5,
+                                newPoint.z
+                            );
+                            matrix.multiply(matrixTranslate);
+
+                            randRotateYMatrix.makeRotationY(hashedY);
+                            matrix.multiply(randRotateYMatrix);
+                            randRotateXMatrix.makeRotationX(hashedX);
+                            matrix.multiply(randRotateXMatrix);
+
+                        } else if (plantBuilding.customInstances[m].isLeafTranslator) {
+
+                            let hashedX = (0.8 + 0.5 * (rand() - 0.5)) * Math.PI;
+                            let hashedY = Farm.TREES[this.variation].leaves[i].rotationalY + randRotateY + (0.5 + 1.0 * (rand() - 0.5)) * Math.PI;
+                            let hashedZ = rand() * 2 * Math.PI;
+
+                            matrix.setPosition(
+                                (this.pos.x) * Farm.blockSize,
+                                0,
+                                (this.pos.z) * Farm.blockSize
+                            );
+
+                            let newPoint = rotatePoint(s, c, -Farm.TREES[this.variation].leaves[i].x * 5, -Farm.TREES[this.variation].leaves[i].z * 5);
+
+                            let point1 = rotatePoint(Math.sin(hashedX), Math.cos(hashedX), 5, 0);
+                            let point2 = rotatePoint(Math.sin(hashedY), Math.cos(hashedY), point1.z, 0);
+
+                            matrixTranslate.makeTranslation(
+                                newPoint.x - point2.x,
+                                Farm.TREES[this.variation].leaves[i].y * 5 + point1.x,
+                                newPoint.z + point2.z
+                            );
+                            matrix.multiply(matrixTranslate);
+                        }
+
+                        //onCurStage *= (rand() - 0.5) * 0.2 + 1;
+
+                        matrix.scale(new THREE.Vector3(onCurStage, onCurStage, onCurStage));
+
+                        curMesh.setMatrixAt(this.meshIdx * instanceAmount + j, matrix);
+                    }
+                }
             }
 
         } else {
-            let plantBuilding = Farm.BUILDINGS[this.type];
 
             for (let m = 0; m < plantBuilding.meshes.length; m++) {
 

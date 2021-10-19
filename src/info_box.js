@@ -164,8 +164,8 @@ export class InfoBox {
 
                                 mesh[type] = { sprite: sprite, text: textMesh };
                             }
-                            mesh[type].sprite.position.set(curXOffset + curItem % 4 * ITEM_SIZE - 3, curYOffset + Math.floor(curItem / 4) * ITEM_SIZE, 1);
-                            mesh[type].text.position.set(curXOffset + curItem % 4 * ITEM_SIZE - 3 + ITEM_SIZE - 10, curYOffset + Math.floor(curItem / 4) * ITEM_SIZE - ITEM_SIZE + 10, 2);
+                            mesh[type].sprite.position.set(curXOffset + curItem % 4 * ITEM_SIZE - 3, curYOffset - Math.floor(curItem / 4) * ITEM_SIZE, 1);
+                            mesh[type].text.position.set(curXOffset + curItem % 4 * ITEM_SIZE - 3 + ITEM_SIZE - 10, curYOffset - Math.floor(curItem / 4) * ITEM_SIZE - ITEM_SIZE + 10, 2);
                             mesh[type].text.text = `${info.inventory.inventory[type]}`;
                             curItem++;
                         }

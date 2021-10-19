@@ -464,9 +464,9 @@ function createNewAreaOfPlants(Farm) {
 
     if (Farm.BUILDINGS[plantType].tree) {
         updateTreeMesh(Farm);
-    } else {
-        updatePlantMesh(Farm, plantType);
     }
+    updatePlantMesh(Farm, plantType);
+
 }
 
 function createSingleNewPlant(Farm, isArea = false) {
@@ -515,9 +515,9 @@ function createSingleNewPlant(Farm, isArea = false) {
     if (!isArea) {
         if (Farm.BUILDINGS[plantType].tree) {
             updateTreeMesh(Farm);
-        } else {
-            updatePlantMesh(Farm, plantType);
         }
+        updatePlantMesh(Farm, plantType);
+
     }
 }
 
@@ -800,9 +800,9 @@ function remove(Farm) {
         removedPlantTypes.forEach(function(plantType) {
             if (Farm.BUILDINGS[plantType].tree) {
                 removedTrees = true;
-            } else {
-                updatePlantMesh(Farm, plantType);
             }
+            updatePlantMesh(Farm, plantType);
+
         });
         if (removedTrees) {
             updateTreeMesh(Farm);

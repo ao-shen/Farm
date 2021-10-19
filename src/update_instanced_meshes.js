@@ -47,14 +47,24 @@ export function updatePlantMesh(Farm, plantType) {
     for (let m = 0; m < plantBuilding.meshes.length; m++) {
         let curMesh = plantBuilding.meshes[m];
 
+        let instanceAmount = 4;
+
+        if (plantBuilding.customInstances) {
+            if (plantBuilding.customInstances[m].amount) {
+                instanceAmount = plantBuilding.customInstances[m].amount;
+            }
+        }
+
         Farm.groupSoilAndPlants.remove(curMesh);
         curMesh.dispose();
-        curMesh = new THREE.InstancedMesh(plantBuilding.geometries[m], plantBuilding.materials[m], plantBuffer.length * 4);
+        curMesh = new THREE.InstancedMesh(plantBuilding.geometries[m], plantBuilding.materials[m], plantBuffer.length * instanceAmount);
         if (plantBuilding.customDepthMaterial[m]) {
             curMesh.customDepthMaterial = plantBuilding.customDepthMaterial[m];
         }
         curMesh.receiveShadow = true;
-        curMesh.castShadow = true;
+        if (!plantBuilding.tree) {
+            curMesh.castShadow = true;
+        }
         Farm.groupSoilAndPlants.add(curMesh);
 
         plantBuilding.meshes[m] = curMesh;
@@ -140,7 +150,7 @@ export function updateTreeMesh(Farm) {
     for (const curPlantIdx in Farm.plants) {
         let curPlant = Farm.plants[curPlantIdx];
         if (curPlant.isTree) {
-            curPlant.meshIdx = plantBuffer[curPlant.variation].length;
+            curPlant.treeMeshIdx = plantBuffer[curPlant.variation].length;
             plantBuffer[curPlant.variation].push(curPlant);
         }
     }

@@ -711,6 +711,7 @@ function loadBuildingAssets(Farm) {
                 curTree.leaves[j].ry * Math.PI / 180,
                 curTree.leaves[j].rz * Math.PI / 180
             ));
+            curTree.leaves[j].rotationalY = Math.atan2(curTree.leaves[j].z, -curTree.leaves[j].x) + Math.PI * 0.5;
         }
 
     }
