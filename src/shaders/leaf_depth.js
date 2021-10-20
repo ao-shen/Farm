@@ -140,9 +140,8 @@ float perspectiveDepthToViewZ( const in float invClipZ, const in float near, con
 #ifdef USE_ALPHAMAP
 	uniform sampler2D alphaMap;
 #endif
-#ifdef USE_ALPHATEST
 	uniform float alphaTest;
-#endif
+	
 #ifdef USE_AOMAP
 	uniform sampler2D aoMap;
 	uniform float aoMapIntensity;
@@ -821,9 +820,9 @@ void main() {
 #ifdef USE_ALPHAMAP
 	diffuseColor.a *= texture2D( alphaMap, vUv ).g;
 #endif
-#ifdef USE_ALPHATEST
+
 	if ( diffuseColor.a < alphaTest ) discard;
-#endif
+
 float specularStrength;
 #ifdef USE_SPECULARMAP
 	vec4 texelSpecular = texture2D( specularMap, vUv );
@@ -1007,6 +1006,7 @@ IncidentLight directLight;
 		outgoingLight += envColor.xyz * specularStrength * reflectivity;
 	#endif
 #endif
+
 #ifdef OPAQUE
 diffuseColor.a = 1.0;
 #endif
@@ -1032,10 +1032,12 @@ gl_FragColor = linearToOutputTexel( gl_FragColor );
 #ifdef DITHERING
 	gl_FragColor.rgb = dithering( gl_FragColor.rgb );
 #endif
-	
+
 	// Higher precision equivalent of gl_FragCoord.z. This assumes depthRange has been left to its default values.
 	float fragCoordZ = 0.5 * vHighPrecisionZW[0] / vHighPrecisionZW[1] + 0.5;
-	
+
 	//gl_FragColor = vec4( vec3( 1.0 - fragCoordZ ), 1.0 );
 	gl_FragColor = packDepthToRGBA( fragCoordZ );
+
+	
 }`;

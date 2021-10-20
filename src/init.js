@@ -27,6 +27,7 @@ import { grassFragmentShader } from './shaders/grass_fragment.js';
 import { leafFragmentShader } from './shaders/leaf_fragment.js';
 import { ShaderChunk } from 'three';
 import { leafDepthShader } from './shaders/leaf_depth.js';
+import { plantVertexShader } from './shaders/plant_vertex.js';
 
 let GLTFModelLoader = new GLTFLoader();
 
@@ -492,6 +493,9 @@ function loadBuildingAssets(Farm) {
     let modelLoader = new GLTFLoader();
     const textureLoader = new THREE.TextureLoader();
 
+    let perlinMap = textureLoader.load('assets/textures/perlin_noise.png');
+    Farm.perlinMap = perlinMap;
+
     // Load Models
     const defaultTransform = new THREE.Matrix4()
         .multiply(new THREE.Matrix4().makeScale(5, 5, 5));
@@ -531,6 +535,72 @@ function loadBuildingAssets(Farm) {
                 });
             }
         } else if (curBuilding.category == "plants") {
+
+            let vertexShader = plantVertexShader;
+
+            if (curBuilding.tree) {
+                vertexShader = leafVertexShader;
+            }
+
+            // Load trees
+            let leafTexture = textureLoader.load(curBuilding.texture);
+            leafTexture.encoding = THREE.sRGBEncoding;
+            leafTexture.flipY = false;
+
+            let uniforms = THREE.UniformsUtils.merge([
+                THREE.ShaderLib.phong.uniforms,
+                { diffuse: { value: new THREE.Color(0xffffff) } },
+                { time: { value: 0.0 } },
+                { perlinMap: { value: null } },
+                { specular: { value: new THREE.Color(0x000000) } },
+                { shininess: { value: 0.01 } },
+                { alphaTest: { value: 0.5 } },
+            ]);
+
+            let leafMaterial = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                vertexShader: vertexShader,
+                fragmentShader: leafFragmentShader,
+                side: THREE.DoubleSide,
+                lights: true,
+                transparent: true,
+                alphaTest: 0.5,
+                extensions: {
+                    fragDepth: true,
+                },
+            });
+
+            let depthUniforms = THREE.UniformsUtils.merge([
+                THREE.ShaderLib.depth.uniforms,
+                { time: { value: 0.0 } },
+                { perlinMap: { value: null } },
+                { alphaTest: { value: 0.5 } },
+            ]);
+
+            let leafDepthMaterial = new THREE.ShaderMaterial({
+                uniforms: depthUniforms,
+                vertexShader: vertexShader,
+                fragmentShader: leafDepthShader,
+                side: THREE.DoubleSide,
+                alphaTest: 0.5,
+                extensions: {
+                    fragDepth: true,
+                },
+            });
+
+            uniforms.map.value = leafTexture;
+            leafMaterial.map = leafTexture;
+            uniforms.perlinMap.value = Farm.perlinMap;
+            leafMaterial.perlinMap = Farm.perlinMap;
+
+            depthUniforms.map.value = leafTexture;
+            leafDepthMaterial.map = leafTexture;
+            depthUniforms.perlinMap.value = Farm.perlinMap;
+            leafDepthMaterial.perlinMap = Farm.perlinMap;
+
+            Farm.timeUpdateMaterials.push(leafMaterial);
+            Farm.timeUpdateMaterials.push(leafDepthMaterial);
+
             curBuilding.geometries = [];
             curBuilding.materials = [];
             curBuilding.meshes = [];
@@ -544,11 +614,12 @@ function loadBuildingAssets(Farm) {
 
                     curBuilding.geometries[j].applyMatrix4(defaultTransform);
 
-                    curBuilding.materials[j] = mesh.material;
+                    //curBuilding.materials[j] = mesh.material;
+                    curBuilding.materials[j] = leafMaterial;
 
                     curBuilding.meshes[j] = new THREE.InstancedMesh(curBuilding.geometries[j], curBuilding.materials[j], 0);
 
-                    if (curBuilding.transparentTexture) {
+                    /*if (curBuilding.transparentTexture) {
                         let transparentTexture = textureLoader.load(curBuilding.transparentTexture);
                         transparentTexture.encoding = THREE.sRGBEncoding;
                         transparentTexture.flipY = false;
@@ -559,7 +630,9 @@ function loadBuildingAssets(Farm) {
                         });
                         curBuilding.customDepthMaterial[j] = depthMat;
                         curBuilding.meshes[j].customDepthMaterial = depthMat;
-                    }
+                    }*/
+                    curBuilding.customDepthMaterial[j] = leafDepthMaterial;
+                    curBuilding.meshes[j].customDepthMaterial = leafDepthMaterial;
 
                     curBuilding.meshes[j].receiveShadow = true;
                     curBuilding.meshes[j].castShadow = true;
@@ -614,7 +687,6 @@ function loadBuildingAssets(Farm) {
     // Load trees
     let leafTexture = textureLoader.load('assets/textures/tree_leaf.png');
     leafTexture.encoding = THREE.sRGBEncoding;
-    let perlinMap = textureLoader.load('assets/textures/perlin_noise.png');
 
     let uniforms = THREE.UniformsUtils.merge([
         THREE.ShaderLib.phong.uniforms,
@@ -663,6 +735,9 @@ function loadBuildingAssets(Farm) {
 
     Farm.leafMaterial = leafMaterial;
     Farm.leafDepthMaterial = leafDepthMaterial;
+
+    Farm.timeUpdateMaterials.push(leafMaterial);
+    Farm.timeUpdateMaterials.push(leafDepthMaterial);
 
     for (let i = 0; i < Farm.TREES.length; i++) {
 

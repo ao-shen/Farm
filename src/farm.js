@@ -116,6 +116,8 @@ export let Farm = {
     geometrySoil: null,
     materialSoil: null,
 
+    timeUpdateMaterials: [],
+
     // Restaurant
     restaurantType: 0,
     restaurantObj: null,
@@ -382,6 +384,7 @@ export let Farm = {
         sellPrice: 20,
         matureTime: 100,
         thumbnail: 'assets/textures/carrot_thumbnail.png',
+        texture: 'assets/textures/carrot.png',
         models: [
             'assets/models/carrot0.glb',
             'assets/models/carrot1.glb',
@@ -396,6 +399,7 @@ export let Farm = {
         sellPrice: 10,
         matureTime: 5000,
         thumbnail: 'assets/textures/potato_thumbnail.png',
+        texture: 'assets/textures/potato.png',
         models: [
             'assets/models/potato0.glb',
             'assets/models/potato1.glb',
@@ -411,6 +415,7 @@ export let Farm = {
         sellPrice: 40,
         matureTime: 5000,
         thumbnail: 'assets/textures/corn_thumbnail.png',
+        texture: 'assets/textures/corn.png',
         models: [
             'assets/models/corn0.glb',
             'assets/models/corn1.glb',
@@ -547,6 +552,7 @@ export let Farm = {
             z: 2,
         },
         thumbnail: 'assets/textures/apple_thumbnail.png',
+        texture: 'assets/textures/apple.png',
         models: [
             'assets/models/apple0.glb',
             'assets/models/apple1.glb',
@@ -572,6 +578,7 @@ export let Farm = {
             z: 2,
         },
         thumbnail: 'assets/textures/orange_thumbnail.png',
+        texture: 'assets/textures/orange.png',
         models: [
             'assets/models/apple0.glb',
             'assets/models/orange1.glb',

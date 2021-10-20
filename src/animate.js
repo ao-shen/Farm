@@ -82,11 +82,10 @@ export function animate(Farm, elapsed) {
 
     //Farm.shadowLight.shadow.camera.position.set(Farm.controls.target.x, 10, Farm.controls.target.y);
 
-    // Update grass blades
-
-    Farm.grassBladeMaterial.uniforms.time.value = now * 0.00005;
-    Farm.leafMaterial.uniforms.time.value = now * 0.00005;
-    Farm.leafDepthMaterial.uniforms.time.value = now * 0.00005;
+    // Update time material
+    for (let mat of Farm.timeUpdateMaterials) {
+        mat.uniforms.time.value = now * 0.00005;
+    }
 
     // Restaurant
     if (Farm.restaurantObj) {

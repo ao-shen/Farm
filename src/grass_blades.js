@@ -135,4 +135,6 @@ export function initGrassBlades(Farm) {
 
     Farm.grassBladeMesh = grass;
     Farm.grassBladeMaterial = phongMaterial;
+
+    Farm.timeUpdateMaterials.push(phongMaterial);
 }

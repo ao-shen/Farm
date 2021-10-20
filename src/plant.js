@@ -293,17 +293,25 @@ export class Plant {
                     let hashedY = (rand() - 0.5) * Farm.blockSize * 0.05;
                     let hashedZ = (rand() - 0.5) * Farm.blockSize * 0.4;
 
-                    matrix.makeRotationY(rand() * 2 * Math.PI);
+                    /*matrix.makeRotationY(rand() * 2 * Math.PI);
 
                     matrix.setPosition(
                         this.pos.x * Farm.blockSize + hashedX + quadPos[j].x * Farm.blockSize * 0.25,
                         hashedY,
                         this.pos.z * Farm.blockSize + hashedZ + quadPos[j].z * Farm.blockSize * 0.25
-                    );
+                    );*/
 
                     onCurStage *= (rand() - 0.5) * 0.2 + 1;
 
-                    matrix.scale(new THREE.Vector3(onCurStage, onCurStage, onCurStage));
+                    //matrix.scale(new THREE.Vector3(onCurStage, onCurStage, onCurStage));
+
+                    matrix.set(
+                        this.pos.x * Farm.blockSize + hashedX + quadPos[j].x * Farm.blockSize * 0.25,
+                        hashedY,
+                        this.pos.z * Farm.blockSize + hashedZ + quadPos[j].z * Farm.blockSize * 0.25,
+                        onCurStage,
+                        rand() * 2 * Math.PI * 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                    );
 
                     curMesh.setMatrixAt(this.meshIdx * 4 + j, matrix);
                 }
