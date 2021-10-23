@@ -57,6 +57,11 @@ export function animate(Farm, elapsed) {
         Farm.entities[entity].update();
     }
 
+    // Update mixers
+    for (const mixer in Farm.mixers) {
+        Farm.mixers[mixer].update(elapsed / 1000);
+    }
+
     // Update dragging info boxes
     if (Farm.draggingInfoBox) {
         Farm.draggingInfoBox.pos.set(
@@ -236,12 +241,20 @@ function renderOverlays(Farm) {
                 ]), 3));
 
                 // update build building preview
+                let centerOffsetX = 0;
+                let centerOffsetZ = 0;
+
+                if (Farm.BUILDINGS[Farm.buildPaletteSelect].center) {
+                    centerOffsetX = Farm.BUILDINGS[Farm.buildPaletteSelect].center.x;
+                    centerOffsetZ = Farm.BUILDINGS[Farm.buildPaletteSelect].center.z;
+                }
+
                 if (Farm.buildBuildingMesh != null) {
                     Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
                     Farm.buildBuildingMesh.position.set(
-                        (point.x) + 0.5 * Farm.blockSize,
+                        (point.x) + centerOffsetX + 0.5 * Farm.blockSize,
                         0.01,
-                        (point.z) + 0.5 * Farm.blockSize
+                        (point.z) + centerOffsetZ + 0.5 * Farm.blockSize
                     );
                 }
             } else if (Farm.overlay == Farm.OVERLAY.BUILD_LINE) {

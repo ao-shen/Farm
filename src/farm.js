@@ -137,6 +137,8 @@ export let Farm = {
     plantIdx: 1,
     plants: {},
 
+    mixers: {},
+
     // GUI -----------------------------------------------
 
     LENS: {
@@ -591,6 +593,25 @@ export let Farm = {
             { amount: 10, isLeafTranslator: true },
             { amount: 10, isLeafTranslator: true },
         ]
+    }, {
+        name: "Water Wheel Pump",
+        category: "buildings",
+        build_mode: "single",
+        price: 200,
+        inventorySlots: 0,
+        size: {
+            x: 1,
+            z: 2,
+        },
+        center: {
+            x: 0,
+            z: -1,
+        },
+        entities: [],
+        thumbnail: 'assets/textures/big_workers_house_thumbnail.png',
+        models: [
+            'assets/models/water_wheel.glb',
+        ],
     }, {
         name: "Remove All",
         category: "remove",

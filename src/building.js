@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { TextureLoader } from 'three';
+import * as SkeletonUtils from './THREE/SkeletonUtils';
 import { Entity } from './entity';
 import { InfoBox } from './info_box';
 import { Inventory } from './inventory';
@@ -32,6 +32,17 @@ export class Building {
             this.updateInstancedMesh();
         } else {
             this.mesh = this.Farm.BUILDINGS[this.type].meshes[this.variation].clone();
+
+            // Set up animations
+            if (this.Farm.BUILDINGS[this.type].animations[this.variation].length > 0) {
+
+                this.mesh = SkeletonUtils.clone(this.Farm.BUILDINGS[this.type].meshes[this.variation]);
+
+                this.mixer = new THREE.AnimationMixer(this.mesh);
+                this.mixer.clipAction(this.Farm.BUILDINGS[this.type].animations[this.variation][0]).play();
+                this.Farm.mixers[this.idx] = this.mixer;
+            }
+
             this.mesh.owner = this;
             this.mesh.name = this.name;
             if (this.infoable) {
@@ -46,9 +57,17 @@ export class Building {
             this.inventory = new Inventory(this.Farm.BUILDINGS[this.type].inventorySlots);
         }
 
+        let centerOffsetX = 0;
+        let centerOffsetZ = 0;
+
+        if (this.Farm.BUILDINGS[this.type].center) {
+            centerOffsetX = this.Farm.BUILDINGS[this.type].center.x;
+            centerOffsetZ = this.Farm.BUILDINGS[this.type].center.z;
+        }
+
         this.center = {
-            x: (this.pos.x + this.size.x * 0.5 - 0.5) * this.Farm.blockSize,
-            z: (this.pos.z + this.size.z * 0.5 - 0.5) * this.Farm.blockSize
+            x: (this.pos.x + centerOffsetX + this.size.x * 0.5 - 0.5) * this.Farm.blockSize,
+            z: (this.pos.z + centerOffsetZ + this.size.z * 0.5 - 0.5) * this.Farm.blockSize
         };
 
         this.centerBlock = {
@@ -210,6 +229,7 @@ export class Building {
         if (this.Farm.buildings[this.idx] == this) {
             delete this.Farm.buildings[this.idx];
             delete this.Farm.updatableBuildings[this.idx];
+            delete this.Farm.mixers[this.idx];
         }
 
         this.isRemoved = true;

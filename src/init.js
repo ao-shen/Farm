@@ -644,22 +644,52 @@ function loadBuildingAssets(Farm) {
             curBuilding.geometries = [];
             curBuilding.materials = [];
             curBuilding.meshes = [];
+            curBuilding.animations = [];
             curBuilding.numVariants = curBuilding.models.length;
             for (let j = 0; j < curBuilding.models.length; j++) {
                 modelLoader.load(curBuilding.models[j], function(gltf) {
                     let mesh = gltf.scene.children[0];
 
-                    mesh.receiveShadow = true;
-                    mesh.castShadow = true;
+                    if (curBuilding.models[j] == 'assets/models/water_wheel.glb') {
+                        console.log(gltf);
+                    }
 
-                    mesh.geometry.computeVertexNormals();
-                    mesh.geometry.applyMatrix4(defaultBuildingTransform);
+                    if (mesh.children.length == 0) {
 
-                    curBuilding.geometries[j] = mesh.geometry.clone();
+                        mesh.receiveShadow = true;
+                        mesh.castShadow = true;
 
-                    curBuilding.materials[j] = mesh.material;
+                        mesh.geometry.computeVertexNormals();
+                        mesh.geometry.applyMatrix4(defaultBuildingTransform);
 
-                    curBuilding.meshes[j] = mesh.clone();
+                        curBuilding.geometries[j] = mesh.geometry.clone();
+
+                        curBuilding.materials[j] = mesh.material;
+
+                        curBuilding.meshes[j] = mesh.clone();
+
+                    } else {
+
+                        mesh.children[1].receiveShadow = true;
+                        mesh.children[1].castShadow = true;
+
+                        mesh.children[1].geometry.computeVertexNormals();
+
+                        mesh.scale.set(5, 5, 5);
+
+                        curBuilding.geometries[j] = mesh.children[1].geometry.clone();
+                        curBuilding.geometries[j].applyMatrix4(defaultBuildingTransform);
+
+                        curBuilding.materials[j] = mesh.children[1].material;
+
+                        curBuilding.meshes[j] = mesh; //.clone();
+                    }
+
+                    curBuilding.animations[j] = [];
+
+                    if (gltf.animations.length > 0) {
+                        gltf.animations.forEach((clip) => { curBuilding.animations[j].push(clip); });
+                    }
                 });
             }
         }
