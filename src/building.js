@@ -61,13 +61,41 @@ export class Building {
         let centerOffsetZ = 0;
 
         if (this.Farm.BUILDINGS[this.type].center) {
-            centerOffsetX = this.Farm.BUILDINGS[this.type].center.x;
-            centerOffsetZ = this.Farm.BUILDINGS[this.type].center.z;
+            if (this.Farm.buildBuildingSide == 3) {
+                centerOffsetX = this.Farm.BUILDINGS[this.type].center.x;
+                centerOffsetZ = this.Farm.BUILDINGS[this.type].center.z;
+            } else if (this.Farm.buildBuildingSide == 2) {
+                centerOffsetX = this.Farm.BUILDINGS[this.type].center.z;
+                centerOffsetZ = -this.Farm.BUILDINGS[this.type].center.x;
+            } else if (this.Farm.buildBuildingSide == 1) {
+                centerOffsetX = -this.Farm.BUILDINGS[this.type].center.x;
+                centerOffsetZ = -this.Farm.BUILDINGS[this.type].center.z;
+            } else {
+                centerOffsetX = -this.Farm.BUILDINGS[this.type].center.z;
+                centerOffsetZ = this.Farm.BUILDINGS[this.type].center.x;
+            }
+        }
+
+        let otherSideX = 0;
+        let otherSideZ = 0;
+
+        if (this.side == 3) {
+            otherSideX = this.size.x - 1;
+            otherSideZ = this.size.z - 1;
+        } else if (this.side == 2) {
+            otherSideX = this.size.z - 1;
+            otherSideZ = -this.size.x + 1;
+        } else if (this.side == 1) {
+            otherSideX = -this.size.x + 1;
+            otherSideZ = -this.size.z + 1;
+        } else {
+            otherSideX = -this.size.z + 1;
+            otherSideZ = this.size.x - 1;
         }
 
         this.center = {
-            x: (this.pos.x + centerOffsetX + this.size.x * 0.5 - 0.5) * this.Farm.blockSize,
-            z: (this.pos.z + centerOffsetZ + this.size.z * 0.5 - 0.5) * this.Farm.blockSize
+            x: (this.pos.x + centerOffsetX + otherSideX * 0.5) * this.Farm.blockSize,
+            z: (this.pos.z + centerOffsetZ + otherSideZ * 0.5) * this.Farm.blockSize
         };
 
         this.centerBlock = {

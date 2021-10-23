@@ -556,8 +556,13 @@ function createSingleNewBuilding(Farm, isArea = false) {
 
     if (Farm.buildAreaPoint1 == null || Farm.buildAreaPoint2 == null) return;
 
-    for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x && newBuilding; x++) {
-        for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z && newBuilding; z++) {
+    let rectX1 = Math.min(Farm.buildAreaPoint1.x, Farm.buildAreaPoint2.x);
+    let rectZ1 = Math.min(Farm.buildAreaPoint1.z, Farm.buildAreaPoint2.z);
+    let rectX2 = Math.max(Farm.buildAreaPoint1.x, Farm.buildAreaPoint2.x);
+    let rectZ2 = Math.max(Farm.buildAreaPoint1.z, Farm.buildAreaPoint2.z);
+
+    for (let x = rectX1; x <= rectX2 && newBuilding; x++) {
+        for (let z = rectZ1; z <= rectZ2 && newBuilding; z++) {
             let curBlock = Farm.blocks[x + ',' + z];
 
             if (typeof curBlock === 'undefined' ||

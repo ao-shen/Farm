@@ -650,10 +650,6 @@ function loadBuildingAssets(Farm) {
                 modelLoader.load(curBuilding.models[j], function(gltf) {
                     let mesh = gltf.scene.children[0];
 
-                    if (curBuilding.models[j] == 'assets/models/water_wheel.glb') {
-                        console.log(gltf);
-                    }
-
                     if (mesh.children.length == 0) {
 
                         mesh.receiveShadow = true;
