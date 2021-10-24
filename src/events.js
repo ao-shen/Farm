@@ -316,6 +316,9 @@ export function onKeyDown(Farm, event) {
         case 't':
             console.info(Farm.hoveringBlock.wetness);
             break;
+        case 'y':
+            console.info(Farm.hoveringBlock.buildings[0].waterDirection, Farm.hoveringBlock.buildings[0].waterLevels[0]);
+            break;
         case 's':
             save(Farm);
             break;
@@ -629,6 +632,10 @@ function createSingleNewBuilding(Farm, isArea = false) {
                 break;
             case "Storage":
                 building = new BuildingObjects.Storage(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                break;
+            case "Aquaduct":
+            case "Piped Aquaduct":
+                building = new BuildingObjects.BuildingWaterCarrier(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             default:
                 building = new BuildingObjects.Building(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);

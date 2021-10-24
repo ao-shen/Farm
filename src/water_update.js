@@ -17,33 +17,95 @@ export function onUpdateWater(Farm) {
             let x = parseInt(idx[0]);
             let z = parseInt(idx[1]);
 
+            curBuilding.outputs = 0;
+
+            for (let i = 0; i < DIRECTIONS.length; i++) {
+                let direction = DIRECTIONS[i];
+                let otherBuilding = Farm.waterUpdateList[(x + direction.x) + ',' + (z + direction.z)];
+
+                if (typeof otherBuilding === 'undefined') continue;
+                if (curBuilding.connectibleGroup != otherBuilding.connectibleGroup) continue;
+
+                if (curBuilding.waterLevels[0] < otherBuilding.waterLevels[0]) {
+                    curBuilding.outputs++;
+                }
+            }
+        }
+        for (let idx in Farm.waterUpdateList) {
+            let curBuilding = Farm.waterUpdateList[idx];
+            idx = idx.split(",");
+            let x = parseInt(idx[0]);
+            let z = parseInt(idx[1]);
+
             curBuilding.newWaterLevel = curBuilding.waterLevels[0];
+            curBuilding.newWaterDirection = curBuilding.waterDirection;
 
             let dropping = true;
+            let droppingLevel = true;
 
             for (let i = 0; i < DIRECTIONS.length; i++) {
                 let direction = DIRECTIONS[i];
                 let otherBuilding = Farm.waterUpdateList[(x + direction.x) + ',' + (z + direction.z)];
 
                 if (x + direction.x < 0) {
+                    curBuilding.newWaterDirection = 0;
                     curBuilding.newWaterLevel = 0;
                     dropping = false;
+                    droppingLevel = false;
                     break;
                 }
 
                 if (typeof otherBuilding === 'undefined') continue;
+                if (curBuilding.connectibleGroup != otherBuilding.connectibleGroup) continue;
 
-                if (otherBuilding.waterLevels[0] + 1 < curBuilding.waterLevels[0]) {
-                    curBuilding.newWaterLevel -= 1;
+                if (otherBuilding.waterDirection != -1 && (curBuilding.newWaterDirection == -1 || otherBuilding.waterDirection + 1 < curBuilding.newWaterDirection)) {
+                    curBuilding.newWaterDirection = otherBuilding.waterDirection + 1;
                     dropping = false;
-                } else if (otherBuilding.waterLevels[0] < curBuilding.waterLevels[0]) {
+                } else if (otherBuilding.waterDirection < curBuilding.newWaterDirection) {
                     dropping = false;
                 }
+
+                /*if (curBuilding.leaky) {
+                    if (curBuilding.newWaterDirection == otherBuilding.waterDirection + 1) {
+                        curBuilding.newWaterLevel = otherBuilding.waterLevels[0] + 1;
+                        droppingLevel = false;
+                    }
+                } else {
+                    if (curBuilding.newWaterDirection == otherBuilding.waterDirection + 1) {
+                        curBuilding.newWaterLevel = otherBuilding.waterLevels[0];
+                        droppingLevel = false;
+                    }
+                }*/
+
+                let otherOutputableLevel = otherBuilding.outputs == 0 ? maxWaterDepth : (maxWaterDepth - (maxWaterDepth - otherBuilding.waterLevels[0]) / otherBuilding.outputs);
+
+                if (curBuilding.leaky || otherBuilding.leaky) {
+                    if (curBuilding.newWaterLevel > otherOutputableLevel + 1) {
+                        curBuilding.newWaterLevel = otherOutputableLevel + 1;
+                        droppingLevel = false;
+                    } else if (curBuilding.newWaterLevel >= otherOutputableLevel + 1) {
+                        droppingLevel = false;
+                    }
+                } else {
+                    if (curBuilding.newWaterLevel > otherOutputableLevel + 0.0001) {
+                        curBuilding.newWaterLevel = otherOutputableLevel + 0.0001;
+                        droppingLevel = false;
+                    } else if (curBuilding.newWaterLevel >= otherOutputableLevel + 0.0001) {
+                        droppingLevel = false;
+                    }
+                }
             }
+
             if (dropping) {
-                curBuilding.newWaterLevel += 1;
+                curBuilding.newWaterDirection = -1;
             }
+
+            if (droppingLevel) {
+                curBuilding.newWaterLevel = Math.ceil(curBuilding.newWaterLevel + 1);
+            }
+
             curBuilding.newWaterLevel = Math.max(0, Math.min(curBuilding.newWaterLevel, maxWaterDepth));
+            curBuilding.newWaterDirection = Math.max(-1, Math.min(curBuilding.newWaterDirection, 128));
         }
         for (let idx in Farm.waterUpdateList) {
             let curBuilding = Farm.waterUpdateList[idx];
@@ -52,6 +114,10 @@ export function onUpdateWater(Farm) {
             let z = parseInt(idx[1]);
 
             curBuilding.waterLevels[0] = curBuilding.newWaterLevel;
+            curBuilding.waterDirection = curBuilding.newWaterDirection;
+            if (curBuilding.waterDirection >= 128) {
+                curBuilding.waterDirection = -1;
+            }
 
             for (let i = 0; i < DIRECTIONS.length; i++) {
                 let direction = DIRECTIONS[i];
@@ -59,8 +125,8 @@ export function onUpdateWater(Farm) {
 
                 if (x + direction.x < 0) {
                     curBuilding.waterLevels[1 + i] = curBuilding.newWaterLevel;
-                } else if (typeof otherBuilding === 'undefined') {
-                    curBuilding.waterLevels[1 + i] = curBuilding.newWaterLevel + 1;
+                } else if (typeof otherBuilding === 'undefined' || curBuilding.connectibleGroup != otherBuilding.connectibleGroup) {
+                    curBuilding.waterLevels[1 + i] = -1;
                 } else {
                     curBuilding.waterLevels[1 + i] = (curBuilding.newWaterLevel + otherBuilding.newWaterLevel) * 0.5;
                 }

@@ -271,6 +271,8 @@ export async function load(Farm) {
 
                         switch (Farm.BUILDINGS[buildingType].name) {
                             case "Trench":
+                            case "Aquaduct":
+                            case "Piped Aquaduct":
                                 building = new BuildingObjects.BuildingWaterCarrier(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
                             case "Worker's House":

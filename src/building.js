@@ -423,7 +423,17 @@ export class BuildingWaterCarrier extends BuildingConnectible {
 
         this.Farm.waterUpdateList[x + ',' + z] = this;
 
+        this.waterDirection = -1;
         this.waterLevels = [maxWaterDepth, maxWaterDepth, maxWaterDepth, maxWaterDepth, maxWaterDepth];
+
+        this.waterPosition = 0;
+
+        this.connectibleGroup = this.Farm.BUILDINGS[this.type].connectibleGroup;
+        this.leaky = this.Farm.BUILDINGS[this.type].leaky;
+
+        if (this.connectibleGroup == "aquaduct") {
+            this.waterPosition = 5;
+        }
 
         this.waterVertices = [];
         this.waterNormals = [];
@@ -480,14 +490,18 @@ export class BuildingWaterCarrier extends BuildingConnectible {
     updateWaterMesh() {
         for (let i = 0; i < this.waterLevels.length; i++) {
             for (let j = 0; j < 4; j++) {
+                this.waterVertices[i * 12 + j * 3 + 0] = (waterQuads[i * 12 + j * 3 + 0] * 0.5 + this.pos.x) * this.Farm.blockSize;
+                this.waterVertices[i * 12 + j * 3 + 2] = (waterQuads[i * 12 + j * 3 + 2] * 0.5 + this.pos.z) * this.Farm.blockSize;
                 if (Math.abs(waterQuads[i * 12 + j * 3 + 0]) == 1 || Math.abs(waterQuads[i * 12 + j * 3 + 2]) == 1) {
-                    if (this.waterLevels[i] == -1) {
-                        this.waterVertices[i * 12 + j * 3 + 1] = -10;
+                    if (this.waterLevels[i] == -1 || this.waterLevels[i] >= maxWaterDepth) {
+                        this.waterVertices[i * 12 + j * 3 + 0] = (this.pos.x) * this.Farm.blockSize;
+                        this.waterVertices[i * 12 + j * 3 + 2] = (this.pos.z) * this.Farm.blockSize;
+                        this.waterVertices[i * 12 + j * 3 + 1] = this.waterPosition - 1.5;
                     } else {
-                        this.waterVertices[i * 12 + j * 3 + 1] = 0 - this.waterLevels[i] * waterLevelScale;
+                        this.waterVertices[i * 12 + j * 3 + 1] = this.waterPosition - this.waterLevels[i] * waterLevelScale;
                     }
                 } else {
-                    this.waterVertices[i * 12 + j * 3 + 1] = 0 - this.waterLevels[0] * waterLevelScale;
+                    this.waterVertices[i * 12 + j * 3 + 1] = this.waterPosition - this.waterLevels[0] * waterLevelScale;
                 }
             }
         }
