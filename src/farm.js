@@ -600,6 +600,10 @@ export let Farm = {
         build_mode: "single",
         price: 200,
         inventorySlots: 0,
+        allowClipConnectibleGroup: ["aquaduct"],
+        limitSide: [true, false, false, false],
+        requireRiver: true,
+        waterSourceForConnectibleGroup: { "aquaduct": true },
         size: {
             x: 2,
             z: 1,

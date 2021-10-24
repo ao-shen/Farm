@@ -554,6 +554,7 @@ function createSingleNewBuilding(Farm, isArea = false) {
     let BUILDING = Farm.BUILDINGS[buildingType];
     let isWall = BUILDING.name == "Fence";
     let isPath = BUILDING.name == "Concrete Slab" || BUILDING.name == "Dirt Path" || BUILDING.name == "Asphalt Road";
+    let touchingRiver = false;
 
     let foundationBlocks = [];
 
@@ -574,6 +575,10 @@ function createSingleNewBuilding(Farm, isArea = false) {
                 continue;
             }
 
+            if (x == 0) {
+                touchingRiver = true;
+            }
+
             let blockingPlants = false;
             let blockingBuildings = false;
             for (let plant of curBlock.plants) {
@@ -583,7 +588,24 @@ function createSingleNewBuilding(Farm, isArea = false) {
                 }
             }
             for (let building of curBlock.buildings) {
-                if ((building.isWall && isWall && Farm.buildBuildingSide == building.side) ||
+                let clippable = false;
+                if (Farm.BUILDINGS[building.type].allowClipConnectibleGroup) {
+                    for (let group of Farm.BUILDINGS[building.type].allowClipConnectibleGroup) {
+                        if (BUILDING.connectibleGroup == group) {
+                            clippable = true;
+                        }
+                    }
+                }
+                if (BUILDING.allowClipConnectibleGroup) {
+                    for (let group of BUILDING.allowClipConnectibleGroup) {
+                        if (building.connectibleGroup == group) {
+                            clippable = true;
+                        }
+                    }
+                }
+                if (clippable) {
+
+                } else if ((building.isWall && isWall && Farm.buildBuildingSide == building.side) ||
                     (isPath && building.isPath)) {
                     blockingBuildings = true;
                     break;
@@ -607,6 +629,8 @@ function createSingleNewBuilding(Farm, isArea = false) {
             }
         }
     }
+
+    if (BUILDING.requireRiver && !touchingRiver) return;
 
     if (newBuilding) {
 

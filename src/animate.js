@@ -214,6 +214,12 @@ function renderOverlays(Farm) {
                 Farm.buildBuildingSide = Farm.EAST;
             }
 
+            if (Farm.BUILDINGS[Farm.buildPaletteSelect].limitSide) {
+                while (!Farm.BUILDINGS[Farm.buildPaletteSelect].limitSide[Farm.buildBuildingSide]) {
+                    Farm.buildBuildingSide = (Farm.buildBuildingSide + 1) % 4;
+                }
+            }
+
             if (Farm.overlay == Farm.OVERLAY.BUILD_AREA ||
                 Farm.overlay == Farm.OVERLAY.REMOVE_AREA ||
                 Farm.overlay == Farm.OVERLAY.REMOVE_PLANTS ||

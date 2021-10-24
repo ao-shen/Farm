@@ -245,8 +245,15 @@ export class Building {
         } else if (this.instanced) {
 
         } else {
-            this.mesh.geometry.dispose();
-            this.mesh.material.dispose();
+
+            if (this.Farm.BUILDINGS[this.type].animations[this.variation].length > 0) {
+                this.mesh.children[1].geometry.dispose();
+                this.mesh.children[1].material.dispose();
+            } else {
+                this.mesh.geometry.dispose();
+                this.mesh.material.dispose();
+            }
+
             if (this.infoable) {
                 this.Farm.groupInfoable.remove(this.mesh);
             } else {

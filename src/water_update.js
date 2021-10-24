@@ -38,44 +38,36 @@ export function onUpdateWater(Farm) {
             let z = parseInt(idx[1]);
 
             curBuilding.newWaterLevel = curBuilding.waterLevels[0];
-            curBuilding.newWaterDirection = curBuilding.waterDirection;
 
-            let dropping = true;
             let droppingLevel = true;
+            let loop = true;
 
-            for (let i = 0; i < DIRECTIONS.length; i++) {
+            let curBlock = Farm.blocks[x + ',' + z];
+            for (let otherBuilding of curBlock.buildings) {
+                if (Farm.BUILDINGS[otherBuilding.type].waterSourceForConnectibleGroup) {
+                    if (Farm.BUILDINGS[otherBuilding.type].waterSourceForConnectibleGroup[curBuilding.connectibleGroup]) {
+                        curBuilding.newWaterLevel = 0;
+                        droppingLevel = false;
+                        loop = false;
+                        break;
+                    }
+                }
+            }
+
+            for (let i = 0; i < DIRECTIONS.length && loop; i++) {
                 let direction = DIRECTIONS[i];
                 let otherBuilding = Farm.waterUpdateList[(x + direction.x) + ',' + (z + direction.z)];
 
-                if (x + direction.x < 0) {
-                    curBuilding.newWaterDirection = 0;
-                    curBuilding.newWaterLevel = 0;
-                    dropping = false;
-                    droppingLevel = false;
-                    break;
+                if (curBuilding.connectibleGroup == "water") {
+                    if (x + direction.x < 0) {
+                        curBuilding.newWaterLevel = 0;
+                        droppingLevel = false;
+                        break;
+                    }
                 }
 
                 if (typeof otherBuilding === 'undefined') continue;
                 if (curBuilding.connectibleGroup != otherBuilding.connectibleGroup) continue;
-
-                if (otherBuilding.waterDirection != -1 && (curBuilding.newWaterDirection == -1 || otherBuilding.waterDirection + 1 < curBuilding.newWaterDirection)) {
-                    curBuilding.newWaterDirection = otherBuilding.waterDirection + 1;
-                    dropping = false;
-                } else if (otherBuilding.waterDirection < curBuilding.newWaterDirection) {
-                    dropping = false;
-                }
-
-                /*if (curBuilding.leaky) {
-                    if (curBuilding.newWaterDirection == otherBuilding.waterDirection + 1) {
-                        curBuilding.newWaterLevel = otherBuilding.waterLevels[0] + 1;
-                        droppingLevel = false;
-                    }
-                } else {
-                    if (curBuilding.newWaterDirection == otherBuilding.waterDirection + 1) {
-                        curBuilding.newWaterLevel = otherBuilding.waterLevels[0];
-                        droppingLevel = false;
-                    }
-                }*/
 
                 let otherOutputableLevel = otherBuilding.outputs == 0 ? maxWaterDepth : (maxWaterDepth - (maxWaterDepth - otherBuilding.waterLevels[0]) / otherBuilding.outputs);
 
@@ -96,16 +88,11 @@ export function onUpdateWater(Farm) {
                 }
             }
 
-            if (dropping) {
-                curBuilding.newWaterDirection = -1;
-            }
-
             if (droppingLevel) {
                 curBuilding.newWaterLevel = Math.ceil(curBuilding.newWaterLevel + 1);
             }
 
             curBuilding.newWaterLevel = Math.max(0, Math.min(curBuilding.newWaterLevel, maxWaterDepth));
-            curBuilding.newWaterDirection = Math.max(-1, Math.min(curBuilding.newWaterDirection, 128));
         }
         for (let idx in Farm.waterUpdateList) {
             let curBuilding = Farm.waterUpdateList[idx];
@@ -114,16 +101,12 @@ export function onUpdateWater(Farm) {
             let z = parseInt(idx[1]);
 
             curBuilding.waterLevels[0] = curBuilding.newWaterLevel;
-            curBuilding.waterDirection = curBuilding.newWaterDirection;
-            if (curBuilding.waterDirection >= 128) {
-                curBuilding.waterDirection = -1;
-            }
 
             for (let i = 0; i < DIRECTIONS.length; i++) {
                 let direction = DIRECTIONS[i];
                 let otherBuilding = Farm.waterUpdateList[(x + direction.x) + ',' + (z + direction.z)];
 
-                if (x + direction.x < 0) {
+                if (curBuilding.connectibleGroup == "water" && x + direction.x < 0) {
                     curBuilding.waterLevels[1 + i] = curBuilding.newWaterLevel;
                 } else if (typeof otherBuilding === 'undefined' || curBuilding.connectibleGroup != otherBuilding.connectibleGroup) {
                     curBuilding.waterLevels[1 + i] = -1;
