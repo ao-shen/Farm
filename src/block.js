@@ -92,7 +92,7 @@ export class Block {
 
             } else {
                 for (let building of this.buildings) {
-                    if (building.isWaterCarrier && building.waterLevels[0] < maxWaterDepth) {
+                    if (building.isWaterCarrier && building.leaky && building.waterLevels[0] < maxWaterDepth) {
                         this.wetness = 6;
                         isWater = true;
                         break;
