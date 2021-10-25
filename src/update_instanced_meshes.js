@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 import { BLOCK } from './block.js';
+import { maxWaterDepth } from './building.js';
 import { updateConnectibleConnections } from './water_update.js';
 
 export function updateSoilMesh(Farm) {
@@ -185,4 +186,92 @@ export function updateTreeMesh(Farm) {
         }
     }
 
+}
+
+const quad_normals = [
+    0, 1, 0
+];
+
+
+/*
+      ____
+     | 1  |
+ ____|____|____
+| 4  | 0  | 2  |
+|____|____|____|
+     | 3  |
+     |____|
+
+*/
+const waterCenterOffset = 0.3334;
+const waterQuads = [];
+// Quad 0
+waterQuads.push(waterCenterOffset, 0, waterCenterOffset);
+waterQuads.push(waterCenterOffset, 0, -waterCenterOffset);
+waterQuads.push(-waterCenterOffset, 0, -waterCenterOffset);
+waterQuads.push(-waterCenterOffset, 0, waterCenterOffset);
+// Quad 1
+waterQuads.push(1, 0, waterCenterOffset);
+waterQuads.push(1, 0, -waterCenterOffset);
+waterQuads.push(waterCenterOffset, 0, -waterCenterOffset);
+waterQuads.push(waterCenterOffset, 0, waterCenterOffset);
+// Quad 2
+waterQuads.push(waterCenterOffset, 0, 1);
+waterQuads.push(waterCenterOffset, 0, waterCenterOffset);
+waterQuads.push(-waterCenterOffset, 0, waterCenterOffset);
+waterQuads.push(-waterCenterOffset, 0, 1);
+// Quad 3
+waterQuads.push(-waterCenterOffset, 0, waterCenterOffset);
+waterQuads.push(-waterCenterOffset, 0, -waterCenterOffset);
+waterQuads.push(-1, 0, -waterCenterOffset);
+waterQuads.push(-1, 0, waterCenterOffset);
+// Quad 4
+waterQuads.push(waterCenterOffset, 0, -waterCenterOffset);
+waterQuads.push(waterCenterOffset, 0, -1);
+waterQuads.push(-waterCenterOffset, 0, -1);
+waterQuads.push(-waterCenterOffset, 0, -waterCenterOffset);
+
+// Water Level Scale
+const waterLevelScale = 1.01 / maxWaterDepth * 2.5 * 0.5;
+
+export function updateWaterMesh(Farm) {
+    let buildingBuffer = [];
+
+    Farm.waterVertices = [];
+    Farm.waterIndices = [];
+
+    for (let idx in Farm.waterUpdateList) {
+        let curBuilding = Farm.waterUpdateList[idx];
+        curBuilding.waterMeshIdx = buildingBuffer.length;
+        buildingBuffer.push(curBuilding);
+
+        for (let i = 0; i < 5 * 4; i++) {
+            Farm.waterVertices.push(0, 0, 0);
+        }
+        for (let i = 0; i < 5; i++) {
+            let curIdx = curBuilding.waterMeshIdx * 20 + i * 4;
+            Farm.waterIndices.push(curIdx + 0);
+            Farm.waterIndices.push(curIdx + 1);
+            Farm.waterIndices.push(curIdx + 2);
+            Farm.waterIndices.push(curIdx + 0);
+            Farm.waterIndices.push(curIdx + 2);
+            Farm.waterIndices.push(curIdx + 3);
+        }
+    }
+
+    Farm.waterGeometry.dispose();
+    Farm.scene.remove(Farm.waterMesh);
+
+    Farm.waterGeometry = new THREE.BufferGeometry();
+    Farm.waterMesh = new THREE.Mesh(Farm.waterGeometry, Farm.waterMaterial);
+    Farm.waterMesh.receiveShadow = true;
+    Farm.scene.add(Farm.waterMesh);
+    Farm.waterVerticesBufferAttribute = new THREE.BufferAttribute(new Float32Array(Farm.waterVertices), 3);
+    Farm.waterIndicesBufferAttribute = new THREE.BufferAttribute(new Uint32Array(Farm.waterIndices), 1);
+    Farm.waterGeometry.setAttribute('position', Farm.waterVerticesBufferAttribute);
+    Farm.waterGeometry.setIndex(Farm.waterIndicesBufferAttribute);
+
+    for (let i = 0; i < buildingBuffer.length; i++) {
+        buildingBuffer[i].updateWaterMesh();
+    }
 }

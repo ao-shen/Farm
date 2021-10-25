@@ -442,52 +442,14 @@ export class BuildingWaterCarrier extends BuildingConnectible {
             this.waterPosition = 5;
         }
 
-        this.waterVertices = [];
-        this.waterNormals = [];
-        this.waterIndices = [];
-        for (let i = 0; i < waterQuads.length; i += 3) {
-            this.waterVertices.push((waterQuads[i + 0] * 0.5 + x) * this.Farm.blockSize);
-            this.waterVertices.push(waterQuads[i + 1]);
-            this.waterVertices.push((waterQuads[i + 2] * 0.5 + z) * this.Farm.blockSize);
-        }
-
-        for (let i = 0; i < 5; i++) {
-            this.waterNormals.push(...quad_normals);
-            this.waterNormals.push(...quad_normals);
-            this.waterNormals.push(...quad_normals);
-            this.waterNormals.push(...quad_normals);
-            let curIdx = i * 4;
-            this.waterIndices.push(curIdx + 0);
-            this.waterIndices.push(curIdx + 1);
-            this.waterIndices.push(curIdx + 2);
-            this.waterIndices.push(curIdx + 0);
-            this.waterIndices.push(curIdx + 2);
-            this.waterIndices.push(curIdx + 3);
-        }
-
-        this.waterGeometry = new THREE.BufferGeometry();
-        this.waterGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.waterVertices), 3));
-        //this.waterGeometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(this.waterNormals), 3));
-        this.waterGeometry.setIndex(new THREE.BufferAttribute(new Uint32Array(this.waterIndices), 1));
-
-        let waterMaterial = new THREE.MeshLambertMaterial({
-            color: 0x2e93d9
-        });
-
-        this.waterMesh = new THREE.Mesh(this.waterGeometry, waterMaterial);
-
-        this.waterMesh.receiveShadow = true;
-
-        this.Farm.scene.add(this.waterMesh);
-
-        this.updateWaterMesh();
+        this.waterMeshIdx = -1;
     }
 
     remove() {
 
-        this.waterMesh.geometry.dispose();
+        /*this.waterMesh.geometry.dispose();
         this.waterMesh.material.dispose();
-        this.Farm.scene.remove(this.waterMesh);
+        this.Farm.scene.remove(this.waterMesh);*/
 
         delete this.Farm.waterUpdateList[this.pos.x + ',' + this.pos.z];
 
@@ -495,24 +457,32 @@ export class BuildingWaterCarrier extends BuildingConnectible {
     }
 
     updateWaterMesh() {
+
+        if (this.waterMeshIdx == -1) return;
+
+        let arr = this.Farm.waterVerticesBufferAttribute.array;
+
         for (let i = 0; i < this.waterLevels.length; i++) {
             for (let j = 0; j < 4; j++) {
-                this.waterVertices[i * 12 + j * 3 + 0] = (waterQuads[i * 12 + j * 3 + 0] * 0.5 + this.pos.x) * this.Farm.blockSize;
-                this.waterVertices[i * 12 + j * 3 + 2] = (waterQuads[i * 12 + j * 3 + 2] * 0.5 + this.pos.z) * this.Farm.blockSize;
-                if (Math.abs(waterQuads[i * 12 + j * 3 + 0]) == 1 || Math.abs(waterQuads[i * 12 + j * 3 + 2]) == 1) {
+                let quadIdx = i * 12 + j * 3;
+                let idx = quadIdx + this.waterMeshIdx * 60;
+                arr[idx + 0] = (waterQuads[quadIdx + 0] * 0.5 + this.pos.x) * this.Farm.blockSize;
+                arr[idx + 2] = (waterQuads[quadIdx + 2] * 0.5 + this.pos.z) * this.Farm.blockSize;
+                if (Math.abs(waterQuads[quadIdx + 0]) == 1 || Math.abs(waterQuads[quadIdx + 2]) == 1) {
                     if (this.waterLevels[i] == -1 || this.waterLevels[i] >= maxWaterDepth) {
-                        this.waterVertices[i * 12 + j * 3 + 0] = (this.pos.x) * this.Farm.blockSize;
-                        this.waterVertices[i * 12 + j * 3 + 2] = (this.pos.z) * this.Farm.blockSize;
-                        this.waterVertices[i * 12 + j * 3 + 1] = this.waterPosition - 1.5;
+                        arr[idx + 0] = (this.pos.x) * this.Farm.blockSize;
+                        arr[idx + 2] = (this.pos.z) * this.Farm.blockSize;
+                        arr[idx + 1] = this.waterPosition - 1.5;
                     } else {
-                        this.waterVertices[i * 12 + j * 3 + 1] = this.waterPosition - this.waterLevels[i] * waterLevelScale;
+                        arr[idx + 1] = this.waterPosition - this.waterLevels[i] * waterLevelScale;
                     }
                 } else {
-                    this.waterVertices[i * 12 + j * 3 + 1] = this.waterPosition - this.waterLevels[0] * waterLevelScale;
+                    arr[idx + 1] = this.waterPosition - this.waterLevels[0] * waterLevelScale;
                 }
             }
         }
-        this.waterGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.waterVertices), 3));
-        this.waterGeometry.computeVertexNormals();
+
+        this.Farm.waterVerticesBufferAttributeNeedsUpdate = true;
+        //this.Farm.waterGeometry.computeVertexNormals();
     }
 }

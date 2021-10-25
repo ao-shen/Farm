@@ -1051,6 +1051,19 @@ async function initWorld(Farm) {
         }
         Farm.connectibleGroupMap[BUILDING.connectibleGroup].push(i);
     }
+
+    // Water Material
+    Farm.waterMaterial = new THREE.MeshLambertMaterial({
+        color: 0x2e93d9
+    });
+    Farm.waterGeometry = new THREE.BufferGeometry();
+    Farm.waterMesh = new THREE.Mesh(Farm.waterGeometry, Farm.waterMaterial);
+    Farm.waterMesh.receiveShadow = true;
+    Farm.scene.add(Farm.waterMesh);
+    Farm.waterVerticesBufferAttribute = new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3);
+    Farm.waterIndicesBufferAttribute = new THREE.BufferAttribute(new Uint32Array([0, 0, 0]), 1);
+    Farm.waterGeometry.setAttribute('position', Farm.waterVerticesBufferAttribute);
+    Farm.waterGeometry.setIndex(Farm.waterIndicesBufferAttribute);
 }
 
 async function initRestaurant(Farm) {

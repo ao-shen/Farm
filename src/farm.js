@@ -362,9 +362,10 @@ export let Farm = {
         category: "ground",
         build_mode: "line",
         connectible: true,
-        leaky: true,
+        leaky: 1,
         connectibleGroup: "water",
         instanced: true,
+        visibleWaterCarrier: true,
         price: 10,
         size: {
             x: 1,
@@ -624,6 +625,7 @@ export let Farm = {
         connectible: true,
         connectibleGroup: "aquaduct",
         instanced: true,
+        visibleWaterCarrier: true,
         price: 50,
         size: {
             x: 1,
@@ -643,9 +645,10 @@ export let Farm = {
         category: "ground",
         build_mode: "line",
         connectible: true,
-        leaky: true,
+        leaky: 0.5,
         connectibleGroup: "aquaduct",
         instanced: true,
+        visibleWaterCarrier: true,
         price: 50,
         size: {
             x: 1,

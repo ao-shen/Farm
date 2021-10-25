@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { LZMA } from './lzma/lzma-min';
 import { Plant } from "./plant";
 import * as BuildingObjects from './building.js';
-import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh } from "./update_instanced_meshes";
+import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh, updateWaterMesh } from "./update_instanced_meshes";
 import { Entity } from "./entity";
 import { updateConnectibleConnections } from "./water_update";
 
@@ -381,6 +381,8 @@ export async function load(Farm) {
                         updateInstancedBuildingMesh(Farm, buildingType);
                     });
                     Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
+
+                    updateWaterMesh(Farm);
 
                     resolve();
 

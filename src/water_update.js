@@ -71,11 +71,11 @@ export function onUpdateWater(Farm) {
 
                 let otherOutputableLevel = otherBuilding.outputs == 0 ? maxWaterDepth : (maxWaterDepth - (maxWaterDepth - otherBuilding.waterLevels[0]) / otherBuilding.outputs);
 
-                if (curBuilding.leaky || otherBuilding.leaky) {
-                    if (curBuilding.newWaterLevel > otherOutputableLevel + 1) {
-                        curBuilding.newWaterLevel = otherOutputableLevel + 1;
+                if (curBuilding.leaky) {
+                    if (curBuilding.newWaterLevel > otherOutputableLevel + curBuilding.leaky) {
+                        curBuilding.newWaterLevel = otherOutputableLevel + curBuilding.leaky;
                         droppingLevel = false;
-                    } else if (curBuilding.newWaterLevel >= otherOutputableLevel + 1) {
+                    } else if (curBuilding.newWaterLevel >= otherOutputableLevel + curBuilding.leaky) {
                         droppingLevel = false;
                     }
                 } else {
@@ -100,11 +100,18 @@ export function onUpdateWater(Farm) {
             let x = parseInt(idx[0]);
             let z = parseInt(idx[1]);
 
+            let changed = false;
+
+            if (curBuilding.waterLevels[0] != curBuilding.newWaterLevel) {
+                changed = true;
+            }
             curBuilding.waterLevels[0] = curBuilding.newWaterLevel;
 
             for (let i = 0; i < DIRECTIONS.length; i++) {
                 let direction = DIRECTIONS[i];
                 let otherBuilding = Farm.waterUpdateList[(x + direction.x) + ',' + (z + direction.z)];
+
+                let old = curBuilding.waterLevels[1 + i];
 
                 if (curBuilding.connectibleGroup == "water" && x + direction.x < 0) {
                     curBuilding.waterLevels[1 + i] = curBuilding.newWaterLevel;
@@ -113,9 +120,15 @@ export function onUpdateWater(Farm) {
                 } else {
                     curBuilding.waterLevels[1 + i] = (curBuilding.newWaterLevel + otherBuilding.newWaterLevel) * 0.5;
                 }
+
+                if (old != curBuilding.waterLevels[1 + i]) {
+                    changed = true;
+                }
             }
 
-            curBuilding.updateWaterMesh();
+            if (changed) {
+                curBuilding.updateWaterMesh();
+            }
         }
 
     }

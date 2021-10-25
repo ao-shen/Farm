@@ -97,6 +97,13 @@ export function animate(Farm, elapsed) {
         Farm.restaurantObj.update();
     }
 
+    // Update Water Mesh
+    if (Farm.waterVerticesBufferAttributeNeedsUpdate) {
+        Farm.waterVerticesBufferAttributeNeedsUpdate = false;
+        Farm.waterGeometry.computeVertexNormals();
+        Farm.waterVerticesBufferAttribute.needsUpdate = true;
+    }
+
     // Update HUD
 
     //Farm.money += 12345;

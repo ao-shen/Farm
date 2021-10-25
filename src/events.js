@@ -7,7 +7,7 @@ import { BLOCK, Block } from './block.js';
 import * as BuildingObjects from './building.js';
 import { updateConnectibleConnections } from './water_update.js';
 import { load, save } from './load_save.js';
-import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh } from "./update_instanced_meshes.js";
+import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh, updateWaterMesh } from "./update_instanced_meshes.js";
 
 
 export function onWindowResize(Farm) {
@@ -447,6 +447,7 @@ function createNewTrench(Farm) {
     Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
 
     updateInstancedBuildingMesh(Farm, buildingType);
+    updateWaterMesh(Farm);
 }
 
 function createNewAreaOfPlants(Farm) {
@@ -541,6 +542,9 @@ function createAreaOfNewBuildings(Farm) {
 
     if (BUILDING.instanced || BUILDING.connectible || BUILDING.connectibleGroup) {
         updateInstancedBuildingMesh(Farm, buildingType, { x: startX, z: startZ }, { x: endX, z: endZ });
+    }
+    if (BUILDING.visibleWaterCarrier) {
+        updateWaterMesh(Farm);
     }
     if (BUILDING.groundStateMutator || BUILDING.connectibleGroup) {
         Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
@@ -678,12 +682,19 @@ function createSingleNewBuilding(Farm, isArea = false) {
         Farm.buildings[Farm.buildingIdx] = building;
         Farm.buildingIdx++;
 
-        if ((BUILDING.instanced || BUILDING.connectible || BUILDING.connectibleGroup) && !isArea) {
-            updateInstancedBuildingMesh(Farm, buildingType, Farm.buildAreaPoint1, Farm.buildAreaPoint2);
-        }
+        if (!isArea) {
 
-        if ((BUILDING.groundStateMutator || BUILDING.connectibleGroup) && !isArea) {
-            Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
+            if (BUILDING.instanced || BUILDING.connectible || BUILDING.connectibleGroup) {
+                updateInstancedBuildingMesh(Farm, buildingType, Farm.buildAreaPoint1, Farm.buildAreaPoint2);
+            }
+
+            if (BUILDING.visibleWaterCarrier) {
+                updateWaterMesh(Farm);
+            }
+
+            if (BUILDING.groundStateMutator || BUILDING.connectibleGroup) {
+                Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
+            }
         }
     }
 }
@@ -829,6 +840,7 @@ function remove(Farm) {
         if (didRemovedGroundStateMutator) {
             Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
         }
+        updateWaterMesh(Farm);
     }
     if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
         Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
