@@ -1054,7 +1054,7 @@ async function initWorld(Farm) {
 
     // Water Material
     Farm.waterMaterial = new THREE.MeshLambertMaterial({
-        color: 0x2e93d9
+        color: 0x094fb8
     });
     Farm.waterGeometry = new THREE.BufferGeometry();
     Farm.waterMesh = new THREE.Mesh(Farm.waterGeometry, Farm.waterMaterial);
