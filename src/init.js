@@ -224,6 +224,7 @@ function initScene(Farm) {
     // Outline Pass
     Farm.outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), Farm.scene, Farm.camera);
     Farm.composer.addPass(Farm.outlinePass);
+    Farm.outlinePass.Farm = Farm;
 
     // FXAA Pass
     let effectFXAA = new ShaderPass(FXAAShader);
@@ -1059,7 +1060,7 @@ async function initWorld(Farm) {
     Farm.waterGeometry = new THREE.BufferGeometry();
     Farm.waterMesh = new THREE.Mesh(Farm.waterGeometry, Farm.waterMaterial);
     Farm.waterMesh.receiveShadow = true;
-    Farm.scene.add(Farm.waterMesh);
+    Farm.groupNonInfoable.add(Farm.waterMesh);
     Farm.waterVerticesBufferAttribute = new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3);
     Farm.waterIndicesBufferAttribute = new THREE.BufferAttribute(new Uint32Array([0, 0, 0]), 1);
     Farm.waterGeometry.setAttribute('position', Farm.waterVerticesBufferAttribute);

@@ -188,11 +188,6 @@ export function updateTreeMesh(Farm) {
 
 }
 
-const quad_normals = [
-    0, 1, 0
-];
-
-
 /*
       ____
      | 1  |
@@ -231,9 +226,6 @@ waterQuads.push(waterCenterOffset, 0, -1);
 waterQuads.push(-waterCenterOffset, 0, -1);
 waterQuads.push(-waterCenterOffset, 0, -waterCenterOffset);
 
-// Water Level Scale
-const waterLevelScale = 1.01 / maxWaterDepth * 2.5 * 0.5;
-
 export function updateWaterMesh(Farm) {
     let buildingBuffer = [];
 
@@ -260,12 +252,12 @@ export function updateWaterMesh(Farm) {
     }
 
     Farm.waterGeometry.dispose();
-    Farm.scene.remove(Farm.waterMesh);
+    Farm.groupNonInfoable.remove(Farm.waterMesh);
 
     Farm.waterGeometry = new THREE.BufferGeometry();
     Farm.waterMesh = new THREE.Mesh(Farm.waterGeometry, Farm.waterMaterial);
     Farm.waterMesh.receiveShadow = true;
-    Farm.scene.add(Farm.waterMesh);
+    Farm.groupNonInfoable.add(Farm.waterMesh);
     Farm.waterVerticesBufferAttribute = new THREE.BufferAttribute(new Float32Array(Farm.waterVertices), 3);
     Farm.waterIndicesBufferAttribute = new THREE.BufferAttribute(new Uint32Array(Farm.waterIndices), 1);
     Farm.waterGeometry.setAttribute('position', Farm.waterVerticesBufferAttribute);

@@ -5,7 +5,7 @@ import {
     LinearFilter,
     Matrix4,
     MeshBasicMaterial,
-    MeshDepthMaterial,
+    MeshDistanceMaterial,
     NoBlending,
     RGBADepthPacking,
     RGBAFormat,
@@ -28,18 +28,17 @@ class OutlinePass extends Pass {
         this.renderCamera = camera;
         this.selectedObjects = selectedObjects !== undefined ? selectedObjects : [];
         this.visibleEdgeColor = new Color(1, 1, 1);
-        this.hiddenEdgeColor = new Color(0.1, 0.04, 0.02);
+        this.hiddenEdgeColor = new Color(1, 1, 1);
         this.edgeGlow = 0.0;
         this.usePatternTexture = false;
         this.edgeThickness = 1.0;
-        this.edgeStrength = 3.0;
-        this.downSampleRatio = 2;
+        this.edgeStrength = 5.0;
         this.pulsePeriod = 0;
 
         this._visibilityCache = new Map();
 
-
         this.resolution = (resolution !== undefined) ? new Vector2(resolution.x, resolution.y) : new Vector2(256, 256);
+        this.downSampleRatio = this.resolution.x / 720;
 
         const pars = { minFilter: LinearFilter, magFilter: LinearFilter, format: RGBAFormat };
 
@@ -52,7 +51,7 @@ class OutlinePass extends Pass {
         this.renderTargetMaskBuffer.texture.name = 'OutlinePass.mask';
         this.renderTargetMaskBuffer.texture.generateMipmaps = false;
 
-        this.depthMaterial = new MeshDepthMaterial();
+        this.depthMaterial = new MeshDistanceMaterial();
         this.depthMaterial.side = DoubleSide;
         this.depthMaterial.depthPacking = RGBADepthPacking;
         this.depthMaterial.blending = NoBlending;
@@ -311,20 +310,25 @@ class OutlinePass extends Pass {
             const currentBackground = this.renderScene.background;
             this.renderScene.background = null;
 
-            let grassBladeMesh = this.renderScene.getObjectByName("GrassBladeMesh");
+            /*let grassBladeMesh = this.renderScene.getObjectByName("GrassBladeMesh");
             if (grassBladeMesh) {
                 grassBladeMesh.visible = false;
+            }*/
+            for (let BUILDING of this.Farm.BUILDINGS) {
+                if (BUILDING.instanced) {
+                    for (let mesh of BUILDING.meshes) {
+                        mesh.visible = false;
+                    }
+                }
             }
+            this.Farm.grassBladeMesh.visible = false;
+            this.Farm.waterMesh.visible = false;
 
             // 1. Draw Non Selected objects in the depth buffer
             this.renderScene.overrideMaterial = this.depthMaterial;
             renderer.setRenderTarget(this.renderTargetDepthBuffer);
             renderer.clear();
             renderer.render(this.renderScene, this.renderCamera);
-
-            if (grassBladeMesh) {
-                grassBladeMesh.visible = true;
-            }
 
             // Make selected objects visible
             this.changeVisibilityOfSelectedObjects(true);
@@ -345,6 +349,19 @@ class OutlinePass extends Pass {
             this.renderScene.overrideMaterial = null;
             this.changeVisibilityOfNonSelectedObjects(true);
             this._visibilityCache.clear();
+
+            for (let BUILDING of this.Farm.BUILDINGS) {
+                if (BUILDING.instanced) {
+                    for (let mesh of BUILDING.meshes) {
+                        mesh.visible = true;
+                    }
+                }
+            }
+            this.Farm.grassBladeMesh.visible = true;
+            this.Farm.waterMesh.visible = true;
+            /*if (grassBladeMesh) {
+                grassBladeMesh.visible = true;
+            }*/
 
             this.renderScene.background = currentBackground;
 

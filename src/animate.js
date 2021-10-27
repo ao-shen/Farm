@@ -154,6 +154,7 @@ function renderInfoBoxes(Farm) {
         } else {
             Farm.outlinePass.selectedObjects = [];
         }
+        //Farm.outlinePass.selectedObjects = [Farm.restaurantObj.restaurantStandMesh];
     }
 }
 
