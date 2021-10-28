@@ -161,7 +161,7 @@ function renderInfoBoxes(Farm) {
 function renderOverlays(Farm) {
 
     Farm.mouseRaycaster.setFromCamera(Farm.mousePos, Farm.camera);
-    const intersects = Farm.mouseRaycaster.intersectObject(Farm.groundMesh);
+    const intersects = Farm.mouseRaycaster.intersectObject(Farm.groundIntersectionMesh);
     if (intersects.length > 0) {
         Farm.grassBladeMaterial.uniforms.mouse_pos_x.value = intersects[0].point.x;
         Farm.grassBladeMaterial.uniforms.mouse_pos_z.value = intersects[0].point.z;
@@ -173,16 +173,13 @@ function renderOverlays(Farm) {
         if (intersects.length > 0) {
 
             const intersect = intersects[0];
-            const face = intersect.face;
 
-            const meshPosition = Farm.groundMesh.geometry.attributes.position;
+            let point = intersect.point;
 
-            let point = new THREE.Vector3();
-
-            point.add(new THREE.Vector3(meshPosition.getX(face.a), 0, meshPosition.getZ(face.a)));
+            /*point.add(new THREE.Vector3(meshPosition.getX(face.a), 0, meshPosition.getZ(face.a)));
             point.add(new THREE.Vector3(meshPosition.getX(face.b), 0, meshPosition.getZ(face.b)));
             point.add(new THREE.Vector3(meshPosition.getX(face.c), 0, meshPosition.getZ(face.c)));
-            point.divideScalar(3);
+            point.divideScalar(3);*/
 
             point = Farm.magnetToBlocks(point);
             let blockPos = Farm.posToBlocks(point.x, point.z);
@@ -200,9 +197,9 @@ function renderOverlays(Farm) {
                 rectScreenPoint4.x, rectScreenPoint4.y, -101,
             ]), 3));
 
-            Farm.groundMesh.updateMatrix();
+            //Farm.groundMesh.updateMatrix();
 
-            Farm.blockLine.geometry.applyMatrix4(Farm.groundMesh.matrix);
+            //Farm.blockLine.geometry.applyMatrix4(Farm.groundMesh.matrix);
 
             Farm.blockLine.visible = true;
 

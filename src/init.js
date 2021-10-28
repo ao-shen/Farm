@@ -854,6 +854,8 @@ function loadEntitiesAssets(Farm) {
 
 async function initWorld(Farm) {
 
+    let geometry, texture, material, mesh;
+
     const textureLoader = new THREE.TextureLoader();
 
     // ground
@@ -952,11 +954,24 @@ async function initWorld(Farm) {
 
     Farm.scene.add(Farm.groundMesh);
 
+    // Ground intersection mesh
+    geometry = new THREE.PlaneGeometry(Farm.blockSize * Farm.numBlocks.x, Farm.blockSize * Farm.numBlocks.z);
+    geometry.rotateX(Math.PI / 2);
+    geometry.rotateY(-Math.PI / 2);
+    material = new THREE.MeshStandardMaterial({
+        transparent: true,
+        opacity: 0,
+        side: THREE.DoubleSide,
+    });
+
+    Farm.groundIntersectionMesh = new THREE.Mesh(geometry, material);
+    Farm.groundIntersectionMesh.position.set(Farm.blockSize * (Farm.numBlocks.x - 1) / 2, -0.01, Farm.blockSize * (Farm.numBlocks.z - 1) / 2);
+    Farm.scene.add(Farm.groundIntersectionMesh);
+
     // Farm Sides
 
     let blocksPerSize = 16;
     let numSides = Math.floor(Farm.numBlocks.x / blocksPerSize);
-    let geometry, texture, material, mesh;
     const matrix = new THREE.Matrix4();
 
     // Road
