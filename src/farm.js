@@ -704,7 +704,7 @@ export let Farm = {
     ENTITIES: [{
         name: "Worker",
         inventorySlots: 1,
-        movementSpeed: 1,
+        movementSpeed: 0.2,
         //models: ['assets/models/worker.glb'],
         models: ['assets/models/cattle0.glb'],
     }, {

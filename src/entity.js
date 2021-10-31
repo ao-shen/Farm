@@ -267,7 +267,7 @@ export class Entity {
             velocity.normalize();
 
             let curMovementSpeed = this.movementSpeed;
-            if (this.path[0].speedLimit) {
+            if (this.path[0].speedLimit && curMovementSpeed > this.path[0].speedLimit) {
                 curMovementSpeed = this.path[0].speedLimit;
             }
             if (dist < curMovementSpeed) {
@@ -276,10 +276,18 @@ export class Entity {
                 velocity.multiplyScalar(curMovementSpeed);
             }
 
+            if (this.mixer) {
+                this.mixer.timeScale = velocity.length() / 0.04;
+            }
+
             this.pos.x += velocity.x;
             this.pos.z += velocity.z;
             this.mesh.lookAt(this.pos);
             this.mesh.rotateY(this.meshRotationOffset);
+        } else {
+            if (this.mixer) {
+                this.mixer.timeScale = 0;
+            }
         }
     }
 
