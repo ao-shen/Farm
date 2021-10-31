@@ -40,7 +40,7 @@ export class Building {
 
                 this.mixer = new THREE.AnimationMixer(this.mesh);
                 this.mixer.clipAction(this.Farm.BUILDINGS[this.type].animations[this.variation][0]).play();
-                this.Farm.mixers[this.idx] = this.mixer;
+                this.Farm.mixers[this.name] = this.mixer;
             }
 
             this.mesh.owner = this;
@@ -264,7 +264,7 @@ export class Building {
         if (this.Farm.buildings[this.idx] == this) {
             delete this.Farm.buildings[this.idx];
             delete this.Farm.updatableBuildings[this.idx];
-            delete this.Farm.mixers[this.idx];
+            delete this.Farm.mixers[this.name];
         }
 
         this.isRemoved = true;

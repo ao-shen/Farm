@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Farm } from './farm';
+import * as SkeletonUtils from './THREE/SkeletonUtils';
 import { PriorityQueue } from './priority_queue';
 import { BLOCK, Block } from './block.js';
 import { Vector3 } from 'three';
@@ -15,6 +16,7 @@ export class Entity {
         this.type = type;
         this.name = "Entity_" + this.idx;
         this.meshRotationOffset = 0;
+        this.variation = variation;
 
         this.state = 0;
 
@@ -31,10 +33,27 @@ export class Entity {
         this.parentBuilding = null;
         this.parentEntitiy = null;
 
-        this.mesh = this.Farm.ENTITIES[this.type].meshes[variation].clone();
-        this.mesh.center = this.Farm.ENTITIES[this.type].meshes[variation].center;
-        this.mesh.owner = this;
-        this.mesh.name = this.name;
+        this.mesh = this.Farm.ENTITIES[this.type].meshes[this.variation].clone();
+        this.skinnedMesh = this.mesh;
+
+        // Set up animations
+        if (this.Farm.ENTITIES[this.type].animations[this.variation].length > 0) {
+
+            this.mesh = SkeletonUtils.clone(this.Farm.ENTITIES[this.type].meshes[this.variation]);
+
+            this.skinnedMeshIndicies = this.Farm.ENTITIES[this.type].skinnedMeshIndicies[this.variation]
+
+            this.mixer = new THREE.AnimationMixer(this.mesh);
+            this.mixer.clipAction(this.Farm.ENTITIES[this.type].animations[this.variation][0]).play();
+            this.Farm.mixers[this.name] = this.mixer;
+
+            this.skinnedMesh = this.mesh.children[this.skinnedMeshIndicies];
+        }
+
+        this.skinnedMesh.center = this.Farm.ENTITIES[this.type].meshes[this.variation].center;
+        this.skinnedMesh.owner = this;
+        this.skinnedMesh.name = this.name;
+
         this.Farm.groupInfoable.add(this.mesh);
 
         if (this.Farm.ENTITIES[this.type].inventorySlots) {
@@ -46,14 +65,20 @@ export class Entity {
             return thisEntity.logic();
         }, this);
 
-        this.infoBox = new InfoBox(this.Farm, this);
+        this.infoBox = new InfoBox(this.Farm, this, "skinnedMesh");
         this.infoBox.addText(this.name);
         this.infoBox.addInventory(this.inventory);
     }
 
     showInfoBox() {
 
-        let pos = this.Farm.posToScreenPos(this.Farm.getCenterPoint(this.mesh), this.Farm.camera);
+        let mesh = this.mesh;
+
+        if (typeof this.skinnedMeshIndicies !== "undefined") {
+            mesh = this.mesh.children[this.skinnedMeshIndicies];
+        }
+
+        let pos = this.Farm.posToScreenPos(this.Farm.getCenterPoint(mesh), this.Farm.camera);
 
         this.infoBox.updatePosition(pos.x, pos.y);
 
@@ -274,11 +299,12 @@ export class Entity {
 
         this.infoBox.remove();
 
-        this.mesh.geometry.dispose();
-        this.mesh.material.dispose();
+        this.skinnedMesh.geometry.dispose();
+        this.skinnedMesh.material.dispose();
         this.Farm.groupInfoable.remove(this.mesh);
 
         delete this.Farm.entities[this.idx];
+        delete this.Farm.mixers[this.name];
 
         this.isRemoved = true;
     }

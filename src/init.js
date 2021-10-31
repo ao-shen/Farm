@@ -667,17 +667,20 @@ function loadBuildingAssets(Farm) {
 
                     } else {
 
-                        mesh.children[1].receiveShadow = true;
-                        mesh.children[1].castShadow = true;
+                        let idx = 0;
+                        while (mesh.children[idx].type != "SkinnedMesh") idx++;
 
-                        mesh.children[1].geometry.computeVertexNormals();
+                        mesh.children[idx].receiveShadow = true;
+                        mesh.children[idx].castShadow = true;
+
+                        mesh.children[idx].geometry.computeVertexNormals();
 
                         mesh.scale.set(5, 5, 5);
 
-                        curBuilding.geometries[j] = mesh.children[1].geometry.clone();
+                        curBuilding.geometries[j] = mesh.children[idx].geometry.clone();
                         curBuilding.geometries[j].applyMatrix4(defaultBuildingTransform);
 
-                        curBuilding.materials[j] = mesh.children[1].material;
+                        curBuilding.materials[j] = mesh.children[idx].material;
 
                         curBuilding.meshes[j] = mesh; //.clone();
                     }
@@ -831,22 +834,54 @@ function loadEntitiesAssets(Farm) {
         curEntity.geometries = [];
         curEntity.materials = [];
         curEntity.meshes = [];
+        curEntity.skinnedMeshIndicies = [];
+        curEntity.animations = [];
         curEntity.numVariants = curEntity.models.length;
 
         for (let j = 0; j < curEntity.models.length; j++) {
             modelLoader.load(curEntity.models[j], function(gltf) {
                 let mesh = gltf.scene.children[0];
 
-                mesh.receiveShadow = true;
-                mesh.castShadow = true;
+                if (mesh.children.length == 0) {
 
-                mesh.geometry.applyMatrix4(defaultEntityTransform);
+                    mesh.receiveShadow = true;
+                    mesh.castShadow = true;
 
-                curEntity.geometries[j] = mesh.geometry.clone();
+                    mesh.geometry.applyMatrix4(defaultEntityTransform);
 
-                curEntity.materials[j] = mesh.material;
+                    curEntity.geometries[j] = mesh.geometry.clone();
 
-                curEntity.meshes[j] = mesh.clone();
+                    curEntity.materials[j] = mesh.material;
+
+                    curEntity.meshes[j] = mesh.clone();
+
+                } else {
+
+                    let idx = 0;
+                    while (mesh.children[idx].type != "SkinnedMesh") idx++;
+
+                    curEntity.skinnedMeshIndicies[j] = idx;
+
+                    mesh.children[idx].receiveShadow = true;
+                    mesh.children[idx].castShadow = true;
+
+                    mesh.children[idx].geometry.computeVertexNormals();
+
+                    mesh.scale.set(5, 5, 5);
+
+                    curEntity.geometries[j] = mesh.children[idx].geometry.clone();
+                    curEntity.geometries[j].applyMatrix4(defaultEntityTransform);
+
+                    curEntity.materials[j] = mesh.children[idx].material;
+
+                    curEntity.meshes[j] = mesh; //.clone();
+                }
+
+                curEntity.animations[j] = [];
+
+                if (gltf.animations.length > 0) {
+                    gltf.animations.forEach((clip) => { curEntity.animations[j].push(clip); });
+                }
             });
         }
     }

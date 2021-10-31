@@ -705,7 +705,8 @@ export let Farm = {
         name: "Worker",
         inventorySlots: 1,
         movementSpeed: 1,
-        models: ['assets/models/worker.glb'],
+        //models: ['assets/models/worker.glb'],
+        models: ['assets/models/cattle0.glb'],
     }, {
         name: "Customer",
         inventorySlots: 1,
