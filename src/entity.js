@@ -16,6 +16,7 @@ export class Entity {
         this.type = type;
         this.name = "Entity_" + this.idx;
         this.meshRotationOffset = 0;
+        this.meshRotation = 0;
         this.variation = variation;
 
         this.state = 0;
@@ -282,8 +283,22 @@ export class Entity {
 
             this.pos.x += velocity.x;
             this.pos.z += velocity.z;
-            this.mesh.lookAt(this.pos);
-            this.mesh.rotateY(this.meshRotationOffset);
+            //this.mesh.lookAt(this.pos);
+
+            let rotationDist = (-Math.atan2(velocity.z, velocity.x) + 2 * Math.PI) - this.meshRotation;
+            if (rotationDist > Math.PI) {
+                rotationDist -= 2 * Math.PI;
+            } else if (rotationDist < -Math.PI) {
+                rotationDist += 2 * Math.PI;
+            }
+            this.meshRotation += 0.1 * (rotationDist);
+            this.meshRotation = this.meshRotation % (2 * Math.PI);
+            if (this.meshRotation < 0) {
+                this.meshRotation += 2 * Math.PI;
+            }
+
+            this.mesh.rotation.set(0, this.meshRotationOffset + this.meshRotation + Math.PI / 2, 0);
+
         } else {
             if (this.mixer) {
                 this.mixer.timeScale = 0;
