@@ -704,9 +704,8 @@ export let Farm = {
     ENTITIES: [{
         name: "Worker",
         inventorySlots: 1,
-        movementSpeed: 0.2,
-        //models: ['assets/models/worker.glb'],
-        models: ['assets/models/cattle0.glb'],
+        movementSpeed: 2,
+        models: ['assets/models/worker.glb'],
     }, {
         name: "Customer",
         inventorySlots: 1,
@@ -715,7 +714,7 @@ export let Farm = {
     }, {
         name: "Car",
         inventorySlots: 1,
-        movementSpeed: 3,
+        movementSpeed: 4,
         entitySlots: 2,
         meshRotationOffset: Math.PI,
         models: [
@@ -725,6 +724,11 @@ export let Farm = {
             'assets/models/car3.glb',
             'assets/models/car4.glb',
         ],
+    }, {
+        name: "Cattle",
+        inventorySlots: 0,
+        movementSpeed: 0.2,
+        models: ['assets/models/cattle0.glb'],
     }, ],
 
     // Tree models
