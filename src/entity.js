@@ -57,9 +57,8 @@ export class Entity {
 
         this.Farm.groupInfoable.add(this.mesh);
 
-        if (this.Farm.ENTITIES[this.type].inventorySlots) {
-            this.inventory = new Inventory(this.Farm.ENTITIES[this.type].inventorySlots);
-        }
+        // if (this.Farm.ENTITIES[this.type].inventorySlots) {   }
+        this.inventory = new Inventory(this.Farm.ENTITIES[this.type].inventorySlots);
 
         let thisEntity = this;
         this.Farm.scheduler.addToSchedule(1000, function() {

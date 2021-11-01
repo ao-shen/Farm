@@ -664,6 +664,28 @@ export let Farm = {
             'assets/models/aquaduct5.glb',
         ],
     }, {
+        name: "Barn",
+        category: "buildings",
+        build_mode: "single",
+        price: 500,
+        infoable: true,
+        inventorySlots: 30,
+        size: {
+            x: 3,
+            z: 3,
+        },
+        entities: [
+            3,
+            3,
+            3,
+            3,
+            3
+        ],
+        thumbnail: 'assets/textures/big_workers_house_thumbnail.png',
+        models: [
+            'assets/models/barn0.glb',
+        ],
+    }, {
         name: "Remove All",
         category: "remove",
         build_mode: "remove",

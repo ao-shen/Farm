@@ -665,6 +665,9 @@ function createSingleNewBuilding(Farm, isArea = false) {
             case "Piped Aquaduct":
                 building = new BuildingObjects.BuildingWaterCarrier(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
+            case "Barn":
+                building = new BuildingObjects.BuildingBarn(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                break;
             default:
                 building = new BuildingObjects.Building(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;

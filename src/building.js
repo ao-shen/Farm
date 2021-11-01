@@ -3,6 +3,7 @@ import * as SkeletonUtils from './THREE/SkeletonUtils';
 import { Entity } from './entity';
 import { InfoBox } from './info_box';
 import { Inventory } from './inventory';
+import { Livestock } from './livestock';
 
 export class Building {
     constructor(Farm, idx, x, z, type, side) {
@@ -346,6 +347,22 @@ export class Storage extends Building {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+export class BuildingBarn extends Building {
+    constructor(Farm, idx, x, z, type, side, createEntities = true) {
+        super(Farm, idx, x, z, type, side);
+
+        if (createEntities) {
+            for (let entityType of this.Farm.BUILDINGS[this.type].entities) {
+                let workerEntity = new Livestock(Farm, this.Farm.entityIdx, this.center.x, this.center.z, entityType);
+                workerEntity.parentBuilding = this;
+                this.childEntities.push(workerEntity);
+                this.Farm.entities[this.Farm.entityIdx] = workerEntity;
+                this.Farm.entityIdx++;
             }
         }
     }
