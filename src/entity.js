@@ -18,6 +18,7 @@ export class Entity {
         this.meshRotationOffset = 0;
         this.meshRotation = 0;
         this.variation = variation;
+        this.infoable = this.Farm.ENTITIES[this.type].infoable;
 
         this.state = 0;
 
@@ -26,6 +27,7 @@ export class Entity {
         this.goal = null;
         this.targetActionCategory = "";
         this.movementSpeed = this.Farm.ENTITIES[this.type].movementSpeed;
+        this.maxPathLength = 30;
 
         if (this.Farm.ENTITIES[this.type].meshRotationOffset) {
             this.meshRotationOffset = this.Farm.ENTITIES[this.type].meshRotationOffset;
@@ -55,7 +57,11 @@ export class Entity {
         this.skinnedMesh.owner = this;
         this.skinnedMesh.name = this.name;
 
-        this.Farm.groupInfoable.add(this.mesh);
+        if (this.infoable) {
+            Farm.groupInfoable.add(this.mesh);
+        } else {
+            Farm.groupNonInfoable.add(this.mesh);
+        }
 
         // if (this.Farm.ENTITIES[this.type].inventorySlots) {   }
         this.inventory = new Inventory(this.Farm.ENTITIES[this.type].inventorySlots);
@@ -65,9 +71,11 @@ export class Entity {
             return thisEntity.logic();
         }, this);
 
-        this.infoBox = new InfoBox(this.Farm, this, "skinnedMesh");
-        this.infoBox.addText(this.name);
-        this.infoBox.addInventory(this.inventory);
+        if (this.infoable) {
+            this.infoBox = new InfoBox(this.Farm, this, "skinnedMesh");
+            this.infoBox.addText(this.name);
+            this.infoBox.addInventory(this.inventory);
+        }
     }
 
     showInfoBox() {
@@ -308,7 +316,9 @@ export class Entity {
     render() {
         if (this.mesh) {
             this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
-            this.infoBox.render();
+            if (this.infoable) {
+                this.infoBox.render();
+            }
         }
     }
 
@@ -319,11 +329,18 @@ export class Entity {
             this.Farm.scene.remove(this.pathMesh);
         }
 
-        this.infoBox.remove();
+        if (this.infoable) {
+            this.infoBox.remove();
+        }
+
+        if (this.infoable) {
+            this.Farm.groupInfoable.remove(this.mesh);
+        } else {
+            this.Farm.groupNonInfoable.remove(this.mesh);
+        }
 
         this.skinnedMesh.geometry.dispose();
         this.skinnedMesh.material.dispose();
-        this.Farm.groupInfoable.remove(this.mesh);
 
         delete this.Farm.entities[this.idx];
         delete this.Farm.mixers[this.name];
@@ -338,7 +355,7 @@ export class Entity {
         let x = curPos.x + direction.x;
         let z = curPos.z + direction.z;
 
-        if (x < 0 || x > Farm.numBlocks.x - 1 || z < 0 || z > Farm.numBlocks.z - 1)
+        if (x < 0 || x > this.Farm.numBlocks.x - 1 || z < 0 || z > this.Farm.numBlocks.z - 1)
             return true;
 
         let curBlock = this.Farm.blocks[x + ',' + z];
@@ -455,7 +472,7 @@ export class Entity {
                 }
 
                 // Otherwise
-                if (!(newBlockIdx in vis) && cur.pathLength < 30) {
+                if (!(newBlockIdx in vis) && cur.pathLength < this.maxPathLength) {
                     pq.push({ x: newX, z: newZ, pathLength: cur.pathLength + direction.length * velocity, parent: cur, heuristic: chebyshevDist(newX, newZ), velocity: velocity });
                     vis[newBlockIdx] = 1;
                 }

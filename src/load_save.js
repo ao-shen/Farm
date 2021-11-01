@@ -8,6 +8,7 @@ import * as BuildingObjects from './building.js';
 import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh, updateWaterMesh } from "./update_instanced_meshes";
 import { Entity } from "./entity";
 import { updateConnectibleConnections } from "./water_update";
+import { Livestock } from "./livestock";
 
 var Base64Binary = {
     _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -290,6 +291,9 @@ export async function load(Farm) {
                             case "Storage":
                                 building = new BuildingObjects.Storage(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
+                            case "Barn":
+                                building = new BuildingObjects.BuildingBarn(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s, false);
+                                break;
                             default:
                                 building = new BuildingObjects.Building(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
@@ -323,7 +327,12 @@ export async function load(Farm) {
 
                     for (let entityData of data.entities) {
 
-                        let curEntity = new Entity(Farm, entityData.i, entityData.p.x, entityData.p.z, entityData.t, entityData.v);
+                        let curEntity;
+                        if (entityData.t == 3) {
+                            curEntity = new Livestock(Farm, entityData.i, entityData.p.x, entityData.p.z, entityData.t, entityData.v);
+                        } else {
+                            curEntity = new Entity(Farm, entityData.i, entityData.p.x, entityData.p.z, entityData.t, entityData.v);
+                        }
                         curEntity.state = entityData.s ? entityData.s : 0;
 
                         if (entityData.n) {

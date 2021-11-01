@@ -7,7 +7,7 @@ import { WaitingList } from "./waiting_list.js";
 export let Farm = {
 
     // FLAGS
-    flagRenderPaths: true,
+    flagRenderPaths: false,
 
     // STATS
     stats: null,
@@ -679,7 +679,6 @@ export let Farm = {
             3,
             3,
             3,
-            3
         ],
         thumbnail: 'assets/textures/big_workers_house_thumbnail.png',
         models: [
@@ -726,6 +725,7 @@ export let Farm = {
     ENTITIES: [{
         name: "Worker",
         inventorySlots: 1,
+        infoable: true,
         movementSpeed: 2,
         models: ['assets/models/worker.glb'],
     }, {

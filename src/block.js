@@ -49,7 +49,27 @@ export class Block {
 
         const matrix = new THREE.Matrix4();
 
-        if (this.type == BLOCK.GRASS && this.groundState == 0 && this.plants.length == 0 && this.buildings.length == 0) {
+        let blockingBuilding = false;
+        for (let curBuilding of this.buildings) {
+            if (curBuilding.isWall) {
+
+            } else {
+                blockingBuilding = true;
+                break;
+            }
+        }
+
+        let blockingPlant = false;
+        for (let curPlant of this.plants) {
+            if (curPlant.isTree) {
+
+            } else {
+                blockingPlant = true;
+                break;
+            }
+        }
+
+        if (this.type == BLOCK.GRASS && this.groundState == 0 && !blockingPlant && !blockingBuilding) {
             if (!this.isGrassBladeVisible) {
                 this.isGrassBladeVisible = true;
                 for (let idx of this.grassBladeIdx) {
