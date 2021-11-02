@@ -750,6 +750,7 @@ export let Farm = {
         name: "Cattle",
         inventorySlots: 0,
         movementSpeed: 0.2,
+        instanced: true,
         models: ['assets/models/cattle0.glb'],
     }, ],
 

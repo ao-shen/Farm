@@ -188,6 +188,42 @@ export function updateTreeMesh(Farm) {
 
 }
 
+export function updateEntityMesh(Farm, entityType, variation = 0) {
+    let entityBuffer = [];
+    let ENTITY = Farm.ENTITIES[entityType];
+
+    if (!ENTITY.instanced) return;
+
+    for (const curEntityIdx in Farm.entities) {
+        let curEntity = Farm.entities[curEntityIdx];
+        if (curEntity.type == entityType && curEntity.variation == variation) {
+            curEntity.meshIdx = entityBuffer.length;
+            entityBuffer.push(curEntity);
+        }
+    }
+
+    let curMesh = ENTITY.meshes[variation];
+
+    Farm.groupNonInfoable.remove(curMesh);
+    curMesh.dispose();
+    curMesh = new THREE.InstancedSkinnedMesh(ENTITY.geometries[variation], ENTITY.materials[variation], entityBuffer.length);
+    curMesh.copy(ENTITY.dummies[variation]);
+    curMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); // will be updated every frame
+    curMesh.frustumCulled = false;
+
+    curMesh.receiveShadow = true;
+    curMesh.castShadow = true;
+
+    Farm.groupNonInfoable.add(curMesh);
+
+    ENTITY.meshes[variation] = curMesh;
+
+    ENTITY.mixers[variation] = new THREE.AnimationMixer(curMesh);
+    ENTITY.mixers[variation].clipAction(ENTITY.animations[variation][0]).play();
+    Farm.mixers[`InstancedEntity_${entityType}`] = ENTITY.mixers[variation];
+
+}
+
 /*
       ____
      | 1  |

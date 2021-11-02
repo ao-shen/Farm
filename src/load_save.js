@@ -5,7 +5,7 @@ import * as THREE from './three/src/Three';
 import { LZMA } from './lzma/lzma-min';
 import { Plant } from "./plant";
 import * as BuildingObjects from './building.js';
-import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh, updateWaterMesh } from "./update_instanced_meshes";
+import { updateEntityMesh, updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh, updateWaterMesh } from "./update_instanced_meshes";
 import { Entity } from "./entity";
 import { updateConnectibleConnections } from "./water_update";
 import { Livestock } from "./livestock";
@@ -221,6 +221,7 @@ export async function load(Farm) {
                     let loadedPlantTypes = new Set();
                     let loadedInstancedBuildingTypes = new Set();
                     let loadedConnectibleBuildingTypes = new Set();
+                    let loadedEntitiesTypes = new Set();
 
                     const data = JSON.parse(result);
                     console.log(data);
@@ -341,6 +342,8 @@ export async function load(Farm) {
 
                         Farm.entities[entityData.i] = curEntity;
                         Farm.entityIdx = Math.max(Farm.entityIdx, entityData.i + 1);
+
+                        loadedEntitiesTypes.add(entityData.t);
                     }
 
                     for (let entityData of data.entities) {
@@ -392,6 +395,10 @@ export async function load(Farm) {
                     Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
 
                     updateWaterMesh(Farm);
+
+                    loadedEntitiesTypes.forEach(function(entityType) {
+                        updateEntityMesh(Farm, entityType, 0);
+                    });
 
                     resolve();
 

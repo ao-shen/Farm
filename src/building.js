@@ -4,6 +4,7 @@ import { Entity } from './entity';
 import { InfoBox } from './info_box';
 import { Inventory } from './inventory';
 import { Livestock } from './livestock';
+import { updateEntityMesh } from './update_instanced_meshes';
 
 export class Building {
     constructor(Farm, idx, x, z, type, side) {
@@ -363,6 +364,7 @@ export class BuildingBarn extends Building {
                 this.childEntities.push(workerEntity);
                 this.Farm.entities[this.Farm.entityIdx] = workerEntity;
                 this.Farm.entityIdx++;
+                updateEntityMesh(this.Farm, entityType, 0);
             }
         }
     }

@@ -1,5 +1,5 @@
 export const grassFragmentShader = `
-#extension GL_EXT_frag_depth : enable
+//#extension GL_EXT_frag_depth : enable
 
 #define PHONG
 uniform vec3 diffuse;

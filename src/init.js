@@ -13,6 +13,7 @@ import { RenderPass } from './three_utils/RenderPass.js';
 import { ShaderPass } from './three_utils/ShaderPass.js';
 import { FXAAShader } from './three_utils/FXAAShader.js';
 import { Sky } from './three_utils/Sky.js';
+import * as SkeletonUtils from './three_utils/SkeletonUtils';
 
 import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown } from './events.js';
 import { BLOCK, Block } from './block.js';
@@ -99,7 +100,7 @@ function initScene(Farm) {
     Farm.scene.background = new THREE.Color(0xcccccc);
     Farm.scene.fog = new THREE.FogExp2(0xcccccc, 0.0001);
 
-    Farm.renderer = new THREE.WebGL1Renderer({ antialias: true, alpha: true, logarithmicDepthBuffer: true });
+    Farm.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, logarithmicDepthBuffer: true });
     Farm.renderer.setPixelRatio(window.devicePixelRatio);
     Farm.renderer.setSize(window.innerWidth, window.innerHeight);
     Farm.renderer.setClearColor(0x000000, 0);
@@ -834,6 +835,8 @@ function loadEntitiesAssets(Farm) {
         curEntity.geometries = [];
         curEntity.materials = [];
         curEntity.meshes = [];
+        curEntity.dummies = [];
+        curEntity.mixers = [];
         curEntity.skinnedMeshIndicies = [];
         curEntity.animations = [];
         curEntity.numVariants = curEntity.models.length;
@@ -874,7 +877,20 @@ function loadEntitiesAssets(Farm) {
 
                     curEntity.materials[j] = mesh.children[idx].material;
 
-                    curEntity.meshes[j] = mesh; //.clone();
+                    if (curEntity.instanced) {
+
+                        curEntity.dummies[j] = mesh.children[idx];
+
+                        curEntity.meshes[j] = new THREE.InstancedSkinnedMesh(curEntity.geometries[j], curEntity.materials[j], 0);
+
+                        curEntity.mixers[j] = new THREE.AnimationMixer(curEntity.meshes[j]);
+
+                        Farm.groupNonInfoable.add(curEntity.meshes[j]);
+
+                    } else {
+
+                        curEntity.meshes[j] = mesh; //.clone();
+                    }
                 }
 
                 curEntity.animations[j] = [];

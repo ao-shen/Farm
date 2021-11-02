@@ -7,7 +7,9 @@ import { Vector3 } from './three/src/Three';
 import { Plant } from './plant';
 import { InfoBox } from './info_box';
 import { Inventory } from './inventory';
+import { updateEntityMesh } from './update_instanced_meshes';
 
+let matrix = new THREE.Matrix4();
 export class Entity {
     constructor(Farm, idx, x, z, type, variation = 0) {
         this.Farm = Farm;
@@ -36,31 +38,39 @@ export class Entity {
         this.parentBuilding = null;
         this.parentEntitiy = null;
 
-        this.mesh = this.Farm.ENTITIES[this.type].meshes[this.variation].clone();
-        this.skinnedMesh = this.mesh;
+        if (this.Farm.ENTITIES[this.type].instanced) {
 
-        // Set up animations
-        if (this.Farm.ENTITIES[this.type].animations[this.variation].length > 0) {
+            this.instanced = true;
+            this.meshIdx = -1;
 
-            this.mesh = SkeletonUtils.clone(this.Farm.ENTITIES[this.type].meshes[this.variation]);
-
-            this.skinnedMeshIndicies = this.Farm.ENTITIES[this.type].skinnedMeshIndicies[this.variation]
-
-            this.mixer = new THREE.AnimationMixer(this.mesh);
-            this.mixer.clipAction(this.Farm.ENTITIES[this.type].animations[this.variation][0]).play();
-            this.Farm.mixers[this.name] = this.mixer;
-
-            this.skinnedMesh = this.mesh.children[this.skinnedMeshIndicies];
-        }
-
-        this.skinnedMesh.center = this.Farm.ENTITIES[this.type].meshes[this.variation].center;
-        this.skinnedMesh.owner = this;
-        this.skinnedMesh.name = this.name;
-
-        if (this.infoable) {
-            Farm.groupInfoable.add(this.mesh);
         } else {
-            Farm.groupNonInfoable.add(this.mesh);
+
+            this.mesh = this.Farm.ENTITIES[this.type].meshes[this.variation].clone();
+            this.skinnedMesh = this.mesh;
+
+            // Set up animations
+            if (this.Farm.ENTITIES[this.type].animations[this.variation].length > 0) {
+
+                this.mesh = SkeletonUtils.clone(this.Farm.ENTITIES[this.type].meshes[this.variation]);
+
+                this.skinnedMeshIndicies = this.Farm.ENTITIES[this.type].skinnedMeshIndicies[this.variation]
+
+                this.mixer = new THREE.AnimationMixer(this.mesh);
+                this.mixer.clipAction(this.Farm.ENTITIES[this.type].animations[this.variation][0]).play();
+                this.Farm.mixers[this.name] = this.mixer;
+
+                this.skinnedMesh = this.mesh.children[this.skinnedMeshIndicies];
+            }
+
+            this.skinnedMesh.center = this.Farm.ENTITIES[this.type].meshes[this.variation].center;
+            this.skinnedMesh.owner = this;
+            this.skinnedMesh.name = this.name;
+
+            if (this.infoable) {
+                Farm.groupInfoable.add(this.mesh);
+            } else {
+                Farm.groupNonInfoable.add(this.mesh);
+            }
         }
 
         // if (this.Farm.ENTITIES[this.type].inventorySlots) {   }
@@ -304,7 +314,7 @@ export class Entity {
                 this.meshRotation += 2 * Math.PI;
             }
 
-            this.mesh.rotation.set(0, this.meshRotationOffset + this.meshRotation + Math.PI / 2, 0);
+
 
         } else {
             if (this.mixer) {
@@ -314,10 +324,40 @@ export class Entity {
     }
 
     render() {
-        if (this.mesh) {
-            this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
-            if (this.infoable) {
-                this.infoBox.render();
+        if (this.instanced) {
+
+            let ENTITY = this.Farm.ENTITIES[this.type];
+
+            let curMesh = ENTITY.meshes[this.variation];
+            let dummy = ENTITY.dummies[this.variation];
+
+            dummy.rotation.set(0, this.meshRotationOffset + this.meshRotation + Math.PI / 2, 0);
+            dummy.position.set(this.pos.x, this.pos.y, this.pos.z);
+            dummy.scale.set(5, 5, 5);
+
+            dummy.updateMatrix();
+
+            dummy.skeleton.bones.forEach((b) => {
+                b.updateMatrixWorld();
+            });
+
+            curMesh.setMatrixAt(this.meshIdx, dummy.matrix);
+
+            curMesh.setBonesAt(this.meshIdx, dummy.skeleton);
+
+            curMesh.instanceMatrix.needsUpdate = true;
+
+            if (curMesh.skeleton && curMesh.skeleton.bonetexture) {
+                curMesh.skeleton.bonetexture.needsUpdate = true;
+            }
+
+        } else {
+            if (this.mesh) {
+                this.mesh.rotation.set(0, this.meshRotationOffset + this.meshRotation + Math.PI / 2, 0);
+                this.mesh.position.set(this.pos.x, this.pos.y, this.pos.z);
+                if (this.infoable) {
+                    this.infoBox.render();
+                }
             }
         }
     }
@@ -333,14 +373,16 @@ export class Entity {
             this.infoBox.remove();
         }
 
-        if (this.infoable) {
-            this.Farm.groupInfoable.remove(this.mesh);
-        } else {
-            this.Farm.groupNonInfoable.remove(this.mesh);
-        }
+        if (!this.instanced) {
+            if (this.infoable) {
+                this.Farm.groupInfoable.remove(this.mesh);
+            } else {
+                this.Farm.groupNonInfoable.remove(this.mesh);
+            }
 
-        this.skinnedMesh.geometry.dispose();
-        this.skinnedMesh.material.dispose();
+            this.skinnedMesh.geometry.dispose();
+            this.skinnedMesh.material.dispose();
+        }
 
         delete this.Farm.entities[this.idx];
         delete this.Farm.mixers[this.name];

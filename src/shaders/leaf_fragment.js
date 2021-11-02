@@ -1,5 +1,4 @@
 export const leafFragmentShader = `
-#extension GL_EXT_frag_depth : enable
 
 #define PHONG
 uniform vec3 diffuse;
