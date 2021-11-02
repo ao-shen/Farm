@@ -42,6 +42,7 @@ export class Entity {
 
             this.instanced = true;
             this.meshIdx = -1;
+            this.animationTime = 0;
 
         } else {
 
@@ -251,6 +252,9 @@ export class Entity {
     }
 
     update() {
+
+        let timeScale = 1;
+
         if (this.path != null) {
 
             let allowedDeviationFromPathSquared = 20;
@@ -294,9 +298,7 @@ export class Entity {
                 velocity.multiplyScalar(curMovementSpeed);
             }
 
-            if (this.mixer) {
-                this.mixer.timeScale = velocity.length() / 0.04;
-            }
+            timeScale = velocity.length() / 0.04;
 
             this.pos.x += velocity.x;
             this.pos.z += velocity.z;
@@ -317,9 +319,13 @@ export class Entity {
 
 
         } else {
-            if (this.mixer) {
-                this.mixer.timeScale = 0;
-            }
+            timeScale = 0;
+        }
+
+        if (this.mixer) {
+            this.mixer.timeScale = timeScale;
+        } else if (typeof this.animationTime !== "undefined") {
+            this.animationTime += this.Farm.elapsed / 1000 * timeScale;
         }
     }
 
@@ -336,6 +342,8 @@ export class Entity {
             dummy.scale.set(5, 5, 5);
 
             dummy.updateMatrix();
+
+            ENTITY.mixers[this.variation].setTime(this.animationTime);
 
             dummy.skeleton.bones.forEach((b) => {
                 b.updateMatrixWorld();

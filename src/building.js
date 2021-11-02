@@ -364,8 +364,8 @@ export class BuildingBarn extends Building {
                 this.childEntities.push(workerEntity);
                 this.Farm.entities[this.Farm.entityIdx] = workerEntity;
                 this.Farm.entityIdx++;
-                updateEntityMesh(this.Farm, entityType, 0);
             }
+            updateEntityMesh(this.Farm, this.Farm.BUILDINGS[this.type].entities[0]);
         }
     }
 }

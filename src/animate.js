@@ -29,6 +29,8 @@ export function onAnimationFrame(Farm, newtime) {
 
 export function animate(Farm, elapsed) {
 
+    Farm.elapsed = elapsed;
+
     Farm.stats.begin();
 
     Farm.controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true

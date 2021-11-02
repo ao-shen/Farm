@@ -1,4 +1,5 @@
 import * as THREE from './three/src/Three';
+import * as SkeletonUtils from './three_utils/SkeletonUtils';
 
 import { BLOCK } from './block.js';
 import { maxWaterDepth } from './building.js';
@@ -205,11 +206,16 @@ export function updateEntityMesh(Farm, entityType, variation = 0) {
     let curMesh = ENTITY.meshes[variation];
 
     Farm.groupNonInfoable.remove(curMesh);
+    curMesh.skeleton = null;
     curMesh.dispose();
-    curMesh = new THREE.InstancedSkinnedMesh(ENTITY.geometries[variation], ENTITY.materials[variation], entityBuffer.length);
-    curMesh.copy(ENTITY.dummies[variation]);
-    curMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); // will be updated every frame
-    curMesh.frustumCulled = false;
+    curMesh = new THREE.InstancedSkinnedMesh(ENTITY.originalMesh[variation].geometry, ENTITY.originalMesh[variation].material, entityBuffer.length);
+
+    curMesh.bindMode = ENTITY.originalMesh[variation].bindMode;
+    curMesh.bindMatrix = ENTITY.originalMesh[variation].bindMatrix.clone();
+    curMesh.bindMatrixInverse = ENTITY.originalMesh[variation].bindMatrixInverse.clone();
+
+    ENTITY.dummies[variation].skeleton = ENTITY.originalMesh[variation].skeleton.clone();
+    curMesh.skeleton = ENTITY.dummies[variation].skeleton;
 
     curMesh.receiveShadow = true;
     curMesh.castShadow = true;
@@ -218,9 +224,12 @@ export function updateEntityMesh(Farm, entityType, variation = 0) {
 
     ENTITY.meshes[variation] = curMesh;
 
+    ENTITY.mixers[variation].stopAllAction();
+    ENTITY.mixers[variation].uncacheClip(ENTITY.animations[variation][0]);
+
     ENTITY.mixers[variation] = new THREE.AnimationMixer(curMesh);
     ENTITY.mixers[variation].clipAction(ENTITY.animations[variation][0]).play();
-    Farm.mixers[`InstancedEntity_${entityType}`] = ENTITY.mixers[variation];
+    //Farm.mixers[`InstancedEntity_${entityType}`] = ENTITY.mixers[variation];
 
 }
 

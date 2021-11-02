@@ -836,6 +836,7 @@ function loadEntitiesAssets(Farm) {
         curEntity.materials = [];
         curEntity.meshes = [];
         curEntity.dummies = [];
+        curEntity.originalMesh = [];
         curEntity.mixers = [];
         curEntity.skinnedMeshIndicies = [];
         curEntity.animations = [];
@@ -880,8 +881,10 @@ function loadEntitiesAssets(Farm) {
                     if (curEntity.instanced) {
 
                         curEntity.dummies[j] = mesh.children[idx];
+                        curEntity.originalMesh[j] = SkeletonUtils.clone(curEntity.dummies[j]);
+                        curEntity.originalMesh[j].copy(curEntity.dummies[j]);
 
-                        curEntity.meshes[j] = new THREE.InstancedSkinnedMesh(curEntity.geometries[j], curEntity.materials[j], 0);
+                        curEntity.meshes[j] = new THREE.InstancedSkinnedMesh(curEntity.originalMesh[j].geometry, curEntity.originalMesh[j].material, 0);
 
                         curEntity.mixers[j] = new THREE.AnimationMixer(curEntity.meshes[j]);
 
