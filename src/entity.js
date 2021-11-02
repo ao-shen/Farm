@@ -1,9 +1,9 @@
-import * as THREE from 'three';
+import * as THREE from './three/src/Three';
 import { Farm } from './farm';
-import * as SkeletonUtils from './THREE/SkeletonUtils';
+import * as SkeletonUtils from './three_utils/SkeletonUtils';
 import { PriorityQueue } from './priority_queue';
 import { BLOCK, Block } from './block.js';
-import { Vector3 } from 'three';
+import { Vector3 } from './three/src/Three';
 import { Plant } from './plant';
 import { InfoBox } from './info_box';
 import { Inventory } from './inventory';

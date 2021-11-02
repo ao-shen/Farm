@@ -1,18 +1,18 @@
-import * as THREE from 'three';
+import * as THREE from './three/src/Three';
 
 import { Text } from 'troika-three-text';
 
 import * as Stats from 'stats.js';
 
-import * as BufferGeometryUtils from './THREE/BufferGeometryUtils.js';
-import { OrbitControls } from './THREE/OrbitControls.js';
-import { GLTFLoader } from './THREE/GLTFLoader.js';
-import { OutlinePass } from './THREE/OutlinePass.js';
-import { EffectComposer } from './THREE/EffectComposer.js';
-import { RenderPass } from './THREE/RenderPass.js';
-import { ShaderPass } from './THREE/ShaderPass.js';
-import { FXAAShader } from './THREE/FXAAShader.js';
-import { Sky } from './THREE/Sky.js';
+import * as BufferGeometryUtils from './three_utils/BufferGeometryUtils.js';
+import { OrbitControls } from './three_utils/OrbitControls.js';
+import { GLTFLoader } from './three_utils/GLTFLoader.js';
+import { OutlinePass } from './three_utils/OutlinePass.js';
+import { EffectComposer } from './three_utils/EffectComposer.js';
+import { RenderPass } from './three_utils/RenderPass.js';
+import { ShaderPass } from './three_utils/ShaderPass.js';
+import { FXAAShader } from './three_utils/FXAAShader.js';
+import { Sky } from './three_utils/Sky.js';
 
 import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown } from './events.js';
 import { BLOCK, Block } from './block.js';
@@ -25,7 +25,7 @@ import { load } from './load_save.js';
 import { leafVertexShader } from './shaders/leaf_vertex.js';
 import { grassFragmentShader } from './shaders/grass_fragment.js';
 import { leafFragmentShader } from './shaders/leaf_fragment.js';
-import { ShaderChunk } from 'three';
+import { ShaderChunk } from './three/src/Three';
 import { leafDepthShader } from './shaders/leaf_depth.js';
 import { plantVertexShader } from './shaders/plant_vertex.js';
 

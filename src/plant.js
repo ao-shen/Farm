@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from './three/src/Three';
 
 export class Plant {
     constructor(Farm, idx, x, z, blocks, type, variation = -1) {

@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { Vector3 } from 'three';
+import * as THREE from './three/src/Three';
+import { Vector3 } from './three/src/Three';
 
 let fps = 60;
 let fpsInterval = 1000 / fps;

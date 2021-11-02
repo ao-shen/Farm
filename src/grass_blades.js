@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from './three/src/Three';
 import { grassFragmentShader } from './shaders/grass_fragment';
 import { grassVertexShader } from './shaders/grass_vertex';
 

@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from './three/src/Three';
 import { maxWaterDepth } from './building';
 
 export class Block {

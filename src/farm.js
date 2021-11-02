@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from './three/src/Three';
 import { Vector3, Vector2 } from "three";
 
 import { Scheduler } from './scheduler.js';

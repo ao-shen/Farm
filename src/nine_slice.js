@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from './three/src/Three';
 
 const basePlaneVertices = [0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0];
 

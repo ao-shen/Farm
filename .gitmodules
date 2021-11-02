@@ -1,0 +1,4 @@
+[submodule "src/three"]
+	path = src/three
+	url = https://github.com/ao-shen/three.js
+	branch = dev

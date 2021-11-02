@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { Vector2 } from 'three';
+import * as THREE from './three/src/Three';
+import { Vector2 } from './three/src/Three';
 import { Text } from 'troika-three-text';
 import { NineSlicePlane } from './nine_slice';
 

@@ -1,6 +1,6 @@
 import { getDatabase, ref, set, child, get } from "firebase/database";
 
-import * as THREE from 'three';
+import * as THREE from './three/src/Three';
 
 import { LZMA } from './lzma/lzma-min';
 import { Plant } from "./plant";

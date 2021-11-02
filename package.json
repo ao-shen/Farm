@@ -20,7 +20,7 @@
         "jquery": "^3.6.0",
         "lodash": "^4.17.21",
         "stats.js": "^0.17.0",
-        "three": "^0.132.2",
+        "three": "^0.134.0",
         "troika-three-text": "^0.42.0"
     }
 }

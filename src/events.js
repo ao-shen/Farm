@@ -1,6 +1,6 @@
 import { signOut, getAuth } from "firebase/auth";
 
-import * as THREE from 'three';
+import * as THREE from './three/src/Three';
 
 import { Plant } from './plant.js';
 import { BLOCK, Block } from './block.js';
