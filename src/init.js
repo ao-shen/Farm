@@ -14,6 +14,7 @@ import { ShaderPass } from './three_utils/ShaderPass.js';
 import { FXAAShader } from './three_utils/FXAAShader.js';
 import { Sky } from './three_utils/Sky.js';
 import * as SkeletonUtils from './three_utils/SkeletonUtils';
+import { GPUComputationRenderer } from './three_utils/GPUComputationRenderer';
 
 import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown } from './events.js';
 import { BLOCK, Block } from './block.js';

@@ -30,6 +30,10 @@ export let Farm = {
 
     groupSoilAndPlants: new THREE.Group(),
 
+    // Compute Renderer
+    gpuCompute: null,
+    gpuComputeWidth: 0,
+
     // 2D HUD
     hudCamera: null,
     hudScene: null,

@@ -1,10 +1,15 @@
+import { livestockPositionComputeShader, livestockVelocityComputeShader } from './shaders/livestock_compute';
 import * as THREE from './three/src/Three';
 import { Vector3 } from './three/src/Three';
+import { GPUComputationRenderer } from './three_utils/GPUComputationRenderer';
 
 let fps = 60;
 let fpsInterval = 1000 / fps;
 let then = window.performance.now();
 let now, elapsed;
+
+let position = new Float32Array(0);
+let velocity = new Float32Array(0);
 
 export function onAnimationFrame(Farm, newtime) {
     requestAnimationFrame(function(newtime) {
@@ -58,6 +63,8 @@ export function animate(Farm, elapsed) {
     for (const entity in Farm.entities) {
         Farm.entities[entity].update();
     }
+
+    //updateComputeRenderer(Farm);
 
     // Update mixers
     for (const mixer in Farm.mixers) {
@@ -398,3 +405,124 @@ function renderOverlays(Farm) {
         Farm.blockLine.visible = false;
     }
 }
+
+function updateComputeRenderer(Farm) {
+
+    function isSafari() {
+
+        return !!navigator.userAgent.match(/Safari/i) && !navigator.userAgent.match(/Chrome/i);
+
+    }
+
+    function fillPositionTexture(texture) {
+        const theArray = texture.image.data;
+        for (let k = 0, kl = theArray.length; k < kl; k += 4) {
+            const x = Math.random() * 1000;
+            const y = 0;
+            const z = Math.random() * 1000;
+            theArray[k + 0] = x;
+            theArray[k + 1] = y;
+            theArray[k + 2] = z;
+            theArray[k + 3] = 1;
+        }
+    }
+
+    function fillVelocityTexture(texture) {
+        const theArray = texture.image.data;
+        for (let k = 0, kl = theArray.length; k < kl; k += 4) {
+            const x = Math.random() - 0.5;
+            const y = 0;
+            const z = Math.random() - 0.5;
+
+            theArray[k + 0] = x * 1;
+            theArray[k + 1] = y * 1;
+            theArray[k + 2] = z * 1;
+            theArray[k + 3] = 1;
+        }
+    }
+
+    let gpuEntities = [];
+    for (const entity in Farm.entities) {
+        if (Farm.entities[entity].instanced) {
+            Farm.entities[entity].gpuIdx = gpuEntities.length;
+            gpuEntities.push(Farm.entities[entity]);
+        }
+    }
+
+    if (Math.pow(Farm.gpuComputeWidth, 2) < gpuEntities.length) {
+
+        Farm.gpuComputeWidth = Math.ceil(Math.sqrt(gpuEntities.length));
+
+        position = new Float32Array(Math.pow(Farm.gpuComputeWidth, 2) * 4);
+        velocity = new Float32Array(Math.pow(Farm.gpuComputeWidth, 2) * 4);
+
+        Farm.gpuCompute = new GPUComputationRenderer(Farm.gpuComputeWidth, Farm.gpuComputeWidth, Farm.renderer);
+
+        let gpuCompute = Farm.gpuCompute;
+
+        if (isSafari()) {
+            gpuCompute.setDataType(THREE.HalfFloatType);
+        }
+
+        const dtPosition = gpuCompute.createTexture();
+        const dtVelocity = gpuCompute.createTexture();
+        fillPositionTexture(dtPosition);
+        fillVelocityTexture(dtVelocity);
+
+        Farm.velocityVariable = gpuCompute.addVariable('textureVelocity', livestockVelocityComputeShader, dtVelocity);
+        Farm.positionVariable = gpuCompute.addVariable('texturePosition', livestockPositionComputeShader, dtPosition);
+
+        gpuCompute.setVariableDependencies(Farm.velocityVariable, [Farm.positionVariable, Farm.velocityVariable]);
+        gpuCompute.setVariableDependencies(Farm.positionVariable, [Farm.positionVariable, Farm.velocityVariable]);
+
+        Farm.positionUniforms = Farm.positionVariable.material.uniforms;
+        Farm.velocityUniforms = Farm.velocityVariable.material.uniforms;
+
+        Farm.positionUniforms['time'] = { value: 0.0 };
+        Farm.positionUniforms['delta'] = { value: 0.0 };
+        Farm.velocityUniforms['time'] = { value: 1.0 };
+        Farm.velocityUniforms['delta'] = { value: 0.0 };
+        Farm.velocityUniforms['testing'] = { value: 1.0 };
+        Farm.velocityUniforms['separationDistance'] = { value: 1.0 };
+        Farm.velocityUniforms['alignmentDistance'] = { value: 1.0 };
+        Farm.velocityUniforms['cohesionDistance'] = { value: 1.0 };
+        Farm.velocityUniforms['freedomFactor'] = { value: 1.0 };
+        Farm.velocityUniforms['predator'] = { value: new THREE.Vector3() };
+        Farm.velocityVariable.material.defines.BOUNDS = "1000.0";
+
+        Farm.velocityVariable.wrapS = THREE.RepeatWrapping;
+        Farm.velocityVariable.wrapT = THREE.RepeatWrapping;
+        Farm.positionVariable.wrapS = THREE.RepeatWrapping;
+        Farm.positionVariable.wrapT = THREE.RepeatWrapping;
+
+        const error = gpuCompute.init();
+
+        if (error !== null) {
+
+            console.error(error);
+
+        }
+    }
+
+    if (gpuEntities.length == 0) return;
+
+    Farm.positionUniforms['time'].value = now / 10000;
+    Farm.positionUniforms['delta'].value = elapsed / 10000;
+    Farm.velocityUniforms['time'].value = now / 10000;
+    Farm.velocityUniforms['delta'].value = elapsed / 10000;
+
+    Farm.velocityUniforms['predator'].value.set(100000, 0, 100000);
+
+    Farm.gpuCompute.compute();
+
+    Farm.renderer.readRenderTargetPixels(Farm.gpuCompute.getCurrentRenderTarget(Farm.positionVariable), 0, 0, Farm.gpuComputeWidth, Farm.gpuComputeWidth, position);
+    Farm.renderer.readRenderTargetPixels(Farm.gpuCompute.getCurrentRenderTarget(Farm.velocityVariable), 0, 0, Farm.gpuComputeWidth, Farm.gpuComputeWidth, velocity);
+
+    for (let i = 0; i < gpuEntities.length; i++) {
+        gpuEntities[i].pos.set(position[i * 4 + 0], position[i * 4 + 1], position[i * 4 + 2]);
+    }
+}
+
+// milk, cook, popcorn
+
+//

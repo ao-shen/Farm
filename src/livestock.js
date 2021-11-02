@@ -11,7 +11,7 @@ export class Livestock extends Entity {
     logic() {
         switch (this.state) {
             case 0:
-                return this.wander();
+                return false; //this.wander();
         }
     }
 
