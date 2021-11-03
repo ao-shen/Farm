@@ -2,6 +2,7 @@ import { livestockPositionComputeShader, livestockVelocityComputeShader } from '
 import * as THREE from './three/src/Three';
 import { Vector3 } from './three/src/Three';
 import { GPUComputationRenderer } from './three_utils/GPUComputationRenderer';
+import { updateEntityMesh } from './update_instanced_meshes';
 
 let fps = 60;
 let fpsInterval = 1000 / fps;
@@ -50,6 +51,11 @@ export function animate(Farm, elapsed) {
         }
     }
     Farm.plantTypeAwaitingMeshUpdate = new Set();
+
+    for (let entityType of Farm.entityTypeAwaitingMeshUpdate) {
+        updateEntityMesh(Farm, entityType);
+    }
+    Farm.entityTypeAwaitingMeshUpdate = new Set();
 
     if (Farm.grassBladeMeshNeedsUpdate) {
         Farm.grassBladeMesh.instanceMatrix.needsUpdate = true;

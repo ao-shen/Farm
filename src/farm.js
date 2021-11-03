@@ -171,6 +171,8 @@ export let Farm = {
 
     plantTypeAwaitingMeshUpdate: new Set(),
 
+    entityTypeAwaitingMeshUpdate: new Set(),
+
     plantsAwaitingHarvest: new WaitingList(),
 
     // GAME -----------------------------------------------
@@ -680,34 +682,6 @@ export let Farm = {
             z: 3,
         },
         entities: [
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
-            3,
             3,
             3,
             3,

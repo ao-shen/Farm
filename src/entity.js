@@ -394,6 +394,8 @@ export class Entity {
         delete this.Farm.entities[this.idx];
         delete this.Farm.mixers[this.name];
 
+        this.Farm.entityTypeAwaitingMeshUpdate.add(this.type);
+
         this.isRemoved = true;
     }
 
