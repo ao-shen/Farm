@@ -21,6 +21,8 @@ export class Block {
 
         this.soilVariation = 1;
 
+        this.livestockDensity = 0;
+
         this.wetness = 0;
 
         this.hash = xmur3(x + "+" + z)();

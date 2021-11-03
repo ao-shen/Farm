@@ -7,7 +7,7 @@ import { WaitingList } from "./waiting_list.js";
 export let Farm = {
 
     // FLAGS
-    flagRenderPaths: false,
+    flagRenderPaths: true,
 
     // STATS
     stats: null,
@@ -131,6 +131,7 @@ export let Farm = {
 
     // Ground
     blocks: {},
+    livestockedBlocks: {},
 
     // Buildings
     buildingIdx: 1,
@@ -781,7 +782,7 @@ export let Farm = {
     }, {
         name: "Cattle",
         inventorySlots: 0,
-        movementSpeed: 0.2,
+        movementSpeed: 0.1,
         instanced: true,
         models: ['assets/models/cattle0.glb'],
     }, ],

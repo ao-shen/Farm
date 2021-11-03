@@ -53,6 +53,7 @@ export class Scheduler {
 };
 
 const SCHEDULES = [
+    { interval: 50, instances: 1 },
     { interval: 100, instances: 2 },
     { interval: 500, instances: 5 },
     { interval: 1000, instances: 10 },

@@ -56,6 +56,15 @@ export function animate(Farm, elapsed) {
         Farm.grassBladeMeshNeedsUpdate = false;
     }
 
+    for (let curBlockIdx in Farm.livestockedBlocks) {
+        let curBlock = Farm.blocks[curBlockIdx];
+        curBlock.livestockDensity *= 0.95;
+        if (curBlock.livestockDensity < 0.1) curBlock.livestockDensity = 0;
+        if (curBlock.livestockDensity == 0) {
+            delete Farm.livestockedBlocks[curBlockIdx];
+        }
+    }
+
     for (const building in Farm.updatableBuildings) {
         Farm.updatableBuildings[building].update();
     }

@@ -30,6 +30,7 @@ export class Entity {
         this.targetActionCategory = "";
         this.movementSpeed = this.Farm.ENTITIES[this.type].movementSpeed;
         this.maxPathLength = 30;
+        this.allowedDeviationFromGoalSquared = 1;
 
         if (this.Farm.ENTITIES[this.type].meshRotationOffset) {
             this.meshRotationOffset = this.Farm.ENTITIES[this.type].meshRotationOffset;
@@ -260,7 +261,7 @@ export class Entity {
             let allowedDeviationFromPathSquared = 20;
 
             if (this.path.length == 1) {
-                allowedDeviationFromPathSquared = 1;
+                allowedDeviationFromPathSquared = this.allowedDeviationFromGoalSquared;
             }
 
             if (this.path[0].allowedDeviation) {
@@ -315,8 +316,6 @@ export class Entity {
             if (this.meshRotation < 0) {
                 this.meshRotation += 2 * Math.PI;
             }
-
-
 
         } else {
             timeScale = 0;
@@ -538,7 +537,7 @@ const EAST = 1;
 const SOUTH = 2;
 const WEST = 3;
 
-const DIRECTIONS = [{
+export const DIRECTIONS = [{
         x: 0,
         z: 1,
         sides: [EAST],

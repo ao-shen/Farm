@@ -314,7 +314,7 @@ export function onKeyDown(Farm, event) {
             }
             break;
         case 't':
-            console.info(Farm.hoveringBlock.wetness);
+            console.info(Farm.hoveringBlock.livestockDensity);
             break;
         case 'y':
             console.info(Farm.hoveringBlock.buildings[0].waterDirection, Farm.hoveringBlock.buildings[0].waterLevels[0]);
