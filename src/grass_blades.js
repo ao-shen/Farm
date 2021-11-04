@@ -1,12 +1,13 @@
 import * as THREE from './three/src/Three';
 import { grassFragmentShader } from './shaders/grass_fragment';
 import { grassVertexShader } from './shaders/grass_vertex';
+import { TextureLoader } from 'three';
 
 //Variables for blade mesh
 var joints = 2;
-var bladeWidth = 0.15 * 2;
+var bladeWidth = 0.25 * 2;
 var bladeHeight = 1.0 * 1.5;
-var instances = 15;
+var instances = 128;
 
 //Define the bend of the grass blade as the combination of three quaternion rotations
 let vertex = new THREE.Vector3();
@@ -14,7 +15,7 @@ let x, y, z;
 
 export function initGrassBlades(Farm) {
 
-    let width = Farm.numBlocks.x * Farm.blockSize;
+    let width = 32;
 
     const textureLoader = new THREE.TextureLoader();
 
@@ -28,8 +29,12 @@ export function initGrassBlades(Farm) {
         THREE.ShaderLib.phong.uniforms,
         { diffuse: { value: new THREE.Color(0x00ff00) } },
         { time: { value: 0.0 } },
+        { perlinMap: { value: null } },
+        { grassPropertiesMap: { value: null } },
         { mouse_pos_x: { value: 0.0 } },
         { mouse_pos_z: { value: 0.0 } },
+        { target_pos_x: { value: 0.0 } },
+        { target_pos_z: { value: 0.0 } },
         { specular: { value: new THREE.Color(0x000000) } },
         { shininess: { value: 0.01 } }
     ]);
@@ -73,10 +78,17 @@ export function initGrassBlades(Farm) {
         },
     });
 
+    const data = new Float32Array(256 * 256 * 4);
+    data.fill(1);
+    Farm.grassPropertiesMap = new THREE.DataTexture(data, 256, 256, THREE.RGBAFormat, THREE.FloatType);
+    //const theArray = texture.image.data;
+
     uniforms.map.value = grassTexture;
     phongMaterial.map = grassTexture;
-    uniforms.displacementMap.value = perlinMap;
-    phongMaterial.displacementMap = perlinMap;
+    uniforms.perlinMap.value = perlinMap;
+    phongMaterial.perlinMap = perlinMap;
+    uniforms.grassPropertiesMap.value = Farm.grassPropertiesMap;
+    phongMaterial.grassPropertiesMap = Farm.grassPropertiesMap;
     //uniforms.alphaMap.value = alphaMap;
     //phongMaterial.alphaMap = alphaMap;
     //uniforms.lightPos = { value: Farm.shadowLight.position }
@@ -88,42 +100,42 @@ export function initGrassBlades(Farm) {
     // Show grass base geometry
     //Farm.scene.add(baseBlade);
 
-    let grass = new THREE.InstancedMesh(grassBaseGeometry, phongMaterial, instances * Farm.numBlocks.x * Farm.numBlocks.z);
+    let grass = new THREE.InstancedMesh(grassBaseGeometry, phongMaterial, instances * width * width);
 
     const matrix = new THREE.Matrix4();
 
     let curMatrixIdx = 0;
 
-    for (const curBlockIdx in Farm.blocks) {
-        let curBlock = Farm.blocks[curBlockIdx];
+    for (let blockX = 0; blockX < width; blockX++) {
+        for (let blockZ = 0; blockZ < width; blockZ++) {
 
-        //For each instance of the grass blade
-        for (let i = 0; i < instances; i++) {
+            //For each instance of the grass blade
+            for (let i = 0; i < instances; i++) {
 
-            //Offset of the roots
-            x = (curBlock.x + Math.random() - 0.5) * Farm.blockSize;
-            z = (curBlock.z + Math.random() - 0.5) * Farm.blockSize;
-            y = 0;
+                //Offset of the roots
+                x = (blockX + Math.random() - 0.5) * Farm.blockSize;
+                z = (blockZ + Math.random() - 0.5) * Farm.blockSize;
+                y = 0;
 
-            //Random orientation
-            let angle = Math.PI - (Math.random() * Math.PI) * 2;
+                //Random orientation
+                let angle = Math.PI - (Math.random() * Math.PI) * 2;
 
-            //Define variety in height
-            let scale = 1;
-            if (i % 3 != 0) {
-                scale = 2.0 + Math.random() * 0.5 * 1.25;
-            } else {
-                scale = 2.0 + Math.random() * 0.5;
+                //Define variety in height
+                let scale = 1;
+                if (i % 3 != 0) {
+                    scale = 1.0 + Math.random() * 0.2 * 1.25;
+                } else {
+                    scale = 1.0 + Math.random() * 0.2;
+                }
+
+                matrix.set(
+                    x, y, z, scale,
+                    angle * 0.5, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                );
+
+                grass.setMatrixAt(curMatrixIdx, matrix);
+                curMatrixIdx++;
             }
-
-            matrix.set(
-                x, y, z, scale,
-                angle * 0.5, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            );
-
-            grass.setMatrixAt(curMatrixIdx, matrix);
-            curBlock.grassBladeIdx.push(curMatrixIdx);
-            curMatrixIdx++;
         }
     }
 

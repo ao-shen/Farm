@@ -207,6 +207,11 @@ vec2 equirectUv( in vec3 dir ) {
 uniform float time;
 uniform float mouse_pos_x;
 uniform float mouse_pos_z;
+uniform float target_pos_x;
+uniform float target_pos_z;
+
+uniform sampler2D perlinMap;
+uniform sampler2D grassPropertiesMap;
 
 vec3 rotateVectorByQuaternion(vec3 v, vec4 q){
     return 2.0 * cross(q.xyz, v * q.w + cross(q.xyz, v)) + v;
@@ -221,19 +226,25 @@ void main() {
 
 	#ifdef USE_INSTANCING
 
-		vec2 decodedOffset = vec2(instanceMatrix[0][0], instanceMatrix[2][0]);
+		vec2 decodedOffset = vec2(target_pos_x - mod(instanceMatrix[0][0] + target_pos_x, 320.0), target_pos_z - mod(instanceMatrix[2][0] + target_pos_z, 320.0));
 		float decodedRotation = instanceMatrix[0][1];
 
-		float grassScale = instanceMatrix[3][0] * instanceMatrix[1][1];
-		float grassScaleY = (instanceMatrix[3][0] + 10.0 * abs(texture2D( displacementMap, mod(decodedOffset * 0.002, 1.0) ).x - 0.5)) * instanceMatrix[1][1];
+		float grassScaleMutiplier = max(0.0, 160.0 * 160.0 - (pow2(target_pos_x - 160.0 - decodedOffset.x) + pow2(target_pos_z - 160.0 - decodedOffset.y)) ) / (160.0 * 160.0);
 
-		mat4 decodedInstanceMatrix = mat4(grassScale, 0.0, 0.0, 0.0, 0.0, grassScaleY, 0.0, 0.0, 0.0, 0.0, grassScale, 0.0, instanceMatrix[0][0], instanceMatrix[1][0], instanceMatrix[2][0], 1.0);
+		grassScaleMutiplier *= (sign(decodedOffset.x + 5.0) + 1.0) / 2.0 * (sign(decodedOffset.y + 5.0) + 1.0) / 2.0;
+
+		grassScaleMutiplier *= texture2D( grassPropertiesMap, floor((decodedOffset.yx + 5.0) / 10.0) / 256.0 ).x;
+
+		float grassScale = instanceMatrix[3][0] * instanceMatrix[1][1] * grassScaleMutiplier;
+		float grassScaleY = (instanceMatrix[3][0] + 10.0 * abs(texture2D( perlinMap, mod(decodedOffset * 0.002, 1.0) ).x - 0.5)) * instanceMatrix[1][1] * grassScaleMutiplier;
+
+		mat4 decodedInstanceMatrix = mat4(grassScale, 0.0, 0.0, 0.0, 0.0, grassScaleY, 0.0, 0.0, 0.0, 0.0, grassScale, 0.0, decodedOffset.x, instanceMatrix[1][0], decodedOffset.y, 1.0);
 
 		vec4 rotateY = vec4(0, sin(decodedRotation), 0, cos(decodedRotation));
 
 		vec2 fractionalPos = mod(decodedOffset * 0.0005 + vec2(time, time), 1.0);
 		
-		vec4 perlin = texture2D( displacementMap, fractionalPos );
+		vec4 perlin = texture2D( perlinMap, fractionalPos );
 
 		//Wind is sine waves in time. 
 		float halfAngle = 0.3 - 0.9 * perlin.x; // sin(fractionalPos.x + time) + cos(fractionalPos.y + 0.25 * time);

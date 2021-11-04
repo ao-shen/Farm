@@ -10,6 +10,7 @@ export class Block {
         this.groundState = 0;
         this.grassBladeIdx = [];
         this.isGrassBladeVisible = true;
+        this.grassPropertiesIdx = (this.x * 256 + this.z) * 4;
 
         this.type = type;
         this.plants = [];
@@ -74,22 +75,26 @@ export class Block {
         if (this.type == BLOCK.GRASS && this.groundState == 0 && !blockingPlant && !blockingBuilding) {
             if (!this.isGrassBladeVisible) {
                 this.isGrassBladeVisible = true;
-                for (let idx of this.grassBladeIdx) {
+                /*for (let idx of this.grassBladeIdx) {
                     this.Farm.grassBladeMesh.getMatrixAt(idx, matrix);
                     matrix.elements[5] = 1;
                     this.Farm.grassBladeMesh.setMatrixAt(idx, matrix);
-                }
+                }*/
+                this.Farm.grassPropertiesMap.image.data[this.grassPropertiesIdx + 0] = 1;
                 this.Farm.grassBladeMeshNeedsUpdate = true;
+                this.Farm.grassPropertiesMap.needsUpdate = true;
             }
         } else {
             if (this.isGrassBladeVisible) {
                 this.isGrassBladeVisible = false;
-                for (let idx of this.grassBladeIdx) {
+                /*for (let idx of this.grassBladeIdx) {
                     this.Farm.grassBladeMesh.getMatrixAt(idx, matrix);
                     matrix.elements[5] = 0;
                     this.Farm.grassBladeMesh.setMatrixAt(idx, matrix);
-                }
+                }*/
+                this.Farm.grassPropertiesMap.image.data[this.grassPropertiesIdx + 0] = 0;
                 this.Farm.grassBladeMeshNeedsUpdate = true;
+                this.Farm.grassPropertiesMap.needsUpdate = true;
             }
         }
     }

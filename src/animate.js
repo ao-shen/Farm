@@ -41,6 +41,9 @@ export function animate(Farm, elapsed) {
 
     Farm.controls.update(); // only required if controls.enableDamping = true, or if controls.autoRotate = true
 
+    Farm.grassBladeMaterial.uniforms.target_pos_x.value = Farm.controls.target.x + 160;
+    Farm.grassBladeMaterial.uniforms.target_pos_z.value = Farm.controls.target.z + 160;
+
     Farm.scheduler.onFrame();
 
     // Update plants buildings and entities
@@ -60,6 +63,8 @@ export function animate(Farm, elapsed) {
     if (Farm.grassBladeMeshNeedsUpdate) {
         Farm.grassBladeMesh.instanceMatrix.needsUpdate = true;
         Farm.grassBladeMeshNeedsUpdate = false;
+        /*Farm.grassBladeMaterial.uniforms.grassPropertiesMap.value = Farm.grassPropertiesMap;
+        Farm.grassBladeMaterial.grassPropertiesMap = Farm.grassPropertiesMap;*/
     }
 
     for (let curBlockIdx in Farm.livestockedBlocks) {
