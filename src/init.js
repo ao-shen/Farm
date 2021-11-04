@@ -30,6 +30,8 @@ import { leafFragmentShader } from './shaders/leaf_fragment.js';
 import { ShaderChunk } from './three/src/Three';
 import { leafDepthShader } from './shaders/leaf_depth.js';
 import { plantVertexShader } from './shaders/plant_vertex.js';
+import { groundFragmentShader } from './shaders/ground_fragment';
+import { groundVertexShader } from './shaders/ground_vertex';
 
 let GLTFModelLoader = new GLTFLoader();
 
@@ -984,26 +986,47 @@ async function initWorld(Farm) {
     Farm.texSoilBlock.magFilter = THREE.NearestFilter;
     Farm.texSoilBlock.minFilter = THREE.NearestFilter;
 
-    let groundMaterial = new THREE.MeshStandardMaterial({
+    let uniforms = THREE.UniformsUtils.merge([
+        THREE.ShaderLib.phong.uniforms,
+        { diffuse: { value: new THREE.Color(0x00b000) } },
+        { specular: { value: new THREE.Color(0x000000) } },
+        { shininess: { value: 0.01 } },
+        { alphaTest: { value: 0.5 } },
+        { target_pos_x: { value: 0.0 } },
+        { target_pos_z: { value: 0.0 } },
+        { grassPropertiesMap: { value: null } },
+    ]);
+
+    let groundMaterial = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: groundVertexShader,
+        fragmentShader: groundFragmentShader,
+        lights: true,
+        transparent: true,
+        alphaTest: 0.5,
+        extensions: {
+            fragDepth: true,
+        },
+    });
+
+    const data = new Float32Array(256 * 256 * 4);
+    data.fill(1);
+    Farm.grassPropertiesMap = new THREE.DataTexture(data, 256, 256, THREE.RGBAFormat, THREE.FloatType);
+
+    uniforms.grassPropertiesMap.value = Farm.grassPropertiesMap;
+    groundMaterial.grassPropertiesMap = Farm.grassPropertiesMap;
+
+    uniforms.map.value = Farm.texGroundBlock;
+    groundMaterial.map = Farm.texGroundBlock;
+
+    /*let groundMaterial = new THREE.MeshStandardMaterial({
         map: Farm.texGroundBlock,
         side: THREE.DoubleSide,
         transparent: true,
-    });
-
-    let depthMaterial = new THREE.MeshDepthMaterial({
-        side: THREE.DoubleSide,
-        transparent: true,
-    });
-
-    let phongMaterial = new THREE.MeshPhongMaterial({
-        color: 0xffffff,
-        side: THREE.DoubleSide,
-        transparent: true,
-    });
-
-    //Farm.scene.overrideMaterial = phongMaterial;
+    });*/
 
     Farm.groundMesh = new THREE.Mesh(Farm.groundGeometry, groundMaterial);
+    Farm.groundMaterial = groundMaterial;
 
     Farm.groundMesh.receiveShadow = true;
 

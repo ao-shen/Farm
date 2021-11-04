@@ -77,10 +77,6 @@ export function initGrassBlades(Farm) {
             fragDepth: true,
         },
     });
-
-    const data = new Float32Array(256 * 256 * 4);
-    data.fill(1);
-    Farm.grassPropertiesMap = new THREE.DataTexture(data, 256, 256, THREE.RGBAFormat, THREE.FloatType);
     //const theArray = texture.image.data;
 
     uniforms.map.value = grassTexture;

@@ -229,7 +229,7 @@ void main() {
 		vec2 decodedOffset = vec2(target_pos_x - mod(instanceMatrix[0][0] + target_pos_x, 320.0), target_pos_z - mod(instanceMatrix[2][0] + target_pos_z, 320.0));
 		float decodedRotation = instanceMatrix[0][1];
 
-		float grassScaleMutiplier = max(0.0, 160.0 * 160.0 - (pow2(target_pos_x - 160.0 - decodedOffset.x) + pow2(target_pos_z - 160.0 - decodedOffset.y)) ) / (160.0 * 160.0);
+		float grassScaleMutiplier = 1.0 - pow4( min(1.0, (pow2(target_pos_x - 160.0 - decodedOffset.x) + pow2(target_pos_z - 160.0 - decodedOffset.y)) / pow2(160.0) )  );
 
 		grassScaleMutiplier *= (sign(decodedOffset.x + 5.0) + 1.0) / 2.0 * (sign(decodedOffset.y + 5.0) + 1.0) / 2.0;
 

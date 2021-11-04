@@ -43,6 +43,8 @@ export function animate(Farm, elapsed) {
 
     Farm.grassBladeMaterial.uniforms.target_pos_x.value = Farm.controls.target.x + 160;
     Farm.grassBladeMaterial.uniforms.target_pos_z.value = Farm.controls.target.z + 160;
+    Farm.groundMaterial.uniforms.target_pos_x.value = Farm.controls.target.x;
+    Farm.groundMaterial.uniforms.target_pos_z.value = Farm.controls.target.z;
 
     Farm.scheduler.onFrame();
 
