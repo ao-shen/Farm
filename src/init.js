@@ -1019,6 +1019,8 @@ async function initWorld(Farm) {
     var perlinMap = textureLoader.load('assets/textures/perlin_noise.png');
     perlinMap.wrapS = THREE.RepeatWrapping;
     perlinMap.wrapT = THREE.RepeatWrapping;
+    perlinMap.minFilter = THREE.LinearFilter;
+    perlinMap.magFilter = THREE.LinearFilter;
 
     uniforms.perlinMap.value = perlinMap;
     groundMaterial.perlinMap = perlinMap;

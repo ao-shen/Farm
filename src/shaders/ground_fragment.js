@@ -751,27 +751,27 @@ void RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in Geometric
 	uniform sampler2D bumpMap;
 	uniform float bumpScale;
 
-	float grassBumpScale = 200.0;
+	float grassBumpScale = 10.0;
 
 	float get_grass_height(vec2 grassUv) {
 		// Custom code
 
-		vec2 pos = 10.0 * grassUv + vCustomWorldPosition.xz;
+		vec2 pos = grassUv + vCustomWorldPosition.xz;
 
-		float distanceFactor = smoothstep( 0.0, 1.0, max(0.0, min(1.0, (sqrt(pow2(target_pos_x - pos.x) + pow2(target_pos_z - pos.y))) / 140.0 ) ) );
+		float distanceFactor = smoothstep( 0.0, 1.0, max(0.0, min(1.0, (sqrt(pow2(target_pos_x - pos.x) + pow2(target_pos_z - pos.y))) / 100.0 - 0.5 ) ) );
 
 		// Wind
 		float grassHeight = 1.0;
 
-		float grassScaleY = texture2D( perlinMap, mod(pos * 0.002, 1.0) ).x;
+		float grassScaleY = texture2D( perlinMap, mod(pos * 0.02, 1.0) ).x;
 
 		grassHeight *= mix(0.5, 1.0, grassScaleY);
 
-		vec2 fractionalPos = mod(pos * 0.0005 + vec2(time, time), 1.0);
+		vec2 fractionalPos = mod(pos * 0.005 + vec2(time, time), 1.0);
 		
 		vec4 perlin = (texture2D( perlinMap, fractionalPos ) - 0.5);
 
-		grassHeight = mix(4.0 * grassHeight, grassHeight + mix(1.0, 0.0, perlin.x) - 0.5, distanceFactor);
+		grassHeight = mix(1.0, grassHeight + mix(1.0, 0.0, perlin.x) - 0.5, distanceFactor);
 	
 		grassHeight = mix(grassHeight, 0.0, sign(mapTexelToLinear( texture2D( map, vUv ) ).x));
 
@@ -779,8 +779,8 @@ void RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in Geometric
 	}
 
 	vec2 dHdxy_fwd() {
-		vec2 dSTdx = dFdx( vUv );
-		vec2 dSTdy = dFdy( vUv );
+		vec2 dSTdx = dFdx( vCustomWorldPosition.xz );
+		vec2 dSTdy = dFdy( vCustomWorldPosition.xz );
 		float Hll = grassBumpScale * get_grass_height( vec2(0.0) );
 		float dBx = grassBumpScale * get_grass_height( dSTdx ) - Hll;
 		float dBy = grassBumpScale * get_grass_height( dSTdy ) - Hll;
@@ -866,7 +866,7 @@ void main() {
 
 	//grassColor *= mix(1.0, 0.5, grassScaleY);
 
-	//vec2 fractionalPos = mod(vCustomWorldPosition.xz * 0.0005 + vec2(time, time), 1.0);
+	//vec2 fractionalPos = mod(vCustomWorldPosition.xz * 0.005 + vec2(time, time), 1.0);
 	
 	//vec4 perlin = texture2D( perlinMap, fractionalPos );
 

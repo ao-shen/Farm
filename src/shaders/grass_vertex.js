@@ -236,18 +236,18 @@ void main() {
 		grassScaleMutiplier *= texture2D( grassPropertiesMap, floor((decodedOffset.yx + 5.0) / 10.0) / 256.0 ).x;
 
 		float grassScale = instanceMatrix[3][0] * instanceMatrix[1][1] * grassScaleMutiplier;
-		float grassScaleY = (instanceMatrix[3][0] + 10.0 * abs(texture2D( perlinMap, mod(decodedOffset * 0.002, 1.0) ).x - 0.5)) * instanceMatrix[1][1] * grassScaleMutiplier;
+		float grassScaleY = (instanceMatrix[3][0] + 3.0 * abs(texture2D( perlinMap, mod(decodedOffset * 0.02, 1.0) ).x - 0.5)) * instanceMatrix[1][1] * grassScaleMutiplier;
 
 		mat4 decodedInstanceMatrix = mat4(grassScale, 0.0, 0.0, 0.0, 0.0, grassScaleY, 0.0, 0.0, 0.0, 0.0, grassScale, 0.0, decodedOffset.x, instanceMatrix[1][0], decodedOffset.y, 1.0);
 
 		vec4 rotateY = vec4(0, sin(decodedRotation), 0, cos(decodedRotation));
 
-		vec2 fractionalPos = mod(decodedOffset * 0.0005 + vec2(time, time), 1.0);
+		vec2 fractionalPos = mod(decodedOffset * 0.005 + vec2(time, time), 1.0);
 		
 		vec4 perlin = texture2D( perlinMap, fractionalPos );
 
 		//Wind is sine waves in time. 
-		float halfAngle = 0.3 - 0.9 * perlin.x; // sin(fractionalPos.x + time) + cos(fractionalPos.y + 0.25 * time);
+		float halfAngle = 0.3 - 0.6 * perlin.x; // sin(fractionalPos.x + time) + cos(fractionalPos.y + 0.25 * time);
 		halfAngle *= (position.y + 7.0) / 7.0;
 
 		//Rotate blade and normals according to the wind

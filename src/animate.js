@@ -120,7 +120,7 @@ export function animate(Farm, elapsed) {
 
     // Update time material
     for (let mat of Farm.timeUpdateMaterials) {
-        mat.uniforms.time.value = now * 0.00005;
+        mat.uniforms.time.value = now * 0.0001;
     }
 
     // Restaurant
