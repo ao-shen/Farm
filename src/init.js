@@ -916,16 +916,15 @@ async function initWorld(Farm) {
     const textureLoader = new THREE.TextureLoader();
 
     // ground
-
-    for (let state of Farm.GROUND_STATES) {
-        state.uv[0] += 0.001;
-        state.uv[1] += 0.001;
-        state.uv[2] -= 0.001;
-        state.uv[3] += 0.001;
-        state.uv[4] -= 0.001;
-        state.uv[5] -= 0.001;
-        state.uv[6] += 0.001;
-        state.uv[7] -= 0.001;
+    for (let state = 0; state < Farm.GROUND_STATES.length; state++) {
+        Farm.GROUND_STATES[state].uv[0] += 0.001;
+        Farm.GROUND_STATES[state].uv[1] += 0.001;
+        Farm.GROUND_STATES[state].uv[2] -= 0.001;
+        Farm.GROUND_STATES[state].uv[3] += 0.001;
+        Farm.GROUND_STATES[state].uv[4] -= 0.001;
+        Farm.GROUND_STATES[state].uv[5] -= 0.001;
+        Farm.GROUND_STATES[state].uv[6] += 0.001;
+        Farm.GROUND_STATES[state].uv[7] -= 0.001;
     }
 
     var quad_normals = [
@@ -992,9 +991,13 @@ async function initWorld(Farm) {
         { specular: { value: new THREE.Color(0x000000) } },
         { shininess: { value: 0.01 } },
         { alphaTest: { value: 0.5 } },
+        { time: { value: 0.0 } },
         { target_pos_x: { value: 0.0 } },
         { target_pos_z: { value: 0.0 } },
+        { perlinMap: { value: null } },
         { grassPropertiesMap: { value: null } },
+        { grassFarColor: { value: new THREE.Color(0x00b000) } },
+        { grassCloseColor: { value: new THREE.Color(0x1f1608) } },
     ]);
 
     let groundMaterial = new THREE.ShaderMaterial({
@@ -1013,6 +1016,12 @@ async function initWorld(Farm) {
     data.fill(1);
     Farm.grassPropertiesMap = new THREE.DataTexture(data, 256, 256, THREE.RGBAFormat, THREE.FloatType);
 
+    var perlinMap = textureLoader.load('assets/textures/perlin_noise.png');
+    perlinMap.wrapS = THREE.RepeatWrapping;
+    perlinMap.wrapT = THREE.RepeatWrapping;
+
+    uniforms.perlinMap.value = perlinMap;
+    groundMaterial.perlinMap = perlinMap;
     uniforms.grassPropertiesMap.value = Farm.grassPropertiesMap;
     groundMaterial.grassPropertiesMap = Farm.grassPropertiesMap;
 
@@ -1027,6 +1036,7 @@ async function initWorld(Farm) {
 
     Farm.groundMesh = new THREE.Mesh(Farm.groundGeometry, groundMaterial);
     Farm.groundMaterial = groundMaterial;
+    Farm.timeUpdateMaterials.push(groundMaterial);
 
     Farm.groundMesh.receiveShadow = true;
 
