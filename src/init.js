@@ -32,6 +32,7 @@ import { leafDepthShader } from './shaders/leaf_depth.js';
 import { plantVertexShader } from './shaders/plant_vertex.js';
 import { groundFragmentShader } from './shaders/ground_fragment';
 import { groundVertexShader } from './shaders/ground_vertex';
+import { waterFragmentShader } from './shaders/water_fragment';
 
 let GLTFModelLoader = new GLTFLoader();
 
@@ -1066,7 +1067,7 @@ async function initWorld(Farm) {
 
     // Road
     geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
-    geometry.rotateX(Math.PI / 2);
+    geometry.rotateX(-Math.PI / 2);
     geometry.rotateY(-Math.PI / 2);
     texture = textureLoader.load('assets/textures/road.png');
     texture.encoding = THREE.sRGBEncoding;
@@ -1074,7 +1075,6 @@ async function initWorld(Farm) {
     texture.magFilter = THREE.NearestFilter;
     material = new THREE.MeshStandardMaterial({
         map: texture,
-        side: THREE.DoubleSide,
     });
     mesh = new THREE.InstancedMesh(geometry, material, numSides);
     mesh.receiveShadow = true;
@@ -1089,29 +1089,56 @@ async function initWorld(Farm) {
     Farm.scene.add(mesh);
 
     // River
-    geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
-    geometry.rotateX(Math.PI / 2);
-    texture = textureLoader.load('assets/textures/river.png');
-    texture.encoding = THREE.sRGBEncoding;
-    material = new THREE.MeshStandardMaterial({
-        map: texture,
-        side: THREE.DoubleSide,
+    uniforms = THREE.UniformsUtils.merge([
+        THREE.ShaderLib.phong.uniforms,
+        { diffuse: { value: new THREE.Color(0x094fb8) } },
+        { specular: { value: new THREE.Color(0x000000) } },
+        { shininess: { value: 0.01 } },
+        { alphaTest: { value: 0.5 } },
+        { time: { value: 0.0 } },
+        { perlinMap: { value: null } },
+        { waveMap: { value: null } },
+    ]);
+
+    let waterMaterial = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: groundVertexShader,
+        fragmentShader: waterFragmentShader,
+        lights: true,
+        transparent: true,
+        extensions: {
+            fragDepth: true,
+        },
     });
-    mesh = new THREE.InstancedMesh(geometry, material, numSides);
+
+    texture = textureLoader.load('assets/textures/river.png');
+
+    uniforms.perlinMap.value = perlinMap;
+    waterMaterial.perlinMap = perlinMap;
+    uniforms.waveMap.value = texture;
+    waterMaterial.waveMap = texture;
+
+    Farm.waterMaterial = waterMaterial;
+    Farm.timeUpdateMaterials.push(waterMaterial);
+
+    geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
+    geometry.rotateX(-Math.PI / 2);
+    //texture.encoding = THREE.sRGBEncoding;
+    mesh = new THREE.InstancedMesh(geometry, waterMaterial, numSides + 1);
     mesh.receiveShadow = true;
-    for (let i = 0; i < numSides; i++) {
+    for (let i = -1; i < numSides; i++) {
         matrix.makeTranslation(
             ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize,
             0,
             ((i + 0.5) * blocksPerSize - 0.5) * Farm.blockSize
         );
-        mesh.setMatrixAt(i, matrix);
+        mesh.setMatrixAt(i + 1, matrix);
     }
     Farm.scene.add(mesh);
 
     // Parking Lot
     geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
-    geometry.rotateX(Math.PI / 2);
+    geometry.rotateX(-Math.PI / 2);
     geometry.rotateY(-Math.PI / 2);
     texture = textureLoader.load('assets/textures/road_parking_lot.png');
     texture.encoding = THREE.sRGBEncoding;
@@ -1119,7 +1146,6 @@ async function initWorld(Farm) {
     texture.magFilter = THREE.NearestFilter;
     material = new THREE.MeshStandardMaterial({
         map: texture,
-        side: THREE.DoubleSide,
     });
     mesh = new THREE.Mesh(geometry, material);
     mesh.receiveShadow = true;
@@ -1128,7 +1154,7 @@ async function initWorld(Farm) {
 
     // Bridge
     geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
-    geometry.rotateX(Math.PI / 2);
+    geometry.rotateX(-Math.PI / 2);
     geometry.rotateY(-Math.PI / 2);
     texture = textureLoader.load('assets/textures/road_bridge.png');
     texture.encoding = THREE.sRGBEncoding;
@@ -1136,11 +1162,12 @@ async function initWorld(Farm) {
     texture.magFilter = THREE.NearestFilter;
     material = new THREE.MeshStandardMaterial({
         map: texture,
-        side: THREE.DoubleSide,
+        transparent: true,
+        alphaTest: 0.5,
     });
     mesh = new THREE.Mesh(geometry, material);
     mesh.receiveShadow = true;
-    mesh.position.set(((-1 + 0.5) * blocksPerSize - 0.5) * Farm.blockSize, 0, ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize);
+    mesh.position.set(((-1 + 0.5) * blocksPerSize - 0.5) * Farm.blockSize, 0.01, ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize);
     Farm.scene.add(mesh);
 
     // Restaurant
