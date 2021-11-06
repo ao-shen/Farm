@@ -134,9 +134,13 @@ uniform float target_pos_z;
 
 uniform sampler2D perlinMap;
 uniform sampler2D grassPropertiesMap;
+uniform sampler2D grassEdgeMap;
+uniform sampler2D shoreRampMap;
 
 uniform vec3 grassFarColor;
 uniform vec3 grassCloseColor;
+
+uniform vec3 waterDiffuse;
 
 #if defined( USE_COLOR_ALPHA )
 	varying vec4 vColor;
@@ -753,10 +757,22 @@ void RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in Geometric
 
 	float grassBumpScale = 10.0;
 
+	float get_grass_edge_value(vec2 pos) {
+
+		float randomOffsetX = mix( 1.0, 1.3, texture2D( perlinMap, mod(pos.xy * 0.015, 1.0) ).x );
+
+		float grassEdgeValue = texture2D( grassEdgeMap, saturate( vec2( mod(pos.y + 5.0, 160.0) / 160.0, (pos.x + 5.0) / 160.0 ) ) ).x;
+
+		return saturate( grassEdgeValue * randomOffsetX );
+	}
+
 	float get_grass_height(vec2 grassUv) {
 		// Custom code
 
 		vec2 pos = grassUv + vCustomWorldPosition.xz;
+
+		float grassEdgeValue = get_grass_edge_value(pos);
+		float grassEdgeValueReal = get_grass_edge_value(vCustomWorldPosition.xz);
 
 		float distanceFactor = smoothstep( 0.0, 1.0, max(0.0, min(1.0, (sqrt(pow2(target_pos_x - pos.x) + pow2(target_pos_z - pos.y))) / 100.0 - 0.5 ) ) );
 
@@ -774,6 +790,31 @@ void RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in Geometric
 		grassHeight = mix(1.0, grassHeight + mix(1.0, 0.0, perlin.x) - 0.5, distanceFactor);
 	
 		grassHeight = mix(grassHeight, 0.0, sign(mapTexelToLinear( texture2D( map, vUv ) ).x));
+
+		grassHeight = mix( grassHeight, 1.0, saturate( (grassEdgeValue - 0.2) * 2.0 ) );
+
+		// Water
+
+		vec2 fractionalPos1 = mod(  pos * 0.005 + vec2( - 0.30 * time, 0.8 * time ), 1.0);
+		vec2 fractionalPos2 = mod(  pos * 0.005 + vec2(   0.37 * time, 0.8 * time ), 1.0);
+		
+		float waveAmplitude = texture2D( perlinMap, fractionalPos1 ).x * texture2D( perlinMap, fractionalPos2 ).x;
+		
+		fractionalPos1 = mod(  pos * 0.013 + vec2( - 0.10 * time, time), 1.0);
+		fractionalPos2 = mod(- pos * 0.009 + vec2(   0.07 * time, time), 1.0);
+
+		float phaseDistort1 = 0.1 * (texture2D( perlinMap, fractionalPos1 ).x - 0.5);
+		float phaseDistort2 = 0.9 * (texture2D( perlinMap, fractionalPos2 ).x - 0.5);
+
+		float waterHeight = 1.0 - abs( sin( (time + phaseDistort1) * 20.0 + (-pos.x + phaseDistort2) * 0.5 ) );
+
+		waterHeight *= clamp( waveAmplitude * 1.1 - 0.1, 0.0, 1.0);
+
+		fractionalPos1 = mod( vec2( 0.0, ( pos.x + 5.0 ) / 160.0 ), 1.0);
+
+		waterHeight = clamp( waterHeight + 0.2, 0.0, 1.0) * 0.5;
+
+		grassHeight = mix( grassHeight, waterHeight, saturate( (grassEdgeValueReal - 0.8) * 50.0 ) );
 
 		return grassHeight;
 	}
@@ -859,24 +900,19 @@ void main() {
 
 	float distanceFactor = pow4(min(1.0, (pow2(target_pos_x - vCustomWorldPosition.x) + pow2(target_pos_z - vCustomWorldPosition.z)) / pow2(140.0) ));
 
-	// Wind
-	vec3 grassColor = grassFarColor;
+	vec3 grassColor = mix(grassCloseColor, grassFarColor, distanceFactor); 
 
-	//float grassScaleY = 2.0 * abs(texture2D( perlinMap, mod(vCustomWorldPosition.xz * 0.002, 1.0) ).x - 0.5);
+	float grassEdgeValue = get_grass_edge_value(vCustomWorldPosition.xz);
 
-	//grassColor *= mix(1.0, 0.5, grassScaleY);
+	//vec4 shoreRampColor = texture2D( shoreRampMap, vec2( 0.0, grassEdgeValue ) );
 
-	//vec2 fractionalPos = mod(vCustomWorldPosition.xz * 0.005 + vec2(time, time), 1.0);
-	
-	//vec4 perlin = texture2D( perlinMap, fractionalPos );
+	vec3 groundColor = mix( grassColor, vec3( 1.0, 1.0, 0.0 ), saturate( (grassEdgeValue - 0.3) * 5.0 ) );
 
-	//grassColor *= mix(1.0, 0.25, perlin.x);
+	vec3 waterColor = mix(waterDiffuse, vec3( 1.0 ), get_grass_height( vec2(0.0) ) * 2.0 );
 
-	grassColor = mix(grassCloseColor, grassColor, distanceFactor); 
-	
-	// texture2D( grassPropertiesMap, floor((vCustomWorldPosition.zx + 5.0) / 10.0) / 256.0 ).x
+	groundColor = mix( groundColor, waterColor, saturate( (grassEdgeValue - 0.8) * 50.0 ));
 
-	diffuseColor = mix(vec4( grassColor, 1 ), diffuseColor, sign(diffuseColor.x));
+	diffuseColor = mix(vec4( groundColor, 1 ), diffuseColor, sign(diffuseColor.x));
 
 #if defined( USE_COLOR_ALPHA )
 	diffuseColor *= vColor;

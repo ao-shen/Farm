@@ -746,7 +746,7 @@ void RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in Geometric
 	uniform sampler2D bumpMap;
 	uniform float bumpScale;
 
-	float grassBumpScale = 1.0;
+	float grassBumpScale = 5.0;
 
 	float get_water_height(vec2 grassUv) {
 		// Custom code
@@ -768,13 +768,13 @@ void RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in Geometric
 
 		waterHeight *= clamp( waveAmplitude * 1.1 - 0.1, 0.0, 1.0);
 
-		fractionalPos1 = mod( vec2( 0.0, ( pos.x + 5.0 ) / 160.0 ), 1.0);
+		fractionalPos1 = saturate( vec2( 0.0, ( pos.x + 5.0 ) / 160.0 ) + 1.0);
 
 		float waveMapValue = texture2D( waveMap, fractionalPos1 ).x;
 
 		waterHeight *= waveMapValue;
 
-		waterHeight = clamp( waterHeight + 0.2 * waveMapValue, 0.0, 1.0);
+		waterHeight = clamp( waterHeight + 0.2 * pow2(waveMapValue), 0.0, 1.0);
 
 		return waterHeight;
 	}

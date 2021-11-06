@@ -991,14 +991,17 @@ async function initWorld(Farm) {
         { diffuse: { value: new THREE.Color(0x00b000) } },
         { specular: { value: new THREE.Color(0x000000) } },
         { shininess: { value: 0.01 } },
-        { alphaTest: { value: 0.5 } },
+        { alphaTest: { value: 0.2 } },
         { time: { value: 0.0 } },
         { target_pos_x: { value: 0.0 } },
         { target_pos_z: { value: 0.0 } },
         { perlinMap: { value: null } },
         { grassPropertiesMap: { value: null } },
+        { grassEdgeMap: { value: null } },
+        { shoreRampMap: { value: null } },
         { grassFarColor: { value: new THREE.Color(0x00b000) } },
         { grassCloseColor: { value: new THREE.Color(0x1f1608) } },
+        { waterDiffuse: { value: new THREE.Color(0x094fb8) } },
     ]);
 
     let groundMaterial = new THREE.ShaderMaterial({
@@ -1023,10 +1026,24 @@ async function initWorld(Farm) {
     perlinMap.minFilter = THREE.LinearFilter;
     perlinMap.magFilter = THREE.LinearFilter;
 
+    var grassEdgeMap = textureLoader.load('assets/textures/shore_ground.png');
+    //grassEdgeMap.wrapS = THREE.RepeatWrapping;
+    //grassEdgeMap.wrapT = THREE.RepeatWrapping;
+    grassEdgeMap.minFilter = THREE.LinearFilter;
+    grassEdgeMap.magFilter = THREE.LinearFilter;
+
+    var shoreRampMap = textureLoader.load('assets/textures/shore_ramp.png');
+    shoreRampMap.minFilter = THREE.LinearFilter;
+    shoreRampMap.magFilter = THREE.LinearFilter;
+
     uniforms.perlinMap.value = perlinMap;
     groundMaterial.perlinMap = perlinMap;
     uniforms.grassPropertiesMap.value = Farm.grassPropertiesMap;
     groundMaterial.grassPropertiesMap = Farm.grassPropertiesMap;
+    uniforms.grassEdgeMap.value = grassEdgeMap;
+    groundMaterial.grassEdgeMap = grassEdgeMap;
+    uniforms.shoreRampMap.value = shoreRampMap;
+    groundMaterial.shoreRampMap = shoreRampMap;
 
     uniforms.map.value = Farm.texGroundBlock;
     groundMaterial.map = Farm.texGroundBlock;
@@ -1065,29 +1082,6 @@ async function initWorld(Farm) {
     let numSides = Math.floor(Farm.numBlocks.x / blocksPerSize);
     const matrix = new THREE.Matrix4();
 
-    // Road
-    geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
-    geometry.rotateX(-Math.PI / 2);
-    geometry.rotateY(-Math.PI / 2);
-    texture = textureLoader.load('assets/textures/road.png');
-    texture.encoding = THREE.sRGBEncoding;
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.NearestFilter;
-    material = new THREE.MeshStandardMaterial({
-        map: texture,
-    });
-    mesh = new THREE.InstancedMesh(geometry, material, numSides);
-    mesh.receiveShadow = true;
-    for (let i = 1; i < numSides; i++) {
-        matrix.makeTranslation(
-            ((i + 0.5) * blocksPerSize - 0.5) * Farm.blockSize,
-            0,
-            ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize
-        );
-        mesh.setMatrixAt(i, matrix);
-    }
-    Farm.scene.add(mesh);
-
     // River
     uniforms = THREE.UniformsUtils.merge([
         THREE.ShaderLib.phong.uniforms,
@@ -1112,6 +1106,10 @@ async function initWorld(Farm) {
     });
 
     texture = textureLoader.load('assets/textures/river.png');
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
 
     uniforms.perlinMap.value = perlinMap;
     waterMaterial.perlinMap = perlinMap;
@@ -1128,11 +1126,65 @@ async function initWorld(Farm) {
     mesh.receiveShadow = true;
     for (let i = -1; i < numSides; i++) {
         matrix.makeTranslation(
-            ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize,
-            0,
+            ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize, 0,
             ((i + 0.5) * blocksPerSize - 0.5) * Farm.blockSize
         );
         mesh.setMatrixAt(i + 1, matrix);
+    }
+    Farm.scene.add(mesh);
+
+    // Road
+    geometry = new THREE.PlaneGeometry(Farm.blockSize * blocksPerSize, Farm.blockSize * blocksPerSize);
+    geometry.rotateX(-Math.PI / 2);
+    geometry.rotateY(-Math.PI / 2);
+    texture = textureLoader.load('assets/textures/road.png');
+    texture.encoding = THREE.sRGBEncoding;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.NearestFilter;
+    material = new THREE.MeshStandardMaterial({
+        map: texture,
+        transparent: true,
+        alphaTest: 0.5,
+    });
+    mesh = new THREE.InstancedMesh(geometry, material, numSides);
+    mesh.receiveShadow = true;
+    for (let i = 1; i < numSides; i++) {
+        matrix.makeTranslation(
+            ((i + 0.5) * blocksPerSize - 0.5) * Farm.blockSize,
+            0.01,
+            ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize
+        );
+        mesh.setMatrixAt(i, matrix);
+    }
+    Farm.scene.add(mesh);
+
+    let sideGroundMaterial = groundMaterial.clone();
+    Farm.sideGroundMaterial = sideGroundMaterial;
+    Farm.timeUpdateMaterials.push(sideGroundMaterial);
+    texture = textureLoader.load('assets/textures/road.png');
+    texture.encoding = THREE.sRGBEncoding;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.NearestFilter;
+    sideGroundMaterial.uniforms.map.value = texture;
+    sideGroundMaterial.map = texture;
+    sideGroundMaterial.uniforms.perlinMap.value = perlinMap;
+    sideGroundMaterial.perlinMap = perlinMap;
+    sideGroundMaterial.uniforms.shoreRampMap.value = shoreRampMap;
+    sideGroundMaterial.shoreRampMap = shoreRampMap;
+    texture = textureLoader.load('assets/textures/road_ground.png');
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    sideGroundMaterial.uniforms.grassEdgeMap.value = texture;
+    sideGroundMaterial.grassEdgeMap = texture;
+    mesh = new THREE.InstancedMesh(geometry, sideGroundMaterial, numSides);
+    mesh.receiveShadow = true;
+    for (let i = 1; i < numSides; i++) {
+        matrix.makeTranslation(
+            ((i + 0.5) * blocksPerSize - 0.5) * Farm.blockSize,
+            0,
+            ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize
+        );
+        mesh.setMatrixAt(i, matrix);
     }
     Farm.scene.add(mesh);
 
@@ -1146,8 +1198,33 @@ async function initWorld(Farm) {
     texture.magFilter = THREE.NearestFilter;
     material = new THREE.MeshStandardMaterial({
         map: texture,
+        transparent: true,
+        alphaTest: 0.5,
     });
     mesh = new THREE.Mesh(geometry, material);
+    mesh.receiveShadow = true;
+    mesh.position.set(((0 + 0.5) * blocksPerSize - 0.5) * Farm.blockSize, 0.01, ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize);
+    Farm.scene.add(mesh);
+
+    let sideParkingLotGroundMaterial = groundMaterial.clone();
+    Farm.sideParkingLotGroundMaterial = sideParkingLotGroundMaterial;
+    Farm.timeUpdateMaterials.push(sideParkingLotGroundMaterial);
+    texture = textureLoader.load('assets/textures/road_parking_lot.png');
+    texture.encoding = THREE.sRGBEncoding;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.NearestFilter;
+    sideParkingLotGroundMaterial.uniforms.map.value = texture;
+    sideParkingLotGroundMaterial.map = texture;
+    sideParkingLotGroundMaterial.uniforms.perlinMap.value = perlinMap;
+    sideParkingLotGroundMaterial.perlinMap = perlinMap;
+    sideParkingLotGroundMaterial.uniforms.shoreRampMap.value = shoreRampMap;
+    sideParkingLotGroundMaterial.shoreRampMap = shoreRampMap;
+    texture = textureLoader.load('assets/textures/road_parking_lot_ground.png');
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    sideParkingLotGroundMaterial.uniforms.grassEdgeMap.value = texture;
+    sideParkingLotGroundMaterial.grassEdgeMap = texture;
+    mesh = new THREE.Mesh(geometry, sideParkingLotGroundMaterial);
     mesh.receiveShadow = true;
     mesh.position.set(((0 + 0.5) * blocksPerSize - 0.5) * Farm.blockSize, 0, ((-0.5) * blocksPerSize - 0.5) * Farm.blockSize);
     Farm.scene.add(mesh);
