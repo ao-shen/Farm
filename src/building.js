@@ -27,6 +27,7 @@ export class Building {
         }
 
         if (this.Farm.BUILDINGS[this.type].groundStateMutator) {
+            this.groundStateMutator = true;
             let curBlock = this.Farm.blocks[this.pos.x + ',' + this.pos.z];
             curBlock.updateGroundState(this.Farm.BUILDINGS[this.type].groundStateMutator[0], this.side, false);
         } else if (this.Farm.BUILDINGS[this.type].instanced) {

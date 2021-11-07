@@ -1017,7 +1017,7 @@ async function initWorld(Farm) {
     });
 
     const data = new Float32Array(256 * 256 * 4);
-    data.fill(1);
+    data.fill(1 / 256);
     Farm.grassPropertiesMap = new THREE.DataTexture(data, 256, 256, THREE.RGBAFormat, THREE.FloatType);
 
     var perlinMap = textureLoader.load('assets/textures/perlin_noise.png');
@@ -1222,6 +1222,7 @@ async function initWorld(Farm) {
     texture = textureLoader.load('assets/textures/road_parking_lot_ground.png');
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
+    Farm.grassEdgeMap = texture;
     sideParkingLotGroundMaterial.uniforms.grassEdgeMap.value = texture;
     sideParkingLotGroundMaterial.grassEdgeMap = texture;
     mesh = new THREE.Mesh(geometry, sideParkingLotGroundMaterial);

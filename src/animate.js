@@ -69,8 +69,6 @@ export function animate(Farm, elapsed) {
     if (Farm.grassBladeMeshNeedsUpdate) {
         Farm.grassBladeMesh.instanceMatrix.needsUpdate = true;
         Farm.grassBladeMeshNeedsUpdate = false;
-        /*Farm.grassBladeMaterial.uniforms.grassPropertiesMap.value = Farm.grassPropertiesMap;
-        Farm.grassBladeMaterial.grassPropertiesMap = Farm.grassPropertiesMap;*/
     }
 
     for (let curBlockIdx in Farm.livestockedBlocks) {

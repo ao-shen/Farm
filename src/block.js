@@ -11,6 +11,7 @@ export class Block {
         this.grassBladeIdx = [];
         this.isGrassBladeVisible = true;
         this.grassPropertiesIdx = (this.x * 256 + this.z) * 4;
+        this.side = 0;
 
         this.type = type;
         this.plants = [];
@@ -30,7 +31,9 @@ export class Block {
     }
 
     updateGroundState(state, side = 0, updateAttribute = true) {
+        let changed = this.groundState != state;
         this.groundState = (state + this.Farm.GROUND_STATES.length) % this.Farm.GROUND_STATES.length;
+        this.side = side;
 
         let curIdx = (this.x * this.Farm.numBlocks.z + this.z) * 8;
         for (let i = 0; i < 8; i++) {
@@ -40,6 +43,8 @@ export class Block {
             this.Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(this.Farm.groundUVs), 2));
         }
 
+        this.updateGrassBlades(true);
+
         this.entityVelocity = 1;
         if (2 <= this.groundState && this.groundState <= 7) {
             this.entityVelocity = 0.5;
@@ -48,13 +53,13 @@ export class Block {
         }
     }
 
-    updateGrassBlades() {
+    updateGrassBlades(force = false) {
 
         const matrix = new THREE.Matrix4();
 
         let blockingBuilding = false;
         for (let curBuilding of this.buildings) {
-            if (curBuilding.isWall) {
+            if (curBuilding.isWall || curBuilding.groundStateMutator) {
 
             } else {
                 blockingBuilding = true;
@@ -72,31 +77,21 @@ export class Block {
             }
         }
 
-        if (this.type == BLOCK.GRASS && this.groundState == 0 && !blockingPlant && !blockingBuilding) {
-            if (!this.isGrassBladeVisible) {
+        let propertyValue = this.groundState + 1;
+        if (this.type == BLOCK.GRASS && !blockingPlant && !blockingBuilding) {
+            if (!this.isGrassBladeVisible || force) {
                 this.isGrassBladeVisible = true;
-                /*for (let idx of this.grassBladeIdx) {
-                    this.Farm.grassBladeMesh.getMatrixAt(idx, matrix);
-                    matrix.elements[5] = 1;
-                    this.Farm.grassBladeMesh.setMatrixAt(idx, matrix);
-                }*/
-                this.Farm.grassPropertiesMap.image.data[this.grassPropertiesIdx + 0] = 1;
-                this.Farm.grassBladeMeshNeedsUpdate = true;
-                this.Farm.grassPropertiesMap.needsUpdate = true;
             }
         } else {
-            if (this.isGrassBladeVisible) {
+            if (this.isGrassBladeVisible || force) {
                 this.isGrassBladeVisible = false;
-                /*for (let idx of this.grassBladeIdx) {
-                    this.Farm.grassBladeMesh.getMatrixAt(idx, matrix);
-                    matrix.elements[5] = 0;
-                    this.Farm.grassBladeMesh.setMatrixAt(idx, matrix);
-                }*/
-                this.Farm.grassPropertiesMap.image.data[this.grassPropertiesIdx + 0] = 0;
-                this.Farm.grassBladeMeshNeedsUpdate = true;
-                this.Farm.grassPropertiesMap.needsUpdate = true;
             }
+            propertyValue = 0;
         }
+        this.Farm.grassPropertiesMap.image.data[this.grassPropertiesIdx + 0] = propertyValue / 256;
+        this.Farm.grassPropertiesMap.image.data[this.grassPropertiesIdx + 1] = this.side / 4;
+        this.Farm.grassBladeMeshNeedsUpdate = true;
+        this.Farm.grassPropertiesMap.needsUpdate = true;
     }
 
     updateWetness() {

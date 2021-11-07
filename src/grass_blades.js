@@ -31,6 +31,9 @@ export function initGrassBlades(Farm) {
         { time: { value: 0.0 } },
         { perlinMap: { value: null } },
         { grassPropertiesMap: { value: null } },
+        { groundMap: { value: null } },
+        { groundUvMap: { value: null } },
+        { grassEdgeMap: { value: null } },
         { mouse_pos_x: { value: 0.0 } },
         { mouse_pos_z: { value: 0.0 } },
         { target_pos_x: { value: 0.0 } },
@@ -79,12 +82,32 @@ export function initGrassBlades(Farm) {
     });
     //const theArray = texture.image.data;
 
+    const data = new Float32Array(256 * 3);
+    data.fill(0);
+    Farm.groundUvMap = new THREE.DataTexture(data, 256, 1, THREE.RGBFormat, THREE.FloatType);
+    Farm.groundUvMap.magFilter = THREE.NearestFilter;
+    Farm.groundUvMap.minFilter = THREE.NearestFilter;
+
+    for (let state = 0; state < Farm.GROUND_STATES.length; state++) {
+        Farm.groundUvMap.image.data[(((state + 1) * 1 + 0) * 3) + 1] = Farm.GROUND_STATES[state].uv[0 * 2 + 0] - 0.001;
+        Farm.groundUvMap.image.data[(((state + 1) * 1 + 0) * 3) + 0] = Farm.GROUND_STATES[state].uv[0 * 2 + 1] - 0.001;
+    }
+    Farm.groundUvMap.image.data[0] = 0;
+    Farm.groundUvMap.image.data[1] = 0;
+    Farm.groundUvMap.needsUpdate = true;
+
     uniforms.map.value = grassTexture;
     phongMaterial.map = grassTexture;
     uniforms.perlinMap.value = perlinMap;
     phongMaterial.perlinMap = perlinMap;
     uniforms.grassPropertiesMap.value = Farm.grassPropertiesMap;
     phongMaterial.grassPropertiesMap = Farm.grassPropertiesMap;
+    uniforms.groundMap.value = Farm.texGroundBlock;
+    phongMaterial.groundMap = Farm.texGroundBlock;
+    uniforms.groundUvMap.value = Farm.groundUvMap;
+    phongMaterial.groundUvMap = Farm.groundUvMap;
+    uniforms.grassEdgeMap.value = Farm.grassEdgeMap;
+    phongMaterial.grassEdgeMap = Farm.grassEdgeMap;
     //uniforms.alphaMap.value = alphaMap;
     //phongMaterial.alphaMap = alphaMap;
     //uniforms.lightPos = { value: Farm.shadowLight.position }

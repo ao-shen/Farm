@@ -789,7 +789,14 @@ void RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in Geometric
 	varying vec3 vClipPosition;
 	uniform vec4 clippingPlanes[ 0 ];
 #endif
+
+varying vec4 groundColor;
+varying float grassScaleMutiplier;
+
 void main() {
+
+	if( grassScaleMutiplier < 0.1 ) discard;
+
 #if 0 > 0
 	vec4 plane;
 	
@@ -821,6 +828,9 @@ void main() {
 #ifdef USE_ALPHATEST
 	if ( diffuseColor.a < alphaTest ) discard;
 #endif
+
+//diffuseColor = groundColor;
+
 float specularStrength;
 #ifdef USE_SPECULARMAP
 	vec4 texelSpecular = texture2D( specularMap, vUv );

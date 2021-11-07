@@ -213,6 +213,13 @@ uniform float target_pos_z;
 uniform sampler2D perlinMap;
 uniform sampler2D grassPropertiesMap;
 
+uniform sampler2D groundMap;
+uniform sampler2D groundUvMap;
+uniform sampler2D grassEdgeMap;
+
+varying vec4 groundColor;
+varying float grassScaleMutiplier;
+
 vec3 rotateVectorByQuaternion(vec3 v, vec4 q){
     return 2.0 * cross(q.xyz, v * q.w + cross(q.xyz, v)) + v;
 }
@@ -229,11 +236,43 @@ void main() {
 		vec2 decodedOffset = vec2(target_pos_x - mod(instanceMatrix[0][0] + target_pos_x, 320.0), target_pos_z - mod(instanceMatrix[2][0] + target_pos_z, 320.0));
 		float decodedRotation = instanceMatrix[0][1];
 
-		float grassScaleMutiplier = 1.0 - pow4( min(1.0, (pow2(target_pos_x - 160.0 - decodedOffset.x) + pow2(target_pos_z - 160.0 - decodedOffset.y)) / pow2(160.0) )  );
+		grassScaleMutiplier = 1.0 - pow4( min(1.0, (pow2(target_pos_x - 160.0 - decodedOffset.x) + pow2(target_pos_z - 160.0 - decodedOffset.y)) / pow2(160.0) )  );
 
-		grassScaleMutiplier *= (sign(decodedOffset.x + 5.0) + 1.0) / 2.0 * (sign(decodedOffset.y + 5.0) + 1.0) / 2.0;
+		grassScaleMutiplier *= (sign(decodedOffset.x + 5.0) + 1.0) / 2.0 * (sign(decodedOffset.y + 5.0 + 160.0) + 1.0) / 2.0;
 
-		grassScaleMutiplier *= texture2D( grassPropertiesMap, floor((decodedOffset.yx + 5.0) / 10.0) / 256.0 ).x;
+		vec4 grassProperties = texture2D( grassPropertiesMap, floor((decodedOffset.yx + 5.0) / 10.0) / 256.0 );
+
+		float side = grassProperties.y * PI2;
+
+		float groundState = mix( 1.0, grassProperties.x, (sign(decodedOffset.y + 5.0) + 1.0) / 2.0 );
+
+		grassScaleMutiplier *= sign(groundState);
+
+		float groundUvX = texture2D( groundUvMap, vec2( groundState, 1.0 ) ).x * 4.0;
+		float groundUvY = texture2D( groundUvMap, vec2( groundState, 1.0 ) ).y * 8.0;
+
+		vec2 pivot = vec2( groundUvX + 0.5, groundUvY + 0.5 );
+
+		groundUvX = (mod((decodedOffset.y + 5.0), 10.0) / 10.0 - 0.5);
+		groundUvY = (mod((decodedOffset.x + 5.0), 10.0) / 10.0 - 0.5);
+
+		float s = sin(side);
+		float c = cos(side);
+		
+		mat2 rotationMatrix = mat2( c, s, -s, c);
+		
+		vec2 groundUv = rotationMatrix * vec2(groundUvX, groundUvY) * 0.998 + pivot;
+
+		groundUv = vec2(0.125 * groundUv.y, 0.25 * groundUv.x);
+		
+		grassScaleMutiplier *= 1.0 - sign( texture2D( groundMap, groundUv ).x );
+
+		//groundColor = texture2D( groundMap, vec2(1.0 - mod((decodedOffset.x + 5.0), 10.0) / 10.0, mod((decodedOffset.y + 5.0), 10.0) / 10.0) );
+		//groundColor = texture2D( groundMap, vec2( groundUvY, groundUvX) );
+		//groundColor = vec4( vec3(texture2D( groundUvMap, vec2( groundState, 0.0 ) ).y), 1.0 );
+		//groundColor = vec4( vec3(groundState * 16.0), 1.0 );
+
+		grassScaleMutiplier *= saturate( 1.0 - 2.0 * texture2D( grassEdgeMap, saturate(vec2(decodedOffset.y + 165.0, decodedOffset.x + 5.0) / 160.0) ).x );
 
 		float grassScale = instanceMatrix[3][0] * instanceMatrix[1][1] * grassScaleMutiplier;
 		float grassScaleY = (instanceMatrix[3][0] + 3.0 * abs(texture2D( perlinMap, mod(decodedOffset * 0.02, 1.0) ).x - 0.5)) * instanceMatrix[1][1] * grassScaleMutiplier;
