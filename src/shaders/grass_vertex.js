@@ -262,7 +262,7 @@ void main() {
 		
 		mat2 rotationMatrix = mat2( c, s, -s, c);
 		
-		vec2 groundUv = rotationMatrix * vec2(groundUvX, groundUvY) * 0.998 + pivot;
+		vec2 groundUv = rotationMatrix * vec2(groundUvX, groundUvY) * 0.99 + pivot;
 
 		groundUv = vec2(0.125 * groundUv.y, 0.25 * groundUv.x);
 		

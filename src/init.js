@@ -918,14 +918,16 @@ async function initWorld(Farm) {
 
     // ground
     for (let state = 0; state < Farm.GROUND_STATES.length; state++) {
-        Farm.GROUND_STATES[state].uv[0] += 0.001;
-        Farm.GROUND_STATES[state].uv[1] += 0.001;
-        Farm.GROUND_STATES[state].uv[2] -= 0.001;
-        Farm.GROUND_STATES[state].uv[3] += 0.001;
-        Farm.GROUND_STATES[state].uv[4] -= 0.001;
-        Farm.GROUND_STATES[state].uv[5] -= 0.001;
-        Farm.GROUND_STATES[state].uv[6] += 0.001;
-        Farm.GROUND_STATES[state].uv[7] -= 0.001;
+        /*Farm.GROUND_STATES[state].uv[0] += 1 / 2048;
+        Farm.GROUND_STATES[state].uv[1] += 1 / 2048;
+        Farm.GROUND_STATES[state].uv[2] -= 1 / 2048;
+        Farm.GROUND_STATES[state].uv[3] += 1 / 2048;
+        Farm.GROUND_STATES[state].uv[4] -= 1 / 2048;
+        Farm.GROUND_STATES[state].uv[5] -= 1 / 2048;
+        Farm.GROUND_STATES[state].uv[6] += 1 / 2048;
+        Farm.GROUND_STATES[state].uv[7] -= 1 / 2048;*/
+        Farm.GROUND_STATES[state].uv[1] += 1 / 512;
+        Farm.GROUND_STATES[state].uv[3] += 1 / 512;
     }
 
     var quad_normals = [
@@ -976,7 +978,6 @@ async function initWorld(Farm) {
 
     Farm.texGroundBlock = textureLoader.load('assets/textures/ground.png');
     Farm.texGroundBlock.encoding = THREE.sRGBEncoding;
-    Farm.texGroundBlock.anisotropy = 1;
     Farm.texGroundBlock.magFilter = THREE.NearestFilter;
     Farm.texGroundBlock.minFilter = THREE.NearestFilter;
 
@@ -1140,6 +1141,7 @@ async function initWorld(Farm) {
     geometry.rotateY(-Math.PI / 2);
     texture = textureLoader.load('assets/textures/road.png');
     texture.encoding = THREE.sRGBEncoding;
+    texture.anisotropy = 16;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.NearestFilter;
     material = new THREE.MeshStandardMaterial({
@@ -1195,6 +1197,7 @@ async function initWorld(Farm) {
     geometry.rotateY(-Math.PI / 2);
     texture = textureLoader.load('assets/textures/road_parking_lot.png');
     texture.encoding = THREE.sRGBEncoding;
+    texture.anisotropy = 16;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.NearestFilter;
     material = new THREE.MeshStandardMaterial({
@@ -1237,6 +1240,7 @@ async function initWorld(Farm) {
     geometry.rotateY(-Math.PI / 2);
     texture = textureLoader.load('assets/textures/road_bridge.png');
     texture.encoding = THREE.sRGBEncoding;
+    texture.anisotropy = 16;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.NearestFilter;
     material = new THREE.MeshStandardMaterial({

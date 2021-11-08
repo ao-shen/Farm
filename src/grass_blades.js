@@ -89,8 +89,8 @@ export function initGrassBlades(Farm) {
     Farm.groundUvMap.minFilter = THREE.NearestFilter;
 
     for (let state = 0; state < Farm.GROUND_STATES.length; state++) {
-        Farm.groundUvMap.image.data[(((state + 1) * 1 + 0) * 3) + 1] = Farm.GROUND_STATES[state].uv[0 * 2 + 0] - 0.001;
-        Farm.groundUvMap.image.data[(((state + 1) * 1 + 0) * 3) + 0] = Farm.GROUND_STATES[state].uv[0 * 2 + 1] - 0.001;
+        Farm.groundUvMap.image.data[(((state + 1) * 1 + 0) * 3) + 1] = Farm.GROUND_STATES[state].uv[0 * 2 + 0];
+        Farm.groundUvMap.image.data[(((state + 1) * 1 + 0) * 3) + 0] = Farm.GROUND_STATES[state].uv[0 * 2 + 1];
     }
     Farm.groundUvMap.image.data[0] = 0;
     Farm.groundUvMap.image.data[1] = 0;

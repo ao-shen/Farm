@@ -891,7 +891,7 @@ void main() {
 	gl_FragDepthEXT = vIsPerspective == 0.0 ? gl_FragCoord.z : log2( vFragDepth ) * logDepthBufFC * 0.5;
 #endif
 #ifdef USE_MAP
-	vec4 texelColor = texture2D( map, vUv );
+	vec4 texelColor = texture2D( map, vec2(floor(vUv.x * 2048.0) / 2048.0, floor(vUv.y * 1024.0) / 1024.0) );
 	texelColor = mapTexelToLinear( texelColor );
 	diffuseColor *= texelColor;
 #endif
