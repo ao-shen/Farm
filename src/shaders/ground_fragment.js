@@ -902,6 +902,9 @@ void main() {
 
 	vec3 grassColor = mix(grassCloseColor, grassFarColor, distanceFactor); 
 
+	float grassColorFactor = texture2D( perlinMap, mod(vCustomWorldPosition.xz * 0.0074, 1.0) ).x; 
+	grassColor.r += mix(  0.2, 0.0, grassColorFactor );
+
 	float grassEdgeValue = get_grass_edge_value(vCustomWorldPosition.xz);
 
 	//vec4 shoreRampColor = texture2D( shoreRampMap, vec2( 0.0, grassEdgeValue ) );

@@ -6,7 +6,7 @@ import { TextureLoader } from 'three';
 //Variables for blade mesh
 var joints = 2;
 var bladeWidth = 0.25 * 2;
-var bladeHeight = 1.0 * 1.5;
+var bladeHeight = 2.0;
 var instances = 128;
 
 //Define the bend of the grass blade as the combination of three quaternion rotations
@@ -51,12 +51,12 @@ export function initGrassBlades(Farm) {
         vertex.x = grassBaseGeometry.attributes.position.array[v];
         vertex.y = grassBaseGeometry.attributes.position.array[v + 1];
         vertex.z = grassBaseGeometry.attributes.position.array[v + 2];
-        vertex.x -= bladeWidth * 0.5;
+        //vertex.x -= bladeWidth * 0.5;
         let frac = vertex.y / bladeHeight;
         if (frac > 0.9) {
-            vertex.x *= 0.3;
+            vertex.x *= 0.01;
         } else {
-            vertex.x *= ((frac) * 0.5 + 0.5);
+            vertex.x *= ((frac) * 0.25 + 0.5);
         }
         vertex.z += (Math.pow(1.2, frac) - 1) * 1.7;
         grassBaseGeometry.attributes.position.array[v] = vertex.x;

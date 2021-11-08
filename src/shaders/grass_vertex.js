@@ -218,6 +218,7 @@ uniform sampler2D groundUvMap;
 uniform sampler2D grassEdgeMap;
 
 varying vec4 groundColor;
+varying vec4 grassColor;
 varying float grassScaleMutiplier;
 
 vec3 rotateVectorByQuaternion(vec3 v, vec4 q){
@@ -284,6 +285,11 @@ void main() {
 		vec2 fractionalPos = mod(decodedOffset * 0.005 + vec2(time, time), 1.0);
 		
 		vec4 perlin = texture2D( perlinMap, fractionalPos );
+
+		float grassColorFactor = texture2D( perlinMap, mod(decodedOffset * 0.0074, 1.0) ).x; 
+		grassColor.r = mix(  0.2, 0.0, grassColorFactor );
+		
+		//grassColor.g = mix( -0.2, 0.2, grassColorFactor );
 
 		//Wind is sine waves in time. 
 		float halfAngle = 0.3 - 0.6 * perlin.x; // sin(fractionalPos.x + time) + cos(fractionalPos.y + 0.25 * time);

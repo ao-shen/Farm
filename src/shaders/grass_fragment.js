@@ -792,6 +792,7 @@ void RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in Geometric
 
 varying vec4 groundColor;
 varying float grassScaleMutiplier;
+varying vec4 grassColor;
 
 void main() {
 
@@ -816,6 +817,7 @@ void main() {
 	vec4 texelColor = texture2D( map, vUv );
 	texelColor = mapTexelToLinear( texelColor );
 	diffuseColor *= texelColor;
+	diffuseColor += grassColor;
 #endif
 #if defined( USE_COLOR_ALPHA )
 	diffuseColor *= vColor;

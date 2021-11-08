@@ -1000,7 +1000,8 @@ async function initWorld(Farm) {
         { grassEdgeMap: { value: null } },
         { shoreRampMap: { value: null } },
         { grassFarColor: { value: new THREE.Color(0x00b000) } },
-        { grassCloseColor: { value: new THREE.Color(0x1f1608) } },
+        { grassCloseColor: { value: new THREE.Color(0x008000) } },
+        //{ grassCloseColor: { value: new THREE.Color(0x1f1608) } },
         { waterDiffuse: { value: new THREE.Color(0x094fb8) } },
     ]);
 
