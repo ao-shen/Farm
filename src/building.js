@@ -30,6 +30,10 @@ export class Building {
             this.groundStateMutator = true;
             let curBlock = this.Farm.blocks[this.pos.x + ',' + this.pos.z];
             curBlock.updateGroundState(this.Farm.BUILDINGS[this.type].groundStateMutator[0], this.side, false);
+        }
+
+        if (this.Farm.BUILDINGS[this.type].noMesh) {
+            this.noMesh = true;
         } else if (this.Farm.BUILDINGS[this.type].instanced) {
             this.instanced = true;
             this.updateInstancedMesh();
@@ -145,6 +149,9 @@ export class Building {
         if (this.Farm.BUILDINGS[this.type].groundStateMutator) {
             let curBlock = this.Farm.blocks[this.pos.x + ',' + this.pos.z];
             curBlock.updateGroundState(this.Farm.BUILDINGS[this.type].groundStateMutator[variation % 6], this.side, false);
+        }
+        if (this.noMesh) {
+
         } else if (this.instanced) {
             this.updateInstancedMesh();
         } else {
@@ -245,6 +252,9 @@ export class Building {
         if (this.Farm.BUILDINGS[this.type].groundStateMutator) {
             let curBlock = this.Farm.blocks[this.pos.x + ',' + this.pos.z];
             curBlock.updateGroundState(0, 0, false);
+        }
+        if (this.noMesh) {
+
         } else if (this.instanced) {
 
         } else {

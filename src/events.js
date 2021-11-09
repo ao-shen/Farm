@@ -448,6 +448,10 @@ function createNewTrench(Farm) {
 
     updateInstancedBuildingMesh(Farm, buildingType);
     updateWaterMesh(Farm);
+
+    if (Farm.BUILDINGS[buildingType].groundStateMutator || Farm.BUILDINGS[buildingType].connectibleGroup) {
+        Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
+    }
 }
 
 function createNewAreaOfPlants(Farm) {

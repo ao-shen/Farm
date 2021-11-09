@@ -325,6 +325,48 @@ export let Farm = {
             1.0, 0.75,
             0.875, 0.75
         ],
+    }, { // BEGIN TRENCH
+        uv: [
+            0.25, 0.25,
+            0.375, 0.25,
+            0.375, 0.5,
+            0.25, 0.5
+        ],
+    }, {
+        uv: [
+            0.375, 0.25,
+            0.5, 0.25,
+            0.5, 0.5,
+            0.375, 0.5
+        ],
+    }, {
+        uv: [
+            0.5, 0.25,
+            0.625, 0.25,
+            0.625, 0.5,
+            0.5, 0.5
+        ],
+    }, {
+        uv: [
+            0.625, 0.25,
+            0.75, 0.25,
+            0.75, 0.5,
+            0.625, 0.5
+        ],
+    }, {
+        uv: [
+            0.75, 0.25,
+            0.875, 0.25,
+            0.875, 0.5,
+            0.75, 0.5
+        ],
+    }, {
+        uv: [
+            0.875, 0.25,
+            1.0, 0.25,
+            1.0, 0.5,
+            0.875, 0.5
+        ],
     }],
     GROUND_STATES_NAMES: {
         CLEAR: 1,
@@ -371,6 +413,7 @@ export let Farm = {
         connectible: true,
         leaky: 1,
         connectibleGroup: "water",
+        groundStateMutator: [14, 15, 16, 17, 18, 19],
         instanced: true,
         visibleWaterCarrier: true,
         price: 10,
@@ -534,6 +577,7 @@ export let Farm = {
         build_mode: "line",
         connectible: true,
         connectibleGroup: "path",
+        noMesh: true,
         groundStateMutator: [2, 3, 4, 5, 6, 7],
         noPreviewMesh: true,
         price: 2,
@@ -545,6 +589,7 @@ export let Farm = {
         build_mode: "line",
         connectible: true,
         connectibleGroup: "path",
+        noMesh: true,
         groundStateMutator: [8, 9, 10, 11, 12, 13],
         noPreviewMesh: true,
         price: 10,

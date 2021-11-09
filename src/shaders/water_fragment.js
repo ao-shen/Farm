@@ -752,27 +752,31 @@ void RE_IndirectDiffuse_BlinnPhong( const in vec3 irradiance, const in Geometric
 		// Custom code
 
 		vec2 pos = grassUv + vCustomWorldPosition.xz;
+
+		float shiftedTime = time + vCustomWorldPosition.y;
 		
-		vec2 fractionalPos1 = mod(  pos * 0.005 + vec2( - 0.30 * time, 0.8 * time ), 1.0);
-		vec2 fractionalPos2 = mod(  pos * 0.005 + vec2(   0.37 * time, 0.8 * time ), 1.0);
+		vec2 fractionalPos1 = mod(  pos * 0.005 + vec2( - 0.30 * shiftedTime, 0.8 * shiftedTime ), 1.0);
+		vec2 fractionalPos2 = mod(  pos * 0.005 + vec2(   0.37 * shiftedTime, 0.8 * shiftedTime ), 1.0);
 		
 		float waveAmplitude = texture2D( perlinMap, fractionalPos1 ).x * texture2D( perlinMap, fractionalPos2 ).x;
 		
-		fractionalPos1 = mod(  pos * 0.013 + vec2( - 0.10 * time, time), 1.0);
-		fractionalPos2 = mod(- pos * 0.009 + vec2(   0.07 * time, time), 1.0);
+		fractionalPos1 = mod(  pos * 0.013 + vec2( - 0.10 * shiftedTime, shiftedTime), 1.0);
+		fractionalPos2 = mod(- pos * 0.009 + vec2(   0.07 * shiftedTime, shiftedTime), 1.0);
 
 		float phaseDistort1 = 0.1 * (texture2D( perlinMap, fractionalPos1 ).x - 0.5);
 		float phaseDistort2 = 0.9 * (texture2D( perlinMap, fractionalPos2 ).x - 0.5);
 
-		float waterHeight = 1.0 - abs( sin( (time + phaseDistort1) * 20.0 + (-pos.x + phaseDistort2) * 0.5 ) );
+		float posEffectiveness = smoothstep(1.0, 0.0, 5.0 * abs(vCustomWorldPosition.y));
+
+		float waterHeight = 1.0 - abs( sin( (shiftedTime + phaseDistort1) * 20.0 + (-pos.x + phaseDistort2) * 0.5 * posEffectiveness ) );
 
 		waterHeight *= clamp( waveAmplitude * 1.1 - 0.1, 0.0, 1.0);
 
 		fractionalPos1 = saturate( vec2( 0.0, ( pos.x + 5.0 ) / 160.0 ) + 1.0);
 
-		float waveMapValue = texture2D( waveMap, fractionalPos1 ).x;
+		float waveMapValue = texture2D( waveMap, fractionalPos1 ).x * posEffectiveness;
 
-		waterHeight *= waveMapValue;
+		waterHeight *= 1.0 - posEffectiveness + waveMapValue;
 
 		waterHeight = clamp( waterHeight + 0.2 * pow2(waveMapValue), 0.0, 1.0);
 

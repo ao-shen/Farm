@@ -917,7 +917,7 @@ async function initWorld(Farm) {
     const textureLoader = new THREE.TextureLoader();
 
     // ground
-    for (let state = 0; state < Farm.GROUND_STATES.length; state++) {
+    for (let state = 0; state <= 13; state++) {
         /*Farm.GROUND_STATES[state].uv[0] += 1 / 2048;
         Farm.GROUND_STATES[state].uv[1] += 1 / 2048;
         Farm.GROUND_STATES[state].uv[2] -= 1 / 2048;
@@ -928,6 +928,12 @@ async function initWorld(Farm) {
         Farm.GROUND_STATES[state].uv[7] -= 1 / 2048;*/
         Farm.GROUND_STATES[state].uv[1] += 1 / 512;
         Farm.GROUND_STATES[state].uv[3] += 1 / 512;
+    }
+    for (let state = 14; state <= 19; state++) {
+        Farm.GROUND_STATES[state].uv[1] += 4 / 1024;
+        Farm.GROUND_STATES[state].uv[3] += 4 / 1024;
+        Farm.GROUND_STATES[state].uv[5] += 2 / 1024;
+        Farm.GROUND_STATES[state].uv[7] += 2 / 1024;
     }
 
     var quad_normals = [
@@ -1101,7 +1107,6 @@ async function initWorld(Farm) {
         vertexShader: groundVertexShader,
         fragmentShader: waterFragmentShader,
         lights: true,
-        transparent: true,
         extensions: {
             fragDepth: true,
         },
@@ -1269,12 +1274,14 @@ async function initWorld(Farm) {
     }
 
     // Water Material
-    Farm.waterMaterial = new THREE.MeshLambertMaterial({
+    /*Farm.waterMaterial = new THREE.MeshLambertMaterial({
         color: 0x094fb8
-    });
+    });*/
+    Farm.waterMaterial = waterMaterial;
     Farm.waterGeometry = new THREE.BufferGeometry();
     Farm.waterMesh = new THREE.Mesh(Farm.waterGeometry, Farm.waterMaterial);
     Farm.waterMesh.receiveShadow = true;
+    Farm.waterMesh.frustumCulled = false;
     Farm.groupNonInfoable.add(Farm.waterMesh);
     Farm.waterVerticesBufferAttribute = new THREE.BufferAttribute(new Float32Array([0, 0, 0]), 3);
     Farm.waterIndicesBufferAttribute = new THREE.BufferAttribute(new Uint32Array([0, 0, 0]), 1);

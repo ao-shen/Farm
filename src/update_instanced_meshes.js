@@ -302,6 +302,7 @@ export function updateWaterMesh(Farm) {
     Farm.waterGeometry = new THREE.BufferGeometry();
     Farm.waterMesh = new THREE.Mesh(Farm.waterGeometry, Farm.waterMaterial);
     Farm.waterMesh.receiveShadow = true;
+    Farm.waterMesh.frustumCulled = false;
     Farm.groupNonInfoable.add(Farm.waterMesh);
     Farm.waterVerticesBufferAttribute = new THREE.BufferAttribute(new Float32Array(Farm.waterVertices), 3);
     Farm.waterIndicesBufferAttribute = new THREE.BufferAttribute(new Uint32Array(Farm.waterIndices), 1);
