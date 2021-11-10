@@ -421,7 +421,7 @@ export let Farm = {
             x: 1,
             z: 1,
         },
-        thumbnail: 'assets/textures/water_thumbnail.png',
+        thumbnail: 'assets/textures/trench_thumbnail.png',
         models: [
             'assets/models/trench0.glb',
             'assets/models/trench1.glb',
@@ -547,7 +547,7 @@ export let Farm = {
             z: 1,
         },
         entities: [],
-        thumbnail: 'assets/textures/stone_path_thumbnail.png',
+        thumbnail: 'assets/textures/concrete_slab_thumbnail.png',
         models: [
             'assets/models/stone_path0.glb',
         ],
@@ -581,7 +581,7 @@ export let Farm = {
         groundStateMutator: [2, 3, 4, 5, 6, 7],
         noPreviewMesh: true,
         price: 2,
-        thumbnail: 'assets/textures/soil_thumbnail.png',
+        thumbnail: 'assets/textures/dirt_path_thumbnail.png',
         models: [],
     }, {
         name: "Asphalt Road",
@@ -593,7 +593,7 @@ export let Farm = {
         groundStateMutator: [8, 9, 10, 11, 12, 13],
         noPreviewMesh: true,
         price: 10,
-        thumbnail: 'assets/textures/soil_thumbnail.png',
+        thumbnail: 'assets/textures/asphalt_road_thumbnail.png',
         models: [],
     }, {
         name: "Apple Tree",
@@ -666,7 +666,7 @@ export let Farm = {
             z: 0,
         },
         entities: [],
-        thumbnail: 'assets/textures/big_workers_house_thumbnail.png',
+        thumbnail: 'assets/textures/waterwheel_pump_thumbnail.png',
         models: [
             'assets/models/water_wheel.glb',
         ],
@@ -683,7 +683,7 @@ export let Farm = {
             x: 1,
             z: 1,
         },
-        thumbnail: 'assets/textures/water_thumbnail.png',
+        thumbnail: 'assets/textures/aquaduct_thumbnail.png',
         models: [
             'assets/models/aquaduct0.glb',
             'assets/models/aquaduct1.glb',
@@ -706,7 +706,7 @@ export let Farm = {
             x: 1,
             z: 1,
         },
-        thumbnail: 'assets/textures/water_thumbnail.png',
+        thumbnail: 'assets/textures/aquaduct_piped_thumbnail.png',
         models: [
             'assets/models/aquaduct_piped0.glb',
             'assets/models/aquaduct_piped1.glb',
@@ -732,7 +732,7 @@ export let Farm = {
             3,
             3,
         ],
-        thumbnail: 'assets/textures/big_workers_house_thumbnail.png',
+        thumbnail: 'assets/textures/barn_thumbnail.png',
         models: [
             'assets/models/barn0.glb',
         ],
