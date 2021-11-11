@@ -387,6 +387,8 @@ export let Farm = {
     }, {
         name: "buildings",
     }, {
+        name: "mechanical",
+    }, {
         name: "remove",
     }],
     curBuildingPaletteCategories: 0,
@@ -735,6 +737,79 @@ export let Farm = {
         thumbnail: 'assets/textures/barn_thumbnail.png',
         models: [
             'assets/models/barn0.glb',
+        ],
+    }, {
+        name: "Waterwheel",
+        category: "mechanical",
+        build_mode: "single",
+        instanced: true,
+        price: 200,
+        limitSide: [true, false, false, false],
+        requireRiver: true,
+        size: {
+            x: 1,
+            z: 1,
+        },
+        thumbnail: 'assets/textures/waterwheel_thumbnail.png',
+        models: [
+            'assets/models/waterwheel_base.glb',
+            'assets/models/waterwheel_wheel.glb',
+        ],
+    }, {
+        name: "Horizontal Axle",
+        category: "mechanical",
+        build_mode: "single",
+        instanced: true,
+        price: 50,
+        size: {
+            x: 1,
+            z: 1,
+        },
+        thumbnail: 'assets/textures/axle_hor_thumbnail.png',
+        models: [
+            'assets/models/axle_hor.glb',
+        ],
+    }, {
+        name: "Vertical Axle",
+        category: "mechanical",
+        build_mode: "single",
+        instanced: true,
+        price: 50,
+        size: {
+            x: 1,
+            z: 1,
+        },
+        thumbnail: 'assets/textures/axle_ver_thumbnail.png',
+        models: [
+            'assets/models/axle_ver.glb',
+        ],
+    }, {
+        name: "Gear 2m",
+        category: "mechanical",
+        build_mode: "single",
+        instanced: true,
+        price: 50,
+        size: {
+            x: 1,
+            z: 1,
+        },
+        thumbnail: 'assets/textures/gear_2m_thumbnail.png',
+        models: [
+            'assets/models/gear_2m.glb',
+        ],
+    }, {
+        name: "Gear 6m",
+        category: "mechanical",
+        build_mode: "single",
+        instanced: true,
+        price: 50,
+        size: {
+            x: 1,
+            z: 1,
+        },
+        thumbnail: 'assets/textures/gear_6m_thumbnail.png',
+        models: [
+            'assets/models/gear_6m.glb',
         ],
     }, {
         name: "Remove All",
