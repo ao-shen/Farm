@@ -271,28 +271,23 @@ export async function load(Farm) {
                             loadedConnectibleBuildingTypes.add(buildingType);
                         }
 
-                        switch (Farm.BUILDINGS[buildingType].name) {
-                            case "Trench":
-                            case "Aquaduct":
-                            case "Piped Aquaduct":
+                        switch (Farm.BUILDINGS[buildingType].buildingObject) {
+                            case "BuildingWaterCarrier":
                                 building = new BuildingObjects.BuildingWaterCarrier(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
-                            case "Worker's House":
-                            case "Big Worker's House":
+                            case "BuildingWorkersHouse":
                                 building = new BuildingObjects.BuildingWorkersHouse(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s, false);
                                 break;
-                            case "Fence":
+                            case "BuildingWall":
                                 building = new BuildingObjects.BuildingWall(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
-                            case "Concrete Slab":
-                            case "Dirt Path":
-                            case "Asphalt Road":
+                            case "BuildingPath":
                                 building = new BuildingObjects.BuildingPath(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
                             case "Storage":
                                 building = new BuildingObjects.Storage(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
-                            case "Barn":
+                            case "BuildingBarn":
                                 building = new BuildingObjects.BuildingBarn(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s, false);
                                 break;
                             default:

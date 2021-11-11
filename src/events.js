@@ -649,27 +649,23 @@ function createSingleNewBuilding(Farm, isArea = false) {
 
         let building;
 
-        switch (Farm.BUILDINGS[buildingType].name) {
-            case "Worker's House":
-            case "Big Worker's House":
+        switch (Farm.BUILDINGS[buildingType].buildingObject) {
+            case "BuildingWorkersHouse":
                 building = new BuildingObjects.BuildingWorkersHouse(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
-            case "Fence":
+            case "BuildingWall":
                 building = new BuildingObjects.BuildingWall(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
-            case "Concrete Slab":
-            case "Dirt Path":
-            case "Asphalt Road":
+            case "BuildingPath":
                 building = new BuildingObjects.BuildingPath(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "Storage":
                 building = new BuildingObjects.Storage(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
-            case "Aquaduct":
-            case "Piped Aquaduct":
+            case "BuildingWaterCarrier":
                 building = new BuildingObjects.BuildingWaterCarrier(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
-            case "Barn":
+            case "BuildingBarn":
                 building = new BuildingObjects.BuildingBarn(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             default:
