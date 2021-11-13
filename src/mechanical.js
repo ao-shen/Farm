@@ -58,6 +58,8 @@ export class MechanicalRotator extends MechanicalPart {
         this.rotatorOffset.z += this.pos.z * this.Farm.blockSize;
 
         this.rotationData = { speed: 0, offset: 0, network: null };
+
+        //console.log(this.pos.x, this.pos.z, this.side);
     }
 
     updateInstancedMesh() {

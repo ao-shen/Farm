@@ -313,6 +313,32 @@ export function updateMechanicalConnections(Farm) {
                             } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 &&
                                 cur.height == building.height && cur.side == building.side && cur.side % 2 == 0) {
                                 connected = -1 / 3;
+                            } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
+                                if (cur.side == 0 && cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z) {
+                                    if ((cur.side - building.side + 4) % 4 == 1) {
+                                        connected = -1 / 3;
+                                    } else {
+                                        connected = 1 / 3;
+                                    }
+                                } else if (cur.side == 2 && cur.pos.x - 1 == building.pos.x && cur.pos.z == building.pos.z) {
+                                    if ((cur.side - building.side + 4) % 4 == 1) {
+                                        connected = -1 / 3;
+                                    } else {
+                                        connected = 1 / 3;
+                                    }
+                                } else if (cur.side == 1 && cur.pos.x == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                    if ((cur.side - building.side + 4) % 4 == 1) {
+                                        connected = 1 / 3;
+                                    } else {
+                                        connected = -1 / 3;
+                                    }
+                                } else if (cur.side == 3 && cur.pos.x == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                    if ((cur.side - building.side + 4) % 4 == 1) {
+                                        connected = 1 / 3;
+                                    } else {
+                                        connected = -1 / 3;
+                                    }
+                                }
                             }
                         }
                     } else if (curName == "Gear 6m") {
@@ -330,6 +356,32 @@ export function updateMechanicalConnections(Farm) {
                             } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 &&
                                 cur.height == building.height && cur.side == building.side && cur.side % 2 == 0) {
                                 connected = -3;
+                            } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
+                                if (cur.side == 0 && cur.pos.x == building.pos.x) {
+                                    if (building.side == 1 && cur.pos.z - 1 == building.pos.z) {
+                                        connected = 3;
+                                    } else if (building.side == 3 && cur.pos.z + 1 == building.pos.z) {
+                                        connected = -3;
+                                    }
+                                } else if (cur.side == 2 && cur.pos.x == building.pos.x) {
+                                    if (building.side == 1 && cur.pos.z - 1 == building.pos.z) {
+                                        connected = -3;
+                                    } else if (building.side == 3 && cur.pos.z + 1 == building.pos.z) {
+                                        connected = 3;
+                                    }
+                                } else if (cur.side == 1 && cur.pos.z == building.pos.z) {
+                                    if (building.side == 0 && cur.pos.x - 1 == building.pos.x) {
+                                        connected = 3;
+                                    } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x) {
+                                        connected = -3;
+                                    }
+                                } else if (cur.side == 3 && cur.pos.z == building.pos.z) {
+                                    if (building.side == 0 && cur.pos.x - 1 == building.pos.x) {
+                                        connected = -3;
+                                    } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x) {
+                                        connected = 3;
+                                    }
+                                }
                             }
                         } else if (buildingName == "Gear 6m") {
                             if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
@@ -372,7 +424,7 @@ export function updateMechanicalConnections(Farm) {
                             queue.push(building);
                         }
                         if (visited[building.idx]) {
-                            if (building.rotationData.speed != cur.rotationData.speed * connected) {
+                            if (Math.abs(building.rotationData.speed - cur.rotationData.speed * connected) > 0.00000000001) {
                                 conflict = true;
                             } else if (Farm.BUILDINGS[building.type].mechanicalSource) {
                                 networkSources[building.idx] = true;
