@@ -8,6 +8,7 @@ import * as BuildingObjects from './building.js';
 import { updateConnectibleConnections } from './water_update.js';
 import { load, save } from './load_save.js';
 import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh, updateWaterMesh } from "./update_instanced_meshes.js";
+import { MechanicalRotator } from "./mechanical";
 
 
 export function onWindowResize(Farm) {
@@ -159,6 +160,7 @@ export function onMouseDown(Farm, event) {
                         Farm.spriteBuildButton.material.map = Farm.texBuildButton;
                         Farm.groupBuildPalette.visible = false;
                         Farm.buildPaletteSelect = 0;
+                        Farm.buildHeightSelect = 0;
 
                         updateBuildingMeshPreview(Farm);
                         Farm.buildAreaRect.visible = false;
@@ -330,7 +332,19 @@ export function onKeyDown(Farm, event) {
             console.log("gehe");
             break;
     }
+    if (event.keyCode == '38') {
+        // up arrow
+        Farm.buildHeightSelect++;
+    } else if (event.keyCode == '40') {
+        // down arrow
+        Farm.buildHeightSelect--;
+    } else if (event.keyCode == '37') {
+        // left arrow
+    } else if (event.keyCode == '39') {
+        // right arrow
+    }
 
+    Farm.buildHeightSelect = Math.max(0, Farm.buildHeightSelect);
 }
 
 function createNewSoil(Farm) {
@@ -563,6 +577,7 @@ function createSingleNewBuilding(Farm, isArea = false) {
     let isWall = BUILDING.name == "Fence";
     let isPath = BUILDING.name == "Concrete Slab" || BUILDING.name == "Dirt Path" || BUILDING.name == "Asphalt Road";
     let touchingRiver = false;
+    let hasAxle = false;
 
     let foundationBlocks = [];
 
@@ -613,6 +628,24 @@ function createSingleNewBuilding(Farm, isArea = false) {
                 }
                 if (clippable) {
 
+                } else if (BUILDING.hasHeight) {
+                    if (typeof building.height === "undefined" || building.height != Farm.buildHeightSelect) {
+
+                    } else if (building.height == Farm.buildHeightSelect) {
+                        if (BUILDING.mechanicalGear && Farm.BUILDINGS[building.type].mechanicalAxle &&
+                            building.side % 2 == Farm.buildBuildingSide % 2) {
+                            hasAxle = true;
+                        } else if (BUILDING.mechanicalGear && Farm.BUILDINGS[building.type].mechanicalGear &&
+                            building.side != Farm.buildBuildingSide) {
+
+                        } else {
+                            blockingBuildings = true;
+                            break;
+                        }
+                    } else {
+                        blockingBuildings = true;
+                        break;
+                    }
                 } else if ((building.isWall && isWall && Farm.buildBuildingSide == building.side) ||
                     (isPath && building.isPath)) {
                     blockingBuildings = true;
@@ -637,6 +670,8 @@ function createSingleNewBuilding(Farm, isArea = false) {
             }
         }
     }
+
+    if (BUILDING.mechanicalGear && !hasAxle) return;
 
     if (BUILDING.requireRiver && !touchingRiver) return;
 
@@ -667,6 +702,9 @@ function createSingleNewBuilding(Farm, isArea = false) {
                 break;
             case "BuildingBarn":
                 building = new BuildingObjects.BuildingBarn(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
+                break;
+            case "MechanicalRotator":
+                building = new MechanicalRotator(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide, Farm.buildHeightSelect);
                 break;
             default:
                 building = new BuildingObjects.Building(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);

@@ -9,6 +9,7 @@ import { updateEntityMesh, updateInstancedBuildingMesh, updatePlantMesh, updateS
 import { Entity } from "./entity";
 import { updateConnectibleConnections } from "./water_update";
 import { Livestock } from "./livestock";
+import { MechanicalRotator } from "./mechanical";
 
 var Base64Binary = {
     _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -289,6 +290,9 @@ export async function load(Farm) {
                                 break;
                             case "BuildingBarn":
                                 building = new BuildingObjects.BuildingBarn(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s, false);
+                                break;
+                            case "MechanicalRotator":
+                                building = new MechanicalRotator(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
                                 break;
                             default:
                                 building = new BuildingObjects.Building(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);

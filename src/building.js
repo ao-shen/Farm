@@ -22,6 +22,8 @@ export class Building {
         this.exportTargets = [];
         this.curExportTargets = 0;
 
+        this.matrix = new THREE.Matrix4();
+
         if (!this.size) {
             this.size = { x: 1, z: 1 };
         }
@@ -177,8 +179,6 @@ export class Building {
 
         let Farm = this.Farm;
 
-        const matrix = new THREE.Matrix4();
-
         let building = Farm.BUILDINGS[this.type];
 
         for (let m = 0; m < building.meshes.length; m++) {
@@ -191,17 +191,17 @@ export class Building {
                 onCurVariation = 1;
             }
 
-            matrix.makeRotationY(-(this.side - 1) * Math.PI / 2);
+            this.matrix.makeRotationY(-(this.side - 1) * Math.PI / 2);
 
-            matrix.setPosition(
+            this.matrix.setPosition(
                 this.pos.x * Farm.blockSize,
                 0,
                 this.pos.z * Farm.blockSize
             );
 
-            matrix.scale(new THREE.Vector3(onCurVariation, onCurVariation, onCurVariation));
+            this.matrix.scale(new THREE.Vector3(onCurVariation, onCurVariation, onCurVariation));
 
-            curMesh.setMatrixAt(this.meshIdx, matrix);
+            curMesh.setMatrixAt(this.meshIdx, this.matrix);
         }
 
         this.Farm.plantTypeAwaitingMeshUpdate.add(this.type);

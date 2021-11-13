@@ -539,7 +539,7 @@ export class OrbitControls extends THREE.EventDispatcher {
 
                 let needsUpdate = false;
 
-                switch (event.code) {
+                /*switch (event.code) {
 
                     case scope.keys.UP:
                         pan(0, scope.keyPanSpeed);
@@ -561,7 +561,7 @@ export class OrbitControls extends THREE.EventDispatcher {
                         needsUpdate = true;
                         break;
 
-                }
+                }*/
 
                 if (needsUpdate) {
 

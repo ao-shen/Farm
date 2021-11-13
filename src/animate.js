@@ -28,6 +28,8 @@ export function onAnimationFrame(Farm, newtime) {
         // Also, adjust for fpsInterval not being multiple of 16.67
         then = now - (elapsed % fpsInterval);
 
+        Farm.now = now;
+
         animate(Farm, elapsed);
     }
 
@@ -253,6 +255,9 @@ function renderOverlays(Farm) {
             }
 
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].limitSide) {
+                if (!Farm.BUILDINGS[Farm.buildPaletteSelect].limitSide[Farm.buildBuildingSide]) {
+                    Farm.buildBuildingSide = (Farm.buildBuildingSide + 2) % 4;
+                }
                 while (!Farm.BUILDINGS[Farm.buildPaletteSelect].limitSide[Farm.buildBuildingSide]) {
                     Farm.buildBuildingSide = (Farm.buildBuildingSide + 1) % 4;
                 }
@@ -413,11 +418,12 @@ function renderOverlays(Farm) {
                         }
                     }
 
-                    let buildingSize = Farm.BUILDINGS[Farm.buildPaletteSelect].size;
+                    if (!Farm.BUILDINGS[Farm.buildPaletteSelect].hasHeight) Farm.buildHeightSelect = 0;
+
                     Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
                     Farm.buildBuildingMesh.position.set(
                         ((Farm.buildAreaPoint1.x + Farm.buildAreaPoint2.x) * 0.5 + centerOffsetX) * Farm.blockSize,
-                        0,
+                        Farm.buildHeightSelect * Farm.blockSize * 0.5,
                         ((Farm.buildAreaPoint1.z + Farm.buildAreaPoint2.z) * 0.5 + centerOffsetZ) * Farm.blockSize
                     );
                 }
