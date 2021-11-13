@@ -231,6 +231,8 @@ export function updateMechanicalConnections(Farm) {
         if (Farm.BUILDINGS[building.type].mechanicalSource) {
             sources.push(building);
             building.rotationData.speed = -0.001;
+            building.rotationData.offset = 0;
+            building.rotationData.offsetBase = 0;
         }
         /*if (Farm.BUILDINGS[building.type].mechanicalGear || Farm.BUILDINGS[building.type].mechanicalAxle) {
             building.mechanicalParents = [];
@@ -387,29 +389,29 @@ export function updateMechanicalConnections(Farm) {
                             if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
                                 Math.abs(cur.height - building.height) == 3 && cur.side == building.side) {
                                 connected = -1;
-                            } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
+                            } else if (cur.height == building.height) {
                                 if (cur.side == 0) {
-                                    if (cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                    if (building.side == 1 && cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
                                         connected = -1;
-                                    } else if (cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                    } else if (building.side == 3 && cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
                                         connected = 1;
                                     }
                                 } else if (cur.side == 2) {
-                                    if (cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                    if (building.side == 1 && cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
                                         connected = 1;
-                                    } else if (cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                    } else if (building.side == 3 && cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
                                         connected = -1;
                                     }
                                 } else if (cur.side == 1) {
-                                    if (cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                    if (building.side == 0 && cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
                                         connected = -1;
-                                    } else if (cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                    } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
                                         connected = 1;
                                     }
                                 } else if (cur.side == 3) {
-                                    if (cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                    if (building.side == 0 && cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
                                         connected = 1;
-                                    } else if (cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                    } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
                                         connected = -1;
                                     }
                                 }
@@ -421,6 +423,20 @@ export function updateMechanicalConnections(Farm) {
                         if (!visited[building.idx]) {
                             visited[building.idx] = true;
                             building.rotationData.speed = cur.rotationData.speed * connected;
+                            let offset = 0;
+                            let offsetBase = 0;
+                            if (buildingName == "Gear 2m") {
+                                offset = Math.PI / 8;
+                                offsetBase = 1;
+                            } else if (buildingName == "Gear 6m") {
+                                offset = Math.PI / 24;
+                                offsetBase = 1;
+                            }
+                            if (connected < 0) {
+                                offsetBase = -offsetBase;
+                            }
+                            building.rotationData.offsetBase = cur.rotationData.offsetBase + offsetBase;
+                            building.rotationData.offset = building.rotationData.offsetBase * offset;
                             queue.push(building);
                         }
                         if (visited[building.idx]) {

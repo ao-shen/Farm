@@ -57,7 +57,7 @@ export class MechanicalRotator extends MechanicalPart {
         this.rotatorOffset.y += this.pos.y * this.Farm.blockSize * 0.5;
         this.rotatorOffset.z += this.pos.z * this.Farm.blockSize;
 
-        this.rotationData = { speed: 0, offset: 0, network: null };
+        this.rotationData = { speed: 0, offset: 0, offsetBase: 0, network: null };
 
         //console.log(this.pos.x, this.pos.z, this.side);
     }
