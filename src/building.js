@@ -104,6 +104,7 @@ export class Building {
 
         this.center = {
             x: (this.pos.x + centerOffsetX + otherSideX * 0.5) * this.Farm.blockSize,
+            y: 0,
             z: (this.pos.z + centerOffsetZ + otherSideZ * 0.5) * this.Farm.blockSize
         };
 

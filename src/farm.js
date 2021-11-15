@@ -166,7 +166,10 @@ export let Farm = {
 
     buildPaletteSelect: 0,
     buildHeightSelect: 0,
+    buildVerticalSelect: false,
+    buildAltSelect: false,
     buildPaletteMap: {},
+
 
     // Waiting Lists
 
@@ -797,9 +800,11 @@ export let Farm = {
         build_mode: "single",
         buildingObject: "MechanicalRotator",
         mechanicalAxle: true,
+        mechanicalVertical: true,
         instanced: true,
         noMesh: true,
         price: 50,
+        limitSide: [true, false, false, false],
         hasHeight: true,
         size: {
             x: 1,

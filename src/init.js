@@ -16,7 +16,7 @@ import { Sky } from './three_utils/Sky.js';
 import * as SkeletonUtils from './three_utils/SkeletonUtils';
 import { GPUComputationRenderer } from './three_utils/GPUComputationRenderer';
 
-import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown } from './events.js';
+import { onWindowResize, onMouseUp, onMouseMove, onMouseDown, onKeyDown, onKeyUp } from './events.js';
 import { BLOCK, Block } from './block.js';
 import { NineSlicePlane } from './nine_slice.js';
 import { onUpdateWater } from './water_update.js';
@@ -1083,6 +1083,7 @@ async function initWorld(Farm) {
     Farm.groundIntersectionMesh = new THREE.Mesh(geometry, material);
     Farm.groundIntersectionMesh.position.set(Farm.blockSize * (Farm.numBlocks.x - 1) / 2, -0.01, Farm.blockSize * (Farm.numBlocks.z - 1) / 2);
     Farm.scene.add(Farm.groundIntersectionMesh);
+    Farm.groundIntersectionMesh.visible = false;
 
     // Farm Sides
 
@@ -1397,6 +1398,10 @@ function initEvents(Farm) {
 
     window.addEventListener('keydown', function(event) {
         onKeyDown(Farm, event);
+    });
+
+    window.addEventListener('keyup', function(event) {
+        onKeyUp(Farm, event);
     });
 }
 

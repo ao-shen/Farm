@@ -345,6 +345,18 @@ export function onKeyDown(Farm, event) {
     }
 
     Farm.buildHeightSelect = Math.max(0, Farm.buildHeightSelect);
+
+    if (event.altKey) {
+        Farm.buildAltSelect = true;
+    }
+
+}
+
+export function onKeyUp(Farm, event) {
+
+    if (event.altKey) {
+        Farm.buildAltSelect = false;
+    }
 }
 
 function createNewSoil(Farm) {
@@ -704,7 +716,7 @@ function createSingleNewBuilding(Farm, isArea = false) {
                 building = new BuildingObjects.BuildingBarn(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "MechanicalRotator":
-                building = new MechanicalRotator(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide, Farm.buildHeightSelect);
+                building = new MechanicalRotator(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide, Farm.buildHeightSelect, Farm.buildVerticalSelect);
                 break;
             default:
                 building = new BuildingObjects.Building(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);

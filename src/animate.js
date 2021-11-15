@@ -195,14 +195,22 @@ function renderInfoBoxes(Farm) {
 
 function renderOverlays(Farm) {
 
-    Farm.mouseRaycaster.setFromCamera(Farm.mousePos, Farm.camera);
-    const intersects = Farm.mouseRaycaster.intersectObject(Farm.groundIntersectionMesh);
-    if (intersects.length > 0) {
-        Farm.grassBladeMaterial.uniforms.mouse_pos_x.value = intersects[0].point.x;
-        Farm.grassBladeMaterial.uniforms.mouse_pos_z.value = intersects[0].point.z;
-    }
-
     if (Farm.lens == Farm.LENS.BUILD || Farm.lens == Farm.LENS.REMOVE) {
+
+        let height = Farm.buildHeightSelect * Farm.blockSize * 0.5;
+        if (!Farm.BUILDINGS[Farm.buildPaletteSelect].hasHeight) {
+            height = 0;
+        }
+
+        Farm.groundIntersectionMesh.position.set(Farm.blockSize * (Farm.numBlocks.x - 1) / 2, height - 0.01, Farm.blockSize * (Farm.numBlocks.z - 1) / 2);
+
+
+        Farm.mouseRaycaster.setFromCamera(Farm.mousePos, Farm.camera);
+        const intersects = Farm.mouseRaycaster.intersectObject(Farm.groundIntersectionMesh);
+        /*if (intersects.length > 0) {
+            Farm.grassBladeMaterial.uniforms.mouse_pos_x.value = intersects[0].point.x;
+            Farm.grassBladeMaterial.uniforms.mouse_pos_z.value = intersects[0].point.z;
+        }*/
 
         Farm.hoveringBlock = null;
         if (intersects.length > 0) {
@@ -220,10 +228,10 @@ function renderOverlays(Farm) {
             let blockPos = Farm.posToBlocks(point.x, point.z);
             Farm.hoveringBlock = Farm.blocks[blockPos.x + ',' + blockPos.z];
 
-            let rectScreenPoint1 = Farm.posToScreenPos(new Vector3(point.x, 0, point.z), Farm.camera);
-            let rectScreenPoint2 = Farm.posToScreenPos(new Vector3(point.x + Farm.blockSize, 0, point.z), Farm.camera);
-            let rectScreenPoint3 = Farm.posToScreenPos(new Vector3(point.x + Farm.blockSize, 0, point.z + Farm.blockSize), Farm.camera);
-            let rectScreenPoint4 = Farm.posToScreenPos(new Vector3(point.x, 0, point.z + Farm.blockSize), Farm.camera);
+            let rectScreenPoint1 = Farm.posToScreenPos(new Vector3(point.x, height, point.z), Farm.camera);
+            let rectScreenPoint2 = Farm.posToScreenPos(new Vector3(point.x + Farm.blockSize, height, point.z), Farm.camera);
+            let rectScreenPoint3 = Farm.posToScreenPos(new Vector3(point.x + Farm.blockSize, height, point.z + Farm.blockSize), Farm.camera);
+            let rectScreenPoint4 = Farm.posToScreenPos(new Vector3(point.x, height, point.z + Farm.blockSize), Farm.camera);
 
             Farm.blockLine.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
                 rectScreenPoint1.x, rectScreenPoint1.y, -101,
@@ -260,6 +268,24 @@ function renderOverlays(Farm) {
                 }
                 while (!Farm.BUILDINGS[Farm.buildPaletteSelect].limitSide[Farm.buildBuildingSide]) {
                     Farm.buildBuildingSide = (Farm.buildBuildingSide + 1) % 4;
+                }
+            }
+
+            Farm.buildVerticalSelect = false;
+            if (Farm.BUILDINGS[Farm.buildPaletteSelect].mechanicalGear) {
+                for (let building of Farm.hoveringBlock.buildings) {
+                    if (building.height == Farm.buildHeightSelect && Farm.BUILDINGS[building.type].mechanicalAxle) {
+                        if (Farm.BUILDINGS[building.type].mechanicalVertical) {
+                            Farm.buildVerticalSelect = true;
+                            Farm.buildBuildingSide = 0;
+                            height += 0.25 * Farm.blockSize;
+                        } else {
+                            while ((Farm.buildBuildingSide + building.side) % 2 != 0) {
+                                Farm.buildBuildingSide = (Farm.buildBuildingSide + 1) % 4;
+                            }
+                        }
+                        break;
+                    }
                 }
             }
 
@@ -399,33 +425,46 @@ function renderOverlays(Farm) {
                 // update build building preview
                 if (Farm.buildBuildingMesh != null) {
 
-                    let centerOffsetX = 0;
-                    let centerOffsetZ = 0;
+                    Farm.buildBuildingMesh.rotation.x = 0;
+                    Farm.buildBuildingMesh.rotation.y = 0;
+                    Farm.buildBuildingMesh.rotation.z = 0;
 
-                    if (Farm.BUILDINGS[Farm.buildPaletteSelect].center) {
-                        if (Farm.buildBuildingSide == 3) {
-                            centerOffsetX = Farm.BUILDINGS[Farm.buildPaletteSelect].center.x;
-                            centerOffsetZ = Farm.BUILDINGS[Farm.buildPaletteSelect].center.z;
-                        } else if (Farm.buildBuildingSide == 2) {
-                            centerOffsetX = Farm.BUILDINGS[Farm.buildPaletteSelect].center.z;
-                            centerOffsetZ = -Farm.BUILDINGS[Farm.buildPaletteSelect].center.x;
-                        } else if (Farm.buildBuildingSide == 1) {
-                            centerOffsetX = -Farm.BUILDINGS[Farm.buildPaletteSelect].center.x;
-                            centerOffsetZ = -Farm.BUILDINGS[Farm.buildPaletteSelect].center.z;
-                        } else {
-                            centerOffsetX = -Farm.BUILDINGS[Farm.buildPaletteSelect].center.z;
-                            centerOffsetZ = Farm.BUILDINGS[Farm.buildPaletteSelect].center.x;
+                    if (Farm.buildVerticalSelect) {
+
+                        Farm.buildBuildingMesh.rotation.x = Math.PI / 2;
+                        Farm.buildBuildingMesh.position.set(
+                            ((Farm.buildAreaPoint1.x + Farm.buildAreaPoint2.x) * 0.5) * Farm.blockSize,
+                            height,
+                            ((Farm.buildAreaPoint1.z + Farm.buildAreaPoint2.z) * 0.5) * Farm.blockSize
+                        );
+                    } else {
+
+                        let centerOffsetX = 0;
+                        let centerOffsetZ = 0;
+
+                        if (Farm.BUILDINGS[Farm.buildPaletteSelect].center) {
+                            if (Farm.buildBuildingSide == 3) {
+                                centerOffsetX = Farm.BUILDINGS[Farm.buildPaletteSelect].center.x;
+                                centerOffsetZ = Farm.BUILDINGS[Farm.buildPaletteSelect].center.z;
+                            } else if (Farm.buildBuildingSide == 2) {
+                                centerOffsetX = Farm.BUILDINGS[Farm.buildPaletteSelect].center.z;
+                                centerOffsetZ = -Farm.BUILDINGS[Farm.buildPaletteSelect].center.x;
+                            } else if (Farm.buildBuildingSide == 1) {
+                                centerOffsetX = -Farm.BUILDINGS[Farm.buildPaletteSelect].center.x;
+                                centerOffsetZ = -Farm.BUILDINGS[Farm.buildPaletteSelect].center.z;
+                            } else {
+                                centerOffsetX = -Farm.BUILDINGS[Farm.buildPaletteSelect].center.z;
+                                centerOffsetZ = Farm.BUILDINGS[Farm.buildPaletteSelect].center.x;
+                            }
                         }
+
+                        Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
+                        Farm.buildBuildingMesh.position.set(
+                            ((Farm.buildAreaPoint1.x + Farm.buildAreaPoint2.x) * 0.5 + centerOffsetX) * Farm.blockSize,
+                            height,
+                            ((Farm.buildAreaPoint1.z + Farm.buildAreaPoint2.z) * 0.5 + centerOffsetZ) * Farm.blockSize
+                        );
                     }
-
-                    if (!Farm.BUILDINGS[Farm.buildPaletteSelect].hasHeight) Farm.buildHeightSelect = 0;
-
-                    Farm.buildBuildingMesh.rotation.y = -(Farm.buildBuildingSide - 1) * Math.PI / 2;
-                    Farm.buildBuildingMesh.position.set(
-                        ((Farm.buildAreaPoint1.x + Farm.buildAreaPoint2.x) * 0.5 + centerOffsetX) * Farm.blockSize,
-                        Farm.buildHeightSelect * Farm.blockSize * 0.5,
-                        ((Farm.buildAreaPoint1.z + Farm.buildAreaPoint2.z) * 0.5 + centerOffsetZ) * Farm.blockSize
-                    );
                 }
             }
         } else {

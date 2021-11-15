@@ -275,6 +275,9 @@ export function updateMechanicalConnections(Farm) {
 
                     let connected = 0;
 
+
+                    console.log(curName, buildingName, cur.side, building.side, cur.pos.x, building.pos.x, cur.pos.z, building.pos.z);
+
                     if (curName == "Waterwheel") {
                         if ((buildingName == "Horizontal Axle") &&
                             cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z &&
@@ -290,131 +293,340 @@ export function updateMechanicalConnections(Farm) {
                                     connected = 1;
                                 }
                             }
-                        } else if ((buildingName == "Gear 2m" || buildingName == "Gear 6m") &&
+                        } else if (!building.vertical && (buildingName == "Gear 2m" || buildingName == "Gear 6m") &&
                             cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
                             cur.height == building.height && cur.side % 2 == building.side % 2) {
                             connected = 1;
                         }
                     } else if (curName == "Gear 2m") {
-                        if ((buildingName == "Horizontal Axle") &&
-                            cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                            cur.height == building.height && cur.side % 2 == building.side % 2) {
-                            connected = 1;
-                        } else if (buildingName == "Gear 2m") {
-                            if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                Math.abs(cur.height - building.height) == 1 && cur.side == building.side) {
-                                connected = -1;
+                        if (cur.vertical) {
+                            if ((buildingName == "Vertical Axle") &&
+                                cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                cur.height == building.height) {
+                                connected = 1;
+                            } else if (buildingName == "Gear 6m") {
+                                if (building.vertical) {
+
+                                } else {
+                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z) {
+                                        if (building.side == 0) {
+                                            if (cur.height - 1 == building.height) {
+                                                connected = -1;
+                                            } else if (cur.height + 2 == building.height) {
+                                                connected = 1;
+                                            }
+                                        } else if (building.side == 2) {
+                                            if (cur.height - 1 == building.height) {
+                                                connected = 1;
+                                            } else if (cur.height + 2 == building.height) {
+                                                connected = -1;
+                                            }
+                                        } else if (building.side == 1) {
+                                            if (cur.height - 1 == building.height) {
+                                                connected = -1;
+                                            } else if (cur.height + 2 == building.height) {
+                                                connected = 1;
+                                            }
+                                        } else if (building.side == 3) {
+                                            if (cur.height - 1 == building.height) {
+                                                connected = 1;
+                                            } else if (cur.height + 2 == building.height) {
+                                                connected = -1;
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                        } else if (buildingName == "Gear 6m") {
-                            if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                Math.abs(cur.height - building.height) == 2 && cur.side == building.side) {
-                                connected = -1 / 3;
-                            } else if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z &&
-                                cur.height == building.height && cur.side == building.side && cur.side % 2 == 1) {
-                                connected = -1 / 3;
-                            } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 &&
-                                cur.height == building.height && cur.side == building.side && cur.side % 2 == 0) {
-                                connected = -1 / 3;
-                            } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
-                                if (cur.side == 0 && cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z) {
-                                    if ((cur.side - building.side + 4) % 4 == 1) {
-                                        connected = -1 / 3;
-                                    } else {
-                                        connected = 1 / 3;
+                        } else {
+                            if ((buildingName == "Horizontal Axle") &&
+                                cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                cur.height == building.height && cur.side % 2 == building.side % 2) {
+                                connected = 1;
+                            } else if (buildingName == "Gear 2m") {
+                                if (building.vertical) {
+
+                                } else {
+                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                        Math.abs(cur.height - building.height) == 1 && cur.side == building.side) {
+                                        connected = -1;
                                     }
-                                } else if (cur.side == 2 && cur.pos.x - 1 == building.pos.x && cur.pos.z == building.pos.z) {
-                                    if ((cur.side - building.side + 4) % 4 == 1) {
-                                        connected = -1 / 3;
-                                    } else {
-                                        connected = 1 / 3;
+                                }
+                            } else if (buildingName == "Gear 6m") {
+                                if (building.vertical) {
+                                    if (cur.side == 0 && building.pos.x - 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                        if (cur.height == building.height) {
+                                            connected = 1 / 3;
+                                        } else if (cur.height - 1 == building.height) {
+                                            connected = -1 / 3;
+                                        }
+                                    } else if (cur.side == 2 && building.pos.x + 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                        if (cur.height == building.height) {
+                                            connected = -1 / 3;
+                                        } else if (cur.height - 1 == building.height) {
+                                            connected = 1 / 3;
+                                        }
+                                    } else if (cur.side == 1 && building.pos.x == cur.pos.x && building.pos.z - 1 == cur.pos.z) {
+                                        if (cur.height == building.height) {
+                                            connected = 1 / 3;
+                                        } else if (cur.height - 1 == building.height) {
+                                            connected = -1 / 3;
+                                        }
+                                    } else if (cur.side == 3 && building.pos.x == cur.pos.x && building.pos.z + 1 == cur.pos.z) {
+                                        if (cur.height == building.height) {
+                                            connected = -1 / 3;
+                                        } else if (cur.height - 1 == building.height) {
+                                            connected = 1 / 3;
+                                        }
                                     }
-                                } else if (cur.side == 1 && cur.pos.x == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                    if ((cur.side - building.side + 4) % 4 == 1) {
-                                        connected = 1 / 3;
-                                    } else {
+                                } else {
+                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                        Math.abs(cur.height - building.height) == 2 && cur.side == building.side) {
                                         connected = -1 / 3;
-                                    }
-                                } else if (cur.side == 3 && cur.pos.x == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                    if ((cur.side - building.side + 4) % 4 == 1) {
-                                        connected = 1 / 3;
-                                    } else {
+                                    } else if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z &&
+                                        cur.height == building.height && cur.side == building.side && cur.side % 2 == 1) {
                                         connected = -1 / 3;
+                                    } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 &&
+                                        cur.height == building.height && cur.side == building.side && cur.side % 2 == 0) {
+                                        connected = -1 / 3;
+                                    } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
+                                        if (cur.side == 0 && cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z) {
+                                            if ((cur.side - building.side + 4) % 4 == 1) {
+                                                connected = -1 / 3;
+                                            } else {
+                                                connected = 1 / 3;
+                                            }
+                                        } else if (cur.side == 2 && cur.pos.x - 1 == building.pos.x && cur.pos.z == building.pos.z) {
+                                            if ((cur.side - building.side + 4) % 4 == 1) {
+                                                connected = -1 / 3;
+                                            } else {
+                                                connected = 1 / 3;
+                                            }
+                                        } else if (cur.side == 1 && cur.pos.x == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                            if ((cur.side - building.side + 4) % 4 == 1) {
+                                                connected = 1 / 3;
+                                            } else {
+                                                connected = -1 / 3;
+                                            }
+                                        } else if (cur.side == 3 && cur.pos.x == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                            if ((cur.side - building.side + 4) % 4 == 1) {
+                                                connected = 1 / 3;
+                                            } else {
+                                                connected = -1 / 3;
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     } else if (curName == "Gear 6m") {
-                        if ((buildingName == "Horizontal Axle") &&
-                            cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                            cur.height == building.height && cur.side % 2 == building.side % 2) {
-                            connected = 1;
-                        } else if (buildingName == "Gear 2m") {
-                            if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                Math.abs(cur.height - building.height) == 2 && cur.side == building.side) {
-                                connected = -3;
-                            } else if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z &&
-                                cur.height == building.height && cur.side == building.side && cur.side % 2 == 1) {
-                                connected = -3;
-                            } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 &&
-                                cur.height == building.height && cur.side == building.side && cur.side % 2 == 0) {
-                                connected = -3;
-                            } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
-                                if (cur.side == 0 && cur.pos.x == building.pos.x) {
-                                    if (building.side == 1 && cur.pos.z - 1 == building.pos.z) {
-                                        connected = 3;
-                                    } else if (building.side == 3 && cur.pos.z + 1 == building.pos.z) {
-                                        connected = -3;
+                        if (cur.vertical) {
+                            if ((buildingName == "Vertical Axle") &&
+                                cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                cur.height == building.height) {
+                                connected = 1;
+                            } else if (buildingName == "Gear 2m") {
+                                if (building.vertical) {
+
+                                } else {
+                                    if (building.side == 0 && building.pos.x + 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                        if (cur.height == building.height) {
+                                            connected = 3;
+                                        } else if (cur.height + 1 == building.height) {
+                                            connected = -3;
+                                        }
+                                    } else if (building.side == 2 && building.pos.x - 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                        if (cur.height == building.height) {
+                                            connected = -3;
+                                        } else if (cur.height + 1 == building.height) {
+                                            connected = 3;
+                                        }
+                                    } else if (building.side == 1 && building.pos.x == cur.pos.x && building.pos.z + 1 == cur.pos.z) {
+                                        if (cur.height == building.height) {
+                                            connected = 3;
+                                        } else if (cur.height + 1 == building.height) {
+                                            connected = -3;
+                                        }
+                                    } else if (building.side == 3 && building.pos.x == cur.pos.x && building.pos.z - 1 == cur.pos.z) {
+                                        if (cur.height == building.height) {
+                                            connected = -3;
+                                        } else if (cur.height + 1 == building.height) {
+                                            connected = 3;
+                                        }
                                     }
-                                } else if (cur.side == 2 && cur.pos.x == building.pos.x) {
-                                    if (building.side == 1 && cur.pos.z - 1 == building.pos.z) {
-                                        connected = -3;
-                                    } else if (building.side == 3 && cur.pos.z + 1 == building.pos.z) {
-                                        connected = 3;
-                                    }
-                                } else if (cur.side == 1 && cur.pos.z == building.pos.z) {
-                                    if (building.side == 0 && cur.pos.x - 1 == building.pos.x) {
-                                        connected = 3;
-                                    } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x) {
-                                        connected = -3;
-                                    }
-                                } else if (cur.side == 3 && cur.pos.z == building.pos.z) {
-                                    if (building.side == 0 && cur.pos.x - 1 == building.pos.x) {
-                                        connected = -3;
-                                    } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x) {
-                                        connected = 3;
+                                }
+                            } else if (buildingName == "Gear 6m") {
+                                if (building.vertical) {
+
+                                } else {
+                                    if (building.side == 0 && building.pos.x + 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                        if (cur.height - 1 == building.height) {
+                                            connected = 1;
+                                        } else if (cur.height + 2 == building.height) {
+                                            connected = -1;
+                                        }
+                                    } else if (building.side == 2 && building.pos.x - 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                        if (cur.height - 1 == building.height) {
+                                            connected = -1;
+                                        } else if (cur.height + 2 == building.height) {
+                                            connected = 1;
+                                        }
+                                    } else if (building.side == 1 && building.pos.x == cur.pos.x && building.pos.z + 1 == cur.pos.z) {
+                                        if (cur.height - 1 == building.height) {
+                                            connected = 1;
+                                        } else if (cur.height + 2 == building.height) {
+                                            connected = -1;
+                                        }
+                                    } else if (building.side == 3 && building.pos.x == cur.pos.x && building.pos.z - 1 == cur.pos.z) {
+                                        if (cur.height - 1 == building.height) {
+                                            connected = -1;
+                                        } else if (cur.height + 2 == building.height) {
+                                            connected = 1;
+                                        }
                                     }
                                 }
                             }
-                        } else if (buildingName == "Gear 6m") {
-                            if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                Math.abs(cur.height - building.height) == 3 && cur.side == building.side) {
-                                connected = -1;
-                            } else if (cur.height == building.height) {
-                                if (cur.side == 0) {
-                                    if (building.side == 1 && cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                        connected = -1;
-                                    } else if (building.side == 3 && cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                        connected = 1;
+                        } else {
+                            if ((buildingName == "Horizontal Axle") &&
+                                cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                cur.height == building.height && cur.side % 2 == building.side % 2) {
+                                connected = 1;
+                            } else if (buildingName == "Gear 2m") {
+                                if (building.vertical) {
+                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z) {
+                                        if (cur.side == 0) {
+                                            if (cur.height + 1 == building.height) {
+                                                connected = -1;
+                                            } else if (cur.height - 2 == building.height) {
+                                                connected = 1;
+                                            }
+                                        } else if (cur.side == 2) {
+                                            if (cur.height + 1 == building.height) {
+                                                connected = 1;
+                                            } else if (cur.height - 2 == building.height) {
+                                                connected = -1;
+                                            }
+                                        } else if (cur.side == 1) {
+                                            if (cur.height + 1 == building.height) {
+                                                connected = -1;
+                                            } else if (cur.height - 2 == building.height) {
+                                                connected = 1;
+                                            }
+                                        } else if (cur.side == 3) {
+                                            if (cur.height + 1 == building.height) {
+                                                connected = 1;
+                                            } else if (cur.height - 2 == building.height) {
+                                                connected = -1;
+                                            }
+                                        }
                                     }
-                                } else if (cur.side == 2) {
-                                    if (building.side == 1 && cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                        connected = 1;
-                                    } else if (building.side == 3 && cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                        connected = -1;
-                                    }
-                                } else if (cur.side == 1) {
-                                    if (building.side == 0 && cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                        connected = -1;
-                                    } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                        connected = 1;
-                                    }
-                                } else if (cur.side == 3) {
-                                    if (building.side == 0 && cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                        connected = 1;
-                                    } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                        connected = -1;
+                                } else {
+                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                        Math.abs(cur.height - building.height) == 2 && cur.side == building.side) {
+                                        connected = -3;
+                                    } else if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z &&
+                                        cur.height == building.height && cur.side == building.side && cur.side % 2 == 1) {
+                                        connected = -3;
+                                    } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 &&
+                                        cur.height == building.height && cur.side == building.side && cur.side % 2 == 0) {
+                                        connected = -3;
+                                    } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
+                                        if (cur.side == 0 && cur.pos.x == building.pos.x) {
+                                            if (building.side == 1 && cur.pos.z - 1 == building.pos.z) {
+                                                connected = 3;
+                                            } else if (building.side == 3 && cur.pos.z + 1 == building.pos.z) {
+                                                connected = -3;
+                                            }
+                                        } else if (cur.side == 2 && cur.pos.x == building.pos.x) {
+                                            if (building.side == 1 && cur.pos.z - 1 == building.pos.z) {
+                                                connected = -3;
+                                            } else if (building.side == 3 && cur.pos.z + 1 == building.pos.z) {
+                                                connected = 3;
+                                            }
+                                        } else if (cur.side == 1 && cur.pos.z == building.pos.z) {
+                                            if (building.side == 0 && cur.pos.x - 1 == building.pos.x) {
+                                                connected = 3;
+                                            } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x) {
+                                                connected = -3;
+                                            }
+                                        } else if (cur.side == 3 && cur.pos.z == building.pos.z) {
+                                            if (building.side == 0 && cur.pos.x - 1 == building.pos.x) {
+                                                connected = -3;
+                                            } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x) {
+                                                connected = 3;
+                                            }
+                                        }
                                     }
                                 }
+                            } else if (buildingName == "Gear 6m") {
+                                if (building.vertical) {
+                                    if (cur.side == 0 && cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z) {
+                                        if (cur.height + 1 == building.height) {
+                                            connected = 1;
+                                        } else if (cur.height - 2 == building.height) {
+                                            connected = -1;
+                                        }
+                                    } else if (cur.side == 2 && cur.pos.x - 1 == building.pos.x && cur.pos.z == building.pos.z) {
+                                        if (cur.height + 1 == building.height) {
+                                            connected = -1;
+                                        } else if (cur.height - 2 == building.height) {
+                                            connected = 1;
+                                        }
+                                    } else if (cur.side == 1 && cur.pos.x == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                        if (cur.height + 1 == building.height) {
+                                            connected = 1;
+                                        } else if (cur.height - 2 == building.height) {
+                                            connected = -1;
+                                        }
+                                    } else if (cur.side == 3 && cur.pos.x == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                        if (cur.height + 1 == building.height) {
+                                            connected = -1;
+                                        } else if (cur.height - 2 == building.height) {
+                                            connected = 1;
+                                        }
+                                    }
+                                } else {
+                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                        Math.abs(cur.height - building.height) == 3 && cur.side == building.side) {
+                                        connected = -1;
+                                    } else if (cur.height == building.height) {
+                                        if (cur.side == 0) {
+                                            if (building.side == 1 && cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                                connected = -1;
+                                            } else if (building.side == 3 && cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                                connected = 1;
+                                            }
+                                        } else if (cur.side == 2) {
+                                            if (building.side == 1 && cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                                connected = 1;
+                                            } else if (building.side == 3 && cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                                connected = -1;
+                                            }
+                                        } else if (cur.side == 1) {
+                                            if (building.side == 0 && cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                                connected = -1;
+                                            } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                                connected = 1;
+                                            }
+                                        } else if (cur.side == 3) {
+                                            if (building.side == 0 && cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                                connected = 1;
+                                            } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                                connected = -1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else if (curName == "Vertical Axle") {
+                        if (building.vertical) {
+                            if (buildingName == "Vertical Axle") {
+                                if (Math.abs(cur.height - building.height) == 1 && cur.pos.x == building.pos.x && cur.pos.z == building.pos.z) {
+                                    connected = 1;
+                                }
+                            } else if (building.vertical && (buildingName == "Gear 2m" || buildingName == "Gear 6m") &&
+                                cur.pos.x == building.pos.x && cur.pos.z == building.pos.z && cur.height == building.height) {
+                                connected = 1;
                             }
                         }
                     }
