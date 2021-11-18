@@ -275,8 +275,7 @@ export function updateMechanicalConnections(Farm) {
 
                     let connected = 0;
 
-
-                    console.log(curName, buildingName, cur.side, building.side, cur.pos.x, building.pos.x, cur.pos.z, building.pos.z);
+                    //console.info(curName, buildingName, cur.side, building.side, cur.pos.x, building.pos.x, cur.pos.z, building.pos.z);
 
                     if (curName == "Waterwheel") {
                         if ((buildingName == "Horizontal Axle") &&
@@ -306,7 +305,9 @@ export function updateMechanicalConnections(Farm) {
                                 connected = 1;
                             } else if (buildingName == "Gear 6m") {
                                 if (building.vertical) {
-
+                                    if (Math.abs(building.pos.x - cur.pos.x) + Math.abs(building.pos.z - cur.pos.z) == 1 && cur.height == building.height) {
+                                        connected = -1 / 3;
+                                    }
                                 } else {
                                     if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z) {
                                         if (building.side == 0) {
@@ -426,7 +427,9 @@ export function updateMechanicalConnections(Farm) {
                                 connected = 1;
                             } else if (buildingName == "Gear 2m") {
                                 if (building.vertical) {
-
+                                    if (Math.abs(building.pos.x - cur.pos.x) + Math.abs(building.pos.z - cur.pos.z) == 1 && cur.height == building.height) {
+                                        connected = -3;
+                                    }
                                 } else {
                                     if (building.side == 0 && building.pos.x + 1 == cur.pos.x && building.pos.z == cur.pos.z) {
                                         if (cur.height == building.height) {
