@@ -859,6 +859,25 @@ export let Farm = {
             'assets/models/gear_6m.glb',
         ],
     }, {
+        name: "Conveyer",
+        category: "mechanical",
+        build_mode: "single",
+        buildingObject: "MechanicalRotator",
+        mechanicalConsumer: true,
+        instanced: true,
+        noMesh: true,
+        price: 20,
+        hasHeight: true,
+        size: {
+            x: 1,
+            z: 1,
+        },
+        thumbnail: 'assets/textures/gear_6m_thumbnail.png',
+        models: [
+            'assets/models/axle_hor_rotator.glb',
+            'assets/models/conveyer.glb',
+        ],
+    }, {
         name: "Remove All",
         category: "remove",
         build_mode: "remove",
