@@ -94,6 +94,9 @@ export function save(Farm) {
         buildingData.v = curBuilding.variation;
         buildingData.f = [];
 
+        if (curBuilding.height) buildingData.h = curBuilding.height;
+        if (curBuilding.vertical) buildingData.vt = curBuilding.vertical;
+
         if (curBuilding.inventory && !curBuilding.inventory.isEmpty()) {
             buildingData.n = curBuilding.inventory.inventory;
         }
@@ -292,7 +295,11 @@ export async function load(Farm) {
                                 building = new BuildingObjects.BuildingBarn(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s, false);
                                 break;
                             case "MechanicalRotator":
-                                building = new MechanicalRotator(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);
+                                let height = 0;
+                                let vertical = false;
+                                if (buildingData.h) height = buildingData.h;
+                                if (buildingData.vt) vertical = buildingData.vt;
+                                building = new MechanicalRotator(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s, height, vertical);
                                 break;
                             default:
                                 building = new BuildingObjects.Building(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);

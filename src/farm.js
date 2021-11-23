@@ -874,7 +874,7 @@ export let Farm = {
         },
         thumbnail: 'assets/textures/gear_6m_thumbnail.png',
         models: [
-            'assets/models/axle_hor_rotator.glb',
+            'assets/models/axle_hor_small_rotator.glb',
             'assets/models/conveyer.glb',
         ],
     }, {
