@@ -8,7 +8,7 @@ import * as BuildingObjects from './building.js';
 import { updateConnectibleConnections } from './water_update.js';
 import { load, save } from './load_save.js';
 import { updateInstancedBuildingMesh, updatePlantMesh, updateSoilMesh, updateTreeMesh, updateWaterMesh } from "./update_instanced_meshes.js";
-import { MechanicalRotator } from "./mechanical";
+import * as MechanicalBuildingObjects from './mechanical';
 
 
 export function onWindowResize(Farm) {
@@ -716,8 +716,12 @@ function createSingleNewBuilding(Farm, isArea = false) {
                 building = new BuildingObjects.BuildingBarn(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;
             case "MechanicalRotator":
-                building = new MechanicalRotator(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide, Farm.buildHeightSelect, Farm.buildVerticalSelect);
+                building = new MechanicalBuildingObjects.MechanicalRotator(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide, Farm.buildHeightSelect, Farm.buildVerticalSelect);
                 break;
+            case "Conveyer":
+                building = new MechanicalBuildingObjects.Conveyer(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide, Farm.buildHeightSelect);
+                break;
+
             default:
                 building = new BuildingObjects.Building(Farm, Farm.buildingIdx, Farm.buildAreaPoint1.x, Farm.buildAreaPoint1.z, buildingType, Farm.buildBuildingSide);
                 break;

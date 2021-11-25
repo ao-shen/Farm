@@ -9,7 +9,7 @@ import { updateEntityMesh, updateInstancedBuildingMesh, updatePlantMesh, updateS
 import { Entity } from "./entity";
 import { updateConnectibleConnections } from "./water_update";
 import { Livestock } from "./livestock";
-import { MechanicalRotator } from "./mechanical";
+import * as MechanicalBuildingObjects from './mechanical';
 
 var Base64Binary = {
     _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
@@ -299,7 +299,7 @@ export async function load(Farm) {
                                 let vertical = false;
                                 if (buildingData.h) height = buildingData.h;
                                 if (buildingData.vt) vertical = buildingData.vt;
-                                building = new MechanicalRotator(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s, height, vertical);
+                                building = new MechanicalBuildingObjects.MechanicalRotator(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s, height, vertical);
                                 break;
                             default:
                                 building = new BuildingObjects.Building(Farm, buildingData.i, buildingData.p[0], buildingData.p[1], buildingType, buildingData.s);

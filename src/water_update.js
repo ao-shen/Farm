@@ -1,10 +1,10 @@
 import { maxWaterDepth } from "./building";
 
 const DIRECTIONS = [
-    { x: 1, z: 0 },
-    { x: 0, z: 1 },
-    { x: -1, z: 0 },
-    { x: 0, z: -1 },
+    { x: 1, z: 0, import_side: 2 },
+    { x: 0, z: 1, import_side: 3 },
+    { x: -1, z: 0, import_side: 0 },
+    { x: 0, z: -1, import_side: 1 },
 ];
 
 let waterUpdateCount = 0;
@@ -144,7 +144,8 @@ export function onUpdateWater(Farm) {
 }
 
 export function updateConnectibleConnections(Farm, buildingType, points = null) {
-    if (Farm.BUILDINGS[buildingType].mechanicalSource || Farm.BUILDINGS[buildingType].mechanicalGear || Farm.BUILDINGS[buildingType].mechanicalAxle) {
+    if (Farm.BUILDINGS[buildingType].mechanicalSource || Farm.BUILDINGS[buildingType].mechanicalGear ||
+        Farm.BUILDINGS[buildingType].mechanicalAxle || Farm.BUILDINGS[buildingType].mechanicalConsumer) {
         updateMechanicalConnections(Farm);
     }
     if (!Farm.BUILDINGS[buildingType].connectible) {
@@ -159,8 +160,15 @@ export function updateConnectibleConnections(Farm, buildingType, points = null) 
             }
         }
     }
+
     let connectToRiver = Farm.BUILDINGS[buildingType].name == "Trench";
     let connectibleGroup = Farm.BUILDINGS[buildingType].connectibleGroup;
+    let connectibleType = 0;
+
+    if (connectibleGroup == "conveyer") {
+        connectibleType = 1;
+    }
+
     points.forEach(function(point) {
         let pointSplit = point.split(",");
         let x = parseInt(pointSplit[0]);
@@ -172,6 +180,7 @@ export function updateConnectibleConnections(Farm, buildingType, points = null) 
             if (building.type != buildingType && (!Farm.BUILDINGS[building.type].connectible || Farm.BUILDINGS[building.type].connectibleGroup != connectibleGroup)) continue;
 
             let connections = [];
+            let connectionMap = {};
 
             for (let i = 0; i < DIRECTIONS.length; i++) {
                 let direction = DIRECTIONS[i];
@@ -179,40 +188,56 @@ export function updateConnectibleConnections(Farm, buildingType, points = null) 
 
                 if ((x + direction.x) < 0 && connectToRiver) {
                     connections.push(i);
+                    connectionMap[i] = true;
                     continue;
                 }
 
                 if (typeof otherBlock === 'undefined') continue;
 
-                for (let building of otherBlock.buildings) {
-                    if (building.type != buildingType && Farm.BUILDINGS[building.type].connectibleGroup != connectibleGroup) continue;
+                for (let otherBuilding of otherBlock.buildings) {
+                    if (otherBuilding.type != buildingType && Farm.BUILDINGS[otherBuilding.type].connectibleGroup != connectibleGroup) continue;
+                    if ((building.height || otherBuilding.height) && building.height != otherBuilding.height) continue;
+                    if (connectibleType == 1 && otherBuilding.side != direction.import_side) continue;
 
                     connections.push(i);
+                    connectionMap[i] = true;
                     break;
                 }
             }
 
-            if (connections.length == 0) {
-                building.updateMeshVariation(0, 0);
-            } else if (connections.length == 1) {
-                building.updateMeshVariation(1, (connections[0] + 4) % 4);
-            } else if (connections.length == 2) {
-                if ((connections[0] + 2) % 4 == connections[1]) {
-                    building.updateMeshVariation(2, (connections[0] + 4) % 4);
-                } else if ((connections[0] + 1) % 4 == connections[1]) {
-                    building.updateMeshVariation(3, (connections[0] + 3) % 4);
-                } else {
-                    building.updateMeshVariation(3, (connections[1] + 3) % 4);
-                }
-            } else if (connections.length == 3) {
-                for (let i = 0; i < 4; i++) {
-                    if (!connections.includes(i)) {
-                        building.updateMeshVariation(4, (i + 4) % 4);
-                        break;
+            if (connectibleType == 0) {
+                if (connections.length == 0) {
+                    building.updateMeshVariation(0, 0);
+                } else if (connections.length == 1) {
+                    building.updateMeshVariation(1, (connections[0] + 4) % 4);
+                } else if (connections.length == 2) {
+                    if ((connections[0] + 2) % 4 == connections[1]) {
+                        building.updateMeshVariation(2, (connections[0] + 4) % 4);
+                    } else if ((connections[0] + 1) % 4 == connections[1]) {
+                        building.updateMeshVariation(3, (connections[0] + 3) % 4);
+                    } else {
+                        building.updateMeshVariation(3, (connections[1] + 3) % 4);
                     }
+                } else if (connections.length == 3) {
+                    for (let i = 0; i < 4; i++) {
+                        if (!connections.includes(i)) {
+                            building.updateMeshVariation(4, (i + 4) % 4);
+                            break;
+                        }
+                    }
+                } else if (connections.length == 4) {
+                    building.updateMeshVariation(5, 0);
                 }
-            } else if (connections.length == 4) {
-                building.updateMeshVariation(5, 0);
+            } else if (connectibleType == 1) {
+                if (connectionMap[(building.side + 2) % 4]) {
+                    building.updateMeshVariation(0);
+                } else if (connectionMap[(building.side + 1) % 4]) {
+                    building.updateMeshVariation(1);
+                } else if (connectionMap[(building.side + 3) % 4]) {
+                    building.updateMeshVariation(2);
+                } else {
+                    building.updateMeshVariation(0);
+                }
             }
         }
     });
@@ -234,10 +259,6 @@ export function updateMechanicalConnections(Farm) {
             building.rotationData.offset = 0;
             building.rotationData.offsetBase = 0;
         }
-        /*if (Farm.BUILDINGS[building.type].mechanicalGear || Farm.BUILDINGS[building.type].mechanicalAxle) {
-            building.mechanicalParents = [];
-            building.mechanicalChildren = [];
-        }*/
     }
 
     while (sources.length > 0) {
@@ -283,8 +304,8 @@ export function updateMechanicalConnections(Farm) {
                             cur.height + 2 == building.height && cur.side % 2 == building.side % 2) {
                             connected = 1;
                         }
-                    } else if (curName == "Horizontal Axle") {
-                        if (buildingName == "Horizontal Axle") {
+                    } else if (curName == "Horizontal Axle" || curName == "Conveyer") {
+                        if (buildingName == "Horizontal Axle" || buildingName == "Conveyer") {
                             if (cur.height == building.height && cur.side % 2 == building.side % 2) {
                                 if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z && cur.side % 2 == 0) {
                                     connected = 1;

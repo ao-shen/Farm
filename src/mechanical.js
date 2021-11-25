@@ -135,3 +135,12 @@ export class MechanicalRotator extends MechanicalPart {
         //this.mesh.position.set(this.center.x, 0, this.center.z);
     }
 }
+
+export class Conveyer extends MechanicalPart {
+    constructor(Farm, idx, x, z, type, side, height = 0) {
+        super(Farm, idx, x, z, type, side, height);
+
+        this.isConveyer = true;
+
+    }
+}

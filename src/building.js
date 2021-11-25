@@ -196,7 +196,7 @@ export class Building {
 
             this.matrix.setPosition(
                 this.pos.x * Farm.blockSize,
-                0,
+                this.pos.y * Farm.blockSize * 0.5,
                 this.pos.z * Farm.blockSize
             );
 

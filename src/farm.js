@@ -862,10 +862,11 @@ export let Farm = {
         name: "Conveyer",
         category: "mechanical",
         build_mode: "single",
-        buildingObject: "MechanicalRotator",
-        mechanicalConsumer: true,
+        buildingObject: "Conveyer",
+        //mechanicalConsumer: true,
+        connectible: true,
+        connectibleGroup: "conveyer",
         instanced: true,
-        noMesh: true,
         price: 20,
         hasHeight: true,
         size: {
@@ -874,8 +875,9 @@ export let Farm = {
         },
         thumbnail: 'assets/textures/gear_6m_thumbnail.png',
         models: [
-            'assets/models/axle_hor_small_rotator.glb',
-            'assets/models/conveyer.glb',
+            'assets/models/conveyer0.glb',
+            'assets/models/conveyer1.glb',
+            'assets/models/conveyer2.glb',
         ],
     }, {
         name: "Remove All",
