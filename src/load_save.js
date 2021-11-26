@@ -314,13 +314,13 @@ export async function load(Farm) {
 
                         if (buildingData.f.length == 0) {
                             let curBlock = Farm.blocks[buildingData.p[0] + ',' + buildingData.p[1]];
-                            curBlock.buildings.push(building);
+                            curBlock.addBuilding(building);
                             curBlock.updateGrassBlades();
                         } else {
                             for (let foundationBlock of buildingData.f) {
                                 let curBlock = Farm.blocks[foundationBlock.x + ',' + foundationBlock.z];
                                 building.foundationBlocks.push(curBlock);
-                                curBlock.buildings.push(building);
+                                curBlock.addBuilding(building);
                                 curBlock.updateGrassBlades();
                             }
                         }

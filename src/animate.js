@@ -273,18 +273,21 @@ function renderOverlays(Farm) {
 
             Farm.buildVerticalSelect = false;
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].mechanicalGear) {
-                for (let building of Farm.hoveringBlock.buildings) {
-                    if (building.height == Farm.buildHeightSelect && Farm.BUILDINGS[building.type].mechanicalAxle) {
-                        if (Farm.BUILDINGS[building.type].mechanicalVertical) {
-                            Farm.buildVerticalSelect = true;
-                            Farm.buildBuildingSide = 0;
-                            height += 0.25 * Farm.blockSize;
-                        } else {
-                            while ((Farm.buildBuildingSide + building.side) % 2 != 0) {
-                                Farm.buildBuildingSide = (Farm.buildBuildingSide + 1) % 4;
+                let buildings = Farm.hoveringBlock.buildings[Farm.buildHeightSelect];
+                if (buildings) {
+                    for (let building of buildings) {
+                        if (building.height == Farm.buildHeightSelect && Farm.BUILDINGS[building.type].mechanicalAxle) {
+                            if (Farm.BUILDINGS[building.type].mechanicalVertical) {
+                                Farm.buildVerticalSelect = true;
+                                Farm.buildBuildingSide = 0;
+                                height += 0.25 * Farm.blockSize;
+                            } else {
+                                while ((Farm.buildBuildingSide + building.side) % 2 != 0) {
+                                    Farm.buildBuildingSide = (Farm.buildBuildingSide + 1) % 4;
+                                }
                             }
+                            break;
                         }
-                        break;
                     }
                 }
             }

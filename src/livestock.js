@@ -108,10 +108,12 @@ export class Livestock extends Entity {
         let curBlock = this.Farm.blocks[x + ',' + z];
 
         let hasPath = false;
-        for (let building of curBlock.buildings) {
-            if (building.isPath) {
-                hasPath = true;
-                break;
+        for (let height in curBlock.buildings) {
+            for (let building of curBlock.buildings[height]) {
+                if (building.isPath) {
+                    hasPath = true;
+                    break;
+                }
             }
         }
 
@@ -123,18 +125,20 @@ export class Livestock extends Entity {
             }
         }
 
-        for (let building of curBlock.buildings) {
-            if (building.isWall) {
-                if (direction.destSides.includes(building.side)) {
-                    return true;
-                }
-            } else if (building.isPath || building == this.parentBuilding) {
+        for (let height in curBlock.buildings) {
+            for (let building of curBlock.buildings[height]) {
+                if (building.isWall) {
+                    if (direction.destSides.includes(building.side)) {
+                        return true;
+                    }
+                } else if (building.isPath || building == this.parentBuilding) {
 
-            } else if (building.isConnectible && hasPath) {
+                } else if (building.isConnectible && hasPath) {
 
-            } else {
-                if (!isTarget) {
-                    return true;
+                } else {
+                    if (!isTarget) {
+                        return true;
+                    }
                 }
             }
         }

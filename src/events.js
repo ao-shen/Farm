@@ -319,7 +319,7 @@ export function onKeyDown(Farm, event) {
             console.info(Farm.hoveringBlock.livestockDensity);
             break;
         case 'y':
-            console.info(Farm.hoveringBlock.buildings[0].waterDirection, Farm.hoveringBlock.buildings[0].waterLevels[0]);
+            console.info(Farm.hoveringBlock.buildings[0][0].waterDirection, Farm.hoveringBlock.buildings[0][0].waterLevels[0]);
             break;
         case 's':
             save(Farm);
@@ -374,10 +374,12 @@ function createNewSoil(Farm) {
                 blockingPlants = true;
                 break;
             }
-            for (let building of curBlock.buildings) {
-                if (building.isWall) {} else {
-                    blockingBuildings = true;
-                    break;
+            for (let height in curBlock.buildings) {
+                for (let building of curBlock.buildings[height]) {
+                    if (building.isWall) {} else {
+                        blockingBuildings = true;
+                        break;
+                    }
                 }
             }
 
@@ -398,30 +400,6 @@ function createNewSoil(Farm) {
     }
 }
 
-// DEPRECATED
-function createWater(Farm) {
-
-    for (let x = Farm.buildAreaPoint1.x; x <= Farm.buildAreaPoint2.x; x++) {
-        for (let z = Farm.buildAreaPoint1.z; z <= Farm.buildAreaPoint2.z; z++) {
-            let curBlock = Farm.blocks[x + ',' + z];
-            if (typeof curBlock === 'undefined') continue;
-
-            if (curBlock.type == BLOCK.GRASS &&
-                curBlock.plants.length == 0 &&
-                curBlock.buildings.length == 0) {
-
-                curBlock.groundState = Farm.GROUND_STATES_NAMES.WATER;
-
-                let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
-                for (let i = 0; i < 8; i++) {
-                    Farm.groundUVs[curIdx + i] = Farm.GROUND_STATES[curBlock.groundState].uv[i];
-                }
-            }
-        }
-    }
-    Farm.groundGeometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(Farm.groundUVs), 2));
-}
-
 function createNewTrench(Farm) {
 
     let buildingType = Farm.buildPaletteSelect;
@@ -434,7 +412,7 @@ function createNewTrench(Farm) {
 
             if (curBlock.type == BLOCK.GRASS &&
                 curBlock.plants.length == 0 &&
-                curBlock.buildings.length == 0 &&
+                curBlock.numBuildings(0) == 0 &&
                 curBlock.groundState < Farm.GROUND_STATES_NAMES.CLEAR) {
 
                 potentialBlocks.push({ x: x, z: z });
@@ -460,7 +438,7 @@ function createNewTrench(Farm) {
         }
 
         let building = new BuildingObjects.BuildingWaterCarrier(Farm, Farm.buildingIdx, x, z, buildingType, Farm.buildBuildingSide);
-        curBlock.buildings.push(building);
+        curBlock.addBuilding(building);
         curBlock.updateGrassBlades();
 
         if (Farm.BUILDINGS[buildingType].requireUpdates || Farm.BUILDINGS[buildingType].infoable) {
@@ -622,51 +600,53 @@ function createSingleNewBuilding(Farm, isArea = false) {
                     break;
                 }
             }
-            for (let building of curBlock.buildings) {
-                let clippable = false;
-                if (Farm.BUILDINGS[building.type].allowClipConnectibleGroup) {
-                    for (let group of Farm.BUILDINGS[building.type].allowClipConnectibleGroup) {
-                        if (BUILDING.connectibleGroup == group) {
-                            clippable = true;
+            for (let height in curBlock.buildings) {
+                for (let building of curBlock.buildings[height]) {
+                    let clippable = false;
+                    if (Farm.BUILDINGS[building.type].allowClipConnectibleGroup) {
+                        for (let group of Farm.BUILDINGS[building.type].allowClipConnectibleGroup) {
+                            if (BUILDING.connectibleGroup == group) {
+                                clippable = true;
+                            }
                         }
                     }
-                }
-                if (BUILDING.allowClipConnectibleGroup) {
-                    for (let group of BUILDING.allowClipConnectibleGroup) {
-                        if (building.connectibleGroup == group) {
-                            clippable = true;
+                    if (BUILDING.allowClipConnectibleGroup) {
+                        for (let group of BUILDING.allowClipConnectibleGroup) {
+                            if (building.connectibleGroup == group) {
+                                clippable = true;
+                            }
                         }
                     }
-                }
-                if (clippable) {
+                    if (clippable) {
 
-                } else if (BUILDING.hasHeight) {
-                    if (typeof building.height === "undefined" || building.height != Farm.buildHeightSelect) {
+                    } else if (BUILDING.hasHeight) {
+                        if (typeof building.height === "undefined" || building.height != Farm.buildHeightSelect) {
 
-                    } else if (building.height == Farm.buildHeightSelect) {
-                        if (BUILDING.mechanicalGear && Farm.BUILDINGS[building.type].mechanicalAxle &&
-                            building.side % 2 == Farm.buildBuildingSide % 2) {
-                            hasAxle = true;
-                        } else if (BUILDING.mechanicalGear && Farm.BUILDINGS[building.type].mechanicalGear &&
-                            building.side != Farm.buildBuildingSide) {
+                        } else if (building.height == Farm.buildHeightSelect) {
+                            if (BUILDING.mechanicalGear && Farm.BUILDINGS[building.type].mechanicalAxle &&
+                                building.side % 2 == Farm.buildBuildingSide % 2) {
+                                hasAxle = true;
+                            } else if (BUILDING.mechanicalGear && Farm.BUILDINGS[building.type].mechanicalGear &&
+                                building.side != Farm.buildBuildingSide) {
 
+                            } else {
+                                blockingBuildings = true;
+                                break;
+                            }
                         } else {
                             blockingBuildings = true;
                             break;
                         }
+                    } else if ((building.isWall && isWall && Farm.buildBuildingSide == building.side) ||
+                        (isPath && building.isPath)) {
+                        blockingBuildings = true;
+                        break;
+                    } else if (building.isWall || isWall || isPath || building.isPath) {
+
                     } else {
                         blockingBuildings = true;
                         break;
                     }
-                } else if ((building.isWall && isWall && Farm.buildBuildingSide == building.side) ||
-                    (isPath && building.isPath)) {
-                    blockingBuildings = true;
-                    break;
-                } else if (building.isWall || isWall || isPath || building.isPath) {
-
-                } else {
-                    blockingBuildings = true;
-                    break;
                 }
             }
             if (blockingPlants || blockingBuildings) {
@@ -728,7 +708,7 @@ function createSingleNewBuilding(Farm, isArea = false) {
         }
 
         for (const block of foundationBlocks) {
-            block.buildings.push(building);
+            block.addBuilding(building);
             block.updateGrassBlades();
             building.foundationBlocks.push(block);
         }
@@ -835,22 +815,21 @@ function remove(Farm) {
 
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Buildings" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
-                for (let i = 0; i < curBlock.buildings.length; i++) {
-                    let curBuilding = curBlock.buildings[i];
-                    if (Farm.BUILDINGS[curBuilding.type].groundStateMutator) {
-                        didRemovedGroundStateMutator = true;
-                    }
-                    removedBuildingTypes.add(curBuilding.type);
-                    for (let foundationBlock of curBuilding.foundationBlocks) {
-                        var index = foundationBlock.buildings.indexOf(curBuilding);
-                        if (index !== -1 && foundationBlock != curBlock) {
-                            foundationBlock.buildings.splice(index, 1);
-                            foundationBlock.updateGrassBlades();
+                for (let height in curBlock.buildings) {
+                    for (let curBuilding of curBlock.buildings[height]) {
+                        if (Farm.BUILDINGS[curBuilding.type].groundStateMutator) {
+                            didRemovedGroundStateMutator = true;
                         }
+                        removedBuildingTypes.add(curBuilding.type);
+                        for (let foundationBlock of curBuilding.foundationBlocks) {
+                            if (foundationBlock != curBlock) {
+                                foundationBlock.removeBuilding(curBuilding);
+                            }
+                        }
+                        curBuilding.remove();
                     }
-                    curBuilding.remove();
                 }
-                curBlock.buildings = [];
+                curBlock.buildings = {};
             }
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Plants" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
@@ -868,13 +847,13 @@ function remove(Farm) {
             }
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Soil" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
-                if (curBlock.type == BLOCK.SOIL && curBlock.buildings.length == 0 && curBlock.plants.length == 0) {
+                if (curBlock.type == BLOCK.SOIL && curBlock.numBuildings() == 0 && curBlock.plants.length == 0) {
                     curBlock.type = BLOCK.GRASS;
                 }
             }
             if (Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove Water" ||
                 Farm.BUILDINGS[Farm.buildPaletteSelect].name == "Remove All") {
-                if (curBlock.type == BLOCK.GRASS && curBlock.buildings.length == 0 && curBlock.plants.length == 0) {
+                if (curBlock.type == BLOCK.GRASS && curBlock.numBuildings() == 0 && curBlock.plants.length == 0) {
                     curBlock.groundState = 0;
                     let curIdx = (curBlock.x * Farm.numBlocks.z + curBlock.z) * 8;
                     for (let i = 0; i < 8; i++) {

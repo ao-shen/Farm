@@ -15,7 +15,7 @@ export class Block {
 
         this.type = type;
         this.plants = [];
-        this.buildings = [];
+        this.buildings = {};
 
         this.entityVelocity = 1;
 
@@ -58,12 +58,14 @@ export class Block {
         const matrix = new THREE.Matrix4();
 
         let blockingBuilding = false;
-        for (let curBuilding of this.buildings) {
-            if (curBuilding.isWall || curBuilding.groundStateMutator) {
+        for (let height in this.buildings) {
+            for (let curBuilding of this.buildings[height]) {
+                if (curBuilding.isWall || curBuilding.groundStateMutator) {
 
-            } else {
-                blockingBuilding = true;
-                break;
+                } else {
+                    blockingBuilding = true;
+                    break;
+                }
             }
         }
 
@@ -113,11 +115,13 @@ export class Block {
             } else if (typeof otherBlock === 'undefined') {
 
             } else {
-                for (let building of this.buildings) {
-                    if (building.isWaterCarrier && building.leaky && building.waterLevels[0] < maxWaterDepth) {
-                        this.wetness = 6;
-                        isWater = true;
-                        break;
+                for (let height in this.buildings) {
+                    for (let building of this.buildings[height]) {
+                        if (building.isWaterCarrier && building.leaky && building.waterLevels[0] < maxWaterDepth) {
+                            this.wetness = 6;
+                            isWater = true;
+                            break;
+                        }
                     }
                 }
                 if (wetSources < otherBlock.wetness) {
@@ -193,6 +197,35 @@ export class Block {
 
             this.Farm.plantTypeAwaitingMeshUpdate.add(buildingType);
         }
+    }
+
+    addBuilding(building) {
+        let height = building.height;
+        if (!height) height = 0;
+        if (!this.buildings[height]) {
+            this.buildings[height] = [];
+        }
+        this.buildings[height].push(building);
+    }
+
+    removeBuilding(building) {
+        let height = building.height;
+        if (!height) height = 0;
+        if (!this.buildings[height]) {
+            return;
+        }
+        var index = this.buildings[height].indexOf(building);
+        if (index !== -1) {
+            this.buildings.splice(index, 1);
+            this.updateGrassBlades();
+        }
+    }
+
+    numBuildings(height = 0) {
+        if (!this.buildings[height]) {
+            return 0;
+        }
+        return this.buildings[height].length;
     }
 };
 

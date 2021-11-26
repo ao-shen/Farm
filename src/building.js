@@ -312,13 +312,15 @@ export class BuildingWorkersHouse extends Building {
                 let curBlock = this.Farm.blocks[x + ',' + z];
                 if (typeof curBlock === 'undefined') continue;
 
-                for (let curBuilding of curBlock.buildings) {
-                    if (curBuilding.isStorage) {
-                        if (!curBuilding.importTargets.includes(this)) {
-                            curBuilding.importTargets.push(this);
-                        }
-                        if (!this.exportTargets.includes(curBuilding)) {
-                            this.exportTargets.push(curBuilding);
+                for (let height in curBlock.buildings) {
+                    for (let curBuilding of curBlock.buildings[height]) {
+                        if (curBuilding.isStorage) {
+                            if (!curBuilding.importTargets.includes(this)) {
+                                curBuilding.importTargets.push(this);
+                            }
+                            if (!this.exportTargets.includes(curBuilding)) {
+                                this.exportTargets.push(curBuilding);
+                            }
                         }
                     }
                 }
@@ -350,13 +352,15 @@ export class Storage extends Building {
                 let curBlock = this.Farm.blocks[x + ',' + z];
                 if (typeof curBlock === 'undefined') continue;
 
-                for (let curBuilding of curBlock.buildings) {
-                    if (curBuilding.canExportToStorage) {
-                        if (!this.importTargets.includes(curBuilding)) {
-                            this.importTargets.push(curBuilding);
-                        }
-                        if (!curBuilding.exportTargets.includes(this)) {
-                            curBuilding.exportTargets.push(this);
+                for (let height in curBlock.buildings) {
+                    for (let curBuilding of curBlock.buildings[height]) {
+                        if (curBuilding.canExportToStorage) {
+                            if (!this.importTargets.includes(curBuilding)) {
+                                this.importTargets.push(curBuilding);
+                            }
+                            if (!curBuilding.exportTargets.includes(this)) {
+                                curBuilding.exportTargets.push(this);
+                            }
                         }
                     }
                 }

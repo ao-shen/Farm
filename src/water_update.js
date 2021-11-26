@@ -43,13 +43,15 @@ export function onUpdateWater(Farm) {
             let loop = true;
 
             let curBlock = Farm.blocks[x + ',' + z];
-            for (let otherBuilding of curBlock.buildings) {
-                if (Farm.BUILDINGS[otherBuilding.type].waterSourceForConnectibleGroup) {
-                    if (Farm.BUILDINGS[otherBuilding.type].waterSourceForConnectibleGroup[curBuilding.connectibleGroup]) {
-                        curBuilding.newWaterLevel = 0;
-                        droppingLevel = false;
-                        loop = false;
-                        break;
+            for (let height in curBlock.buildings) {
+                for (let otherBuilding of curBlock.buildings[height]) {
+                    if (Farm.BUILDINGS[otherBuilding.type].waterSourceForConnectibleGroup) {
+                        if (Farm.BUILDINGS[otherBuilding.type].waterSourceForConnectibleGroup[curBuilding.connectibleGroup]) {
+                            curBuilding.newWaterLevel = 0;
+                            droppingLevel = false;
+                            loop = false;
+                            break;
+                        }
                     }
                 }
             }
@@ -176,67 +178,72 @@ export function updateConnectibleConnections(Farm, buildingType, points = null) 
         let curBlock = Farm.blocks[x + ',' + z];
         if (typeof curBlock === 'undefined') return;
 
-        for (let building of curBlock.buildings) {
-            if (building.type != buildingType && (!Farm.BUILDINGS[building.type].connectible || Farm.BUILDINGS[building.type].connectibleGroup != connectibleGroup)) continue;
 
-            let connections = [];
-            let connectionMap = {};
+        for (let height in curBlock.buildings) {
+            for (let building of curBlock.buildings[height]) {
+                if (building.type != buildingType && (!Farm.BUILDINGS[building.type].connectible || Farm.BUILDINGS[building.type].connectibleGroup != connectibleGroup)) continue;
 
-            for (let i = 0; i < DIRECTIONS.length; i++) {
-                let direction = DIRECTIONS[i];
-                let otherBlock = Farm.blocks[(x + direction.x) + ',' + (z + direction.z)];
+                let connections = [];
+                let connectionMap = {};
 
-                if ((x + direction.x) < 0 && connectToRiver) {
-                    connections.push(i);
-                    connectionMap[i] = true;
-                    continue;
-                }
+                for (let i = 0; i < DIRECTIONS.length; i++) {
+                    let direction = DIRECTIONS[i];
+                    let otherBlock = Farm.blocks[(x + direction.x) + ',' + (z + direction.z)];
 
-                if (typeof otherBlock === 'undefined') continue;
-
-                for (let otherBuilding of otherBlock.buildings) {
-                    if (otherBuilding.type != buildingType && Farm.BUILDINGS[otherBuilding.type].connectibleGroup != connectibleGroup) continue;
-                    if ((building.height || otherBuilding.height) && building.height != otherBuilding.height) continue;
-                    if (connectibleType == 1 && otherBuilding.side != direction.import_side) continue;
-
-                    connections.push(i);
-                    connectionMap[i] = true;
-                    break;
-                }
-            }
-
-            if (connectibleType == 0) {
-                if (connections.length == 0) {
-                    building.updateMeshVariation(0, 0);
-                } else if (connections.length == 1) {
-                    building.updateMeshVariation(1, (connections[0] + 4) % 4);
-                } else if (connections.length == 2) {
-                    if ((connections[0] + 2) % 4 == connections[1]) {
-                        building.updateMeshVariation(2, (connections[0] + 4) % 4);
-                    } else if ((connections[0] + 1) % 4 == connections[1]) {
-                        building.updateMeshVariation(3, (connections[0] + 3) % 4);
-                    } else {
-                        building.updateMeshVariation(3, (connections[1] + 3) % 4);
+                    if ((x + direction.x) < 0 && connectToRiver) {
+                        connections.push(i);
+                        connectionMap[i] = true;
+                        continue;
                     }
-                } else if (connections.length == 3) {
-                    for (let i = 0; i < 4; i++) {
-                        if (!connections.includes(i)) {
-                            building.updateMeshVariation(4, (i + 4) % 4);
+
+                    if (typeof otherBlock === 'undefined') continue;
+
+                    if (otherBlock.buildings[height]) {
+                        for (let otherBuilding of otherBlock.buildings[height]) {
+                            if (otherBuilding.type != buildingType && Farm.BUILDINGS[otherBuilding.type].connectibleGroup != connectibleGroup) continue;
+                            if ((building.height || otherBuilding.height) && building.height != otherBuilding.height) continue;
+                            if (connectibleType == 1 && otherBuilding.side != direction.import_side) continue;
+
+                            connections.push(i);
+                            connectionMap[i] = true;
                             break;
                         }
                     }
-                } else if (connections.length == 4) {
-                    building.updateMeshVariation(5, 0);
                 }
-            } else if (connectibleType == 1) {
-                if (connectionMap[(building.side + 2) % 4]) {
-                    building.updateMeshVariation(0);
-                } else if (connectionMap[(building.side + 1) % 4]) {
-                    building.updateMeshVariation(1);
-                } else if (connectionMap[(building.side + 3) % 4]) {
-                    building.updateMeshVariation(2);
-                } else {
-                    building.updateMeshVariation(0);
+
+                if (connectibleType == 0) {
+                    if (connections.length == 0) {
+                        building.updateMeshVariation(0, 0);
+                    } else if (connections.length == 1) {
+                        building.updateMeshVariation(1, (connections[0] + 4) % 4);
+                    } else if (connections.length == 2) {
+                        if ((connections[0] + 2) % 4 == connections[1]) {
+                            building.updateMeshVariation(2, (connections[0] + 4) % 4);
+                        } else if ((connections[0] + 1) % 4 == connections[1]) {
+                            building.updateMeshVariation(3, (connections[0] + 3) % 4);
+                        } else {
+                            building.updateMeshVariation(3, (connections[1] + 3) % 4);
+                        }
+                    } else if (connections.length == 3) {
+                        for (let i = 0; i < 4; i++) {
+                            if (!connections.includes(i)) {
+                                building.updateMeshVariation(4, (i + 4) % 4);
+                                break;
+                            }
+                        }
+                    } else if (connections.length == 4) {
+                        building.updateMeshVariation(5, 0);
+                    }
+                } else if (connectibleType == 1) {
+                    if (connectionMap[(building.side + 2) % 4]) {
+                        building.updateMeshVariation(0);
+                    } else if (connectionMap[(building.side + 1) % 4]) {
+                        building.updateMeshVariation(1);
+                    } else if (connectionMap[(building.side + 3) % 4]) {
+                        building.updateMeshVariation(2);
+                    } else {
+                        building.updateMeshVariation(0);
+                    }
                 }
             }
         }
@@ -282,6 +289,9 @@ export function updateMechanicalConnections(Farm) {
             let cur = queue[queueIdx];
             queueIdx++;
 
+            let curHeight = cur.height;
+            if (!curHeight) curHeight = 0;
+
             cur.rotationData.network = networkObj;
 
             let curName = Farm.BUILDINGS[cur.type].name;
@@ -289,397 +299,401 @@ export function updateMechanicalConnections(Farm) {
             for (let DIRECTION of MECHANICAL_DIRECTIONS) {
                 let block = Farm.blocks[(cur.pos.x + DIRECTION.x) + ',' + (cur.pos.z + DIRECTION.z)];
                 if (!block) continue;
-                for (let building of block.buildings) {
-                    let buildingName = Farm.BUILDINGS[building.type].name;
 
-                    if (cur.idx == building.idx) continue;
+                for (let height = curHeight - 2; height <= curHeight + 2; height++) {
+                    if (!block.buildings[height]) continue;
+                    for (let building of block.buildings[height]) {
+                        let buildingName = Farm.BUILDINGS[building.type].name;
 
-                    let connected = 0;
+                        if (cur.idx == building.idx) continue;
 
-                    //console.info(curName, buildingName, cur.side, building.side, cur.pos.x, building.pos.x, cur.pos.z, building.pos.z);
+                        let connected = 0;
 
-                    if (curName == "Waterwheel") {
-                        if ((buildingName == "Horizontal Axle") &&
-                            cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z &&
-                            cur.height + 2 == building.height && cur.side % 2 == building.side % 2) {
-                            connected = 1;
-                        }
-                    } else if (curName == "Horizontal Axle" || curName == "Conveyer") {
-                        if (buildingName == "Horizontal Axle" || buildingName == "Conveyer") {
-                            if (cur.height == building.height && cur.side % 2 == building.side % 2) {
-                                if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z && cur.side % 2 == 0) {
-                                    connected = 1;
-                                } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 && cur.side % 2 == 1) {
-                                    connected = 1;
-                                }
-                            }
-                        } else if (!building.vertical && (buildingName == "Gear 2m" || buildingName == "Gear 6m") &&
-                            cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                            cur.height == building.height && cur.side % 2 == building.side % 2) {
-                            connected = 1;
-                        }
-                    } else if (curName == "Gear 2m") {
-                        if (cur.vertical) {
-                            if ((buildingName == "Vertical Axle") &&
-                                cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                cur.height == building.height) {
-                                connected = 1;
-                            } else if (buildingName == "Gear 6m") {
-                                if (building.vertical) {
-                                    if (Math.abs(building.pos.x - cur.pos.x) + Math.abs(building.pos.z - cur.pos.z) == 1 && cur.height == building.height) {
-                                        connected = -1 / 3;
-                                    }
-                                } else {
-                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z) {
-                                        if (building.side == 0) {
-                                            if (cur.height - 1 == building.height) {
-                                                connected = -1;
-                                            } else if (cur.height + 2 == building.height) {
-                                                connected = 1;
-                                            }
-                                        } else if (building.side == 2) {
-                                            if (cur.height - 1 == building.height) {
-                                                connected = 1;
-                                            } else if (cur.height + 2 == building.height) {
-                                                connected = -1;
-                                            }
-                                        } else if (building.side == 1) {
-                                            if (cur.height - 1 == building.height) {
-                                                connected = -1;
-                                            } else if (cur.height + 2 == building.height) {
-                                                connected = 1;
-                                            }
-                                        } else if (building.side == 3) {
-                                            if (cur.height - 1 == building.height) {
-                                                connected = 1;
-                                            } else if (cur.height + 2 == building.height) {
-                                                connected = -1;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
+                        //console.info(curName, buildingName, cur.side, building.side, cur.pos.x, building.pos.x, cur.pos.z, building.pos.z);
+
+                        if (curName == "Waterwheel") {
                             if ((buildingName == "Horizontal Axle") &&
+                                cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z &&
+                                cur.height + 2 == building.height && cur.side % 2 == building.side % 2) {
+                                connected = 1;
+                            }
+                        } else if (curName == "Horizontal Axle" || curName == "Conveyer") {
+                            if (buildingName == "Horizontal Axle" || buildingName == "Conveyer") {
+                                if (cur.height == building.height && cur.side % 2 == building.side % 2) {
+                                    if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z && cur.side % 2 == 0) {
+                                        connected = 1;
+                                    } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 && cur.side % 2 == 1) {
+                                        connected = 1;
+                                    }
+                                }
+                            } else if (!building.vertical && (buildingName == "Gear 2m" || buildingName == "Gear 6m") &&
                                 cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
                                 cur.height == building.height && cur.side % 2 == building.side % 2) {
                                 connected = 1;
-                            } else if (buildingName == "Gear 2m") {
-                                if (building.vertical) {
-
-                                } else {
-                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                        Math.abs(cur.height - building.height) == 1 && cur.side == building.side) {
-                                        connected = -1;
+                            }
+                        } else if (curName == "Gear 2m") {
+                            if (cur.vertical) {
+                                if ((buildingName == "Vertical Axle") &&
+                                    cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                    cur.height == building.height) {
+                                    connected = 1;
+                                } else if (buildingName == "Gear 6m") {
+                                    if (building.vertical) {
+                                        if (Math.abs(building.pos.x - cur.pos.x) + Math.abs(building.pos.z - cur.pos.z) == 1 && cur.height == building.height) {
+                                            connected = -1 / 3;
+                                        }
+                                    } else {
+                                        if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z) {
+                                            if (building.side == 0) {
+                                                if (cur.height - 1 == building.height) {
+                                                    connected = -1;
+                                                } else if (cur.height + 2 == building.height) {
+                                                    connected = 1;
+                                                }
+                                            } else if (building.side == 2) {
+                                                if (cur.height - 1 == building.height) {
+                                                    connected = 1;
+                                                } else if (cur.height + 2 == building.height) {
+                                                    connected = -1;
+                                                }
+                                            } else if (building.side == 1) {
+                                                if (cur.height - 1 == building.height) {
+                                                    connected = -1;
+                                                } else if (cur.height + 2 == building.height) {
+                                                    connected = 1;
+                                                }
+                                            } else if (building.side == 3) {
+                                                if (cur.height - 1 == building.height) {
+                                                    connected = 1;
+                                                } else if (cur.height + 2 == building.height) {
+                                                    connected = -1;
+                                                }
+                                            }
+                                        }
                                     }
                                 }
-                            } else if (buildingName == "Gear 6m") {
-                                if (building.vertical) {
-                                    if (cur.side == 0 && building.pos.x - 1 == cur.pos.x && building.pos.z == cur.pos.z) {
-                                        if (cur.height == building.height) {
-                                            connected = 1 / 3;
-                                        } else if (cur.height - 1 == building.height) {
-                                            connected = -1 / 3;
-                                        }
-                                    } else if (cur.side == 2 && building.pos.x + 1 == cur.pos.x && building.pos.z == cur.pos.z) {
-                                        if (cur.height == building.height) {
-                                            connected = -1 / 3;
-                                        } else if (cur.height - 1 == building.height) {
-                                            connected = 1 / 3;
-                                        }
-                                    } else if (cur.side == 1 && building.pos.x == cur.pos.x && building.pos.z - 1 == cur.pos.z) {
-                                        if (cur.height == building.height) {
-                                            connected = 1 / 3;
-                                        } else if (cur.height - 1 == building.height) {
-                                            connected = -1 / 3;
-                                        }
-                                    } else if (cur.side == 3 && building.pos.x == cur.pos.x && building.pos.z + 1 == cur.pos.z) {
-                                        if (cur.height == building.height) {
-                                            connected = -1 / 3;
-                                        } else if (cur.height - 1 == building.height) {
-                                            connected = 1 / 3;
+                            } else {
+                                if ((buildingName == "Horizontal Axle") &&
+                                    cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                    cur.height == building.height && cur.side % 2 == building.side % 2) {
+                                    connected = 1;
+                                } else if (buildingName == "Gear 2m") {
+                                    if (building.vertical) {
+
+                                    } else {
+                                        if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                            Math.abs(cur.height - building.height) == 1 && cur.side == building.side) {
+                                            connected = -1;
                                         }
                                     }
-                                } else {
-                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                        Math.abs(cur.height - building.height) == 2 && cur.side == building.side) {
-                                        connected = -1 / 3;
-                                    } else if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z &&
-                                        cur.height == building.height && cur.side == building.side && cur.side % 2 == 1) {
-                                        connected = -1 / 3;
-                                    } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 &&
-                                        cur.height == building.height && cur.side == building.side && cur.side % 2 == 0) {
-                                        connected = -1 / 3;
-                                    } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
-                                        if (cur.side == 0 && cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z) {
-                                            if ((cur.side - building.side + 4) % 4 == 1) {
-                                                connected = -1 / 3;
-                                            } else {
+                                } else if (buildingName == "Gear 6m") {
+                                    if (building.vertical) {
+                                        if (cur.side == 0 && building.pos.x - 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                            if (cur.height == building.height) {
                                                 connected = 1 / 3;
+                                            } else if (cur.height - 1 == building.height) {
+                                                connected = -1 / 3;
+                                            }
+                                        } else if (cur.side == 2 && building.pos.x + 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                            if (cur.height == building.height) {
+                                                connected = -1 / 3;
+                                            } else if (cur.height - 1 == building.height) {
+                                                connected = 1 / 3;
+                                            }
+                                        } else if (cur.side == 1 && building.pos.x == cur.pos.x && building.pos.z - 1 == cur.pos.z) {
+                                            if (cur.height == building.height) {
+                                                connected = 1 / 3;
+                                            } else if (cur.height - 1 == building.height) {
+                                                connected = -1 / 3;
+                                            }
+                                        } else if (cur.side == 3 && building.pos.x == cur.pos.x && building.pos.z + 1 == cur.pos.z) {
+                                            if (cur.height == building.height) {
+                                                connected = -1 / 3;
+                                            } else if (cur.height - 1 == building.height) {
+                                                connected = 1 / 3;
+                                            }
+                                        }
+                                    } else {
+                                        if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                            Math.abs(cur.height - building.height) == 2 && cur.side == building.side) {
+                                            connected = -1 / 3;
+                                        } else if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z &&
+                                            cur.height == building.height && cur.side == building.side && cur.side % 2 == 1) {
+                                            connected = -1 / 3;
+                                        } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 &&
+                                            cur.height == building.height && cur.side == building.side && cur.side % 2 == 0) {
+                                            connected = -1 / 3;
+                                        } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
+                                            if (cur.side == 0 && cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z) {
+                                                if ((cur.side - building.side + 4) % 4 == 1) {
+                                                    connected = -1 / 3;
+                                                } else {
+                                                    connected = 1 / 3;
+                                                }
+                                            } else if (cur.side == 2 && cur.pos.x - 1 == building.pos.x && cur.pos.z == building.pos.z) {
+                                                if ((cur.side - building.side + 4) % 4 == 1) {
+                                                    connected = -1 / 3;
+                                                } else {
+                                                    connected = 1 / 3;
+                                                }
+                                            } else if (cur.side == 1 && cur.pos.x == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                                if ((cur.side - building.side + 4) % 4 == 1) {
+                                                    connected = 1 / 3;
+                                                } else {
+                                                    connected = -1 / 3;
+                                                }
+                                            } else if (cur.side == 3 && cur.pos.x == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                                if ((cur.side - building.side + 4) % 4 == 1) {
+                                                    connected = 1 / 3;
+                                                } else {
+                                                    connected = -1 / 3;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (curName == "Gear 6m") {
+                            if (cur.vertical) {
+                                if ((buildingName == "Vertical Axle") &&
+                                    cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                    cur.height == building.height) {
+                                    connected = 1;
+                                } else if (buildingName == "Gear 2m") {
+                                    if (building.vertical) {
+                                        if (Math.abs(building.pos.x - cur.pos.x) + Math.abs(building.pos.z - cur.pos.z) == 1 && cur.height == building.height) {
+                                            connected = -3;
+                                        }
+                                    } else {
+                                        if (building.side == 0 && building.pos.x + 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                            if (cur.height == building.height) {
+                                                connected = 3;
+                                            } else if (cur.height + 1 == building.height) {
+                                                connected = -3;
+                                            }
+                                        } else if (building.side == 2 && building.pos.x - 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                            if (cur.height == building.height) {
+                                                connected = -3;
+                                            } else if (cur.height + 1 == building.height) {
+                                                connected = 3;
+                                            }
+                                        } else if (building.side == 1 && building.pos.x == cur.pos.x && building.pos.z + 1 == cur.pos.z) {
+                                            if (cur.height == building.height) {
+                                                connected = 3;
+                                            } else if (cur.height + 1 == building.height) {
+                                                connected = -3;
+                                            }
+                                        } else if (building.side == 3 && building.pos.x == cur.pos.x && building.pos.z - 1 == cur.pos.z) {
+                                            if (cur.height == building.height) {
+                                                connected = -3;
+                                            } else if (cur.height + 1 == building.height) {
+                                                connected = 3;
+                                            }
+                                        }
+                                    }
+                                } else if (buildingName == "Gear 6m") {
+                                    if (building.vertical) {
+
+                                    } else {
+                                        if (building.side == 0 && building.pos.x + 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                            if (cur.height - 1 == building.height) {
+                                                connected = 1;
+                                            } else if (cur.height + 2 == building.height) {
+                                                connected = -1;
+                                            }
+                                        } else if (building.side == 2 && building.pos.x - 1 == cur.pos.x && building.pos.z == cur.pos.z) {
+                                            if (cur.height - 1 == building.height) {
+                                                connected = -1;
+                                            } else if (cur.height + 2 == building.height) {
+                                                connected = 1;
+                                            }
+                                        } else if (building.side == 1 && building.pos.x == cur.pos.x && building.pos.z + 1 == cur.pos.z) {
+                                            if (cur.height - 1 == building.height) {
+                                                connected = 1;
+                                            } else if (cur.height + 2 == building.height) {
+                                                connected = -1;
+                                            }
+                                        } else if (building.side == 3 && building.pos.x == cur.pos.x && building.pos.z - 1 == cur.pos.z) {
+                                            if (cur.height - 1 == building.height) {
+                                                connected = -1;
+                                            } else if (cur.height + 2 == building.height) {
+                                                connected = 1;
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                if ((buildingName == "Horizontal Axle") &&
+                                    cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                    cur.height == building.height && cur.side % 2 == building.side % 2) {
+                                    connected = 1;
+                                } else if (buildingName == "Gear 2m") {
+                                    if (building.vertical) {
+                                        if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z) {
+                                            if (cur.side == 0) {
+                                                if (cur.height + 1 == building.height) {
+                                                    connected = -1;
+                                                } else if (cur.height - 2 == building.height) {
+                                                    connected = 1;
+                                                }
+                                            } else if (cur.side == 2) {
+                                                if (cur.height + 1 == building.height) {
+                                                    connected = 1;
+                                                } else if (cur.height - 2 == building.height) {
+                                                    connected = -1;
+                                                }
+                                            } else if (cur.side == 1) {
+                                                if (cur.height + 1 == building.height) {
+                                                    connected = -1;
+                                                } else if (cur.height - 2 == building.height) {
+                                                    connected = 1;
+                                                }
+                                            } else if (cur.side == 3) {
+                                                if (cur.height + 1 == building.height) {
+                                                    connected = 1;
+                                                } else if (cur.height - 2 == building.height) {
+                                                    connected = -1;
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                            Math.abs(cur.height - building.height) == 2 && cur.side == building.side) {
+                                            connected = -3;
+                                        } else if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z &&
+                                            cur.height == building.height && cur.side == building.side && cur.side % 2 == 1) {
+                                            connected = -3;
+                                        } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 &&
+                                            cur.height == building.height && cur.side == building.side && cur.side % 2 == 0) {
+                                            connected = -3;
+                                        } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
+                                            if (cur.side == 0 && cur.pos.x == building.pos.x) {
+                                                if (building.side == 1 && cur.pos.z - 1 == building.pos.z) {
+                                                    connected = 3;
+                                                } else if (building.side == 3 && cur.pos.z + 1 == building.pos.z) {
+                                                    connected = -3;
+                                                }
+                                            } else if (cur.side == 2 && cur.pos.x == building.pos.x) {
+                                                if (building.side == 1 && cur.pos.z - 1 == building.pos.z) {
+                                                    connected = -3;
+                                                } else if (building.side == 3 && cur.pos.z + 1 == building.pos.z) {
+                                                    connected = 3;
+                                                }
+                                            } else if (cur.side == 1 && cur.pos.z == building.pos.z) {
+                                                if (building.side == 0 && cur.pos.x - 1 == building.pos.x) {
+                                                    connected = 3;
+                                                } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x) {
+                                                    connected = -3;
+                                                }
+                                            } else if (cur.side == 3 && cur.pos.z == building.pos.z) {
+                                                if (building.side == 0 && cur.pos.x - 1 == building.pos.x) {
+                                                    connected = -3;
+                                                } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x) {
+                                                    connected = 3;
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else if (buildingName == "Gear 6m") {
+                                    if (building.vertical) {
+                                        if (cur.side == 0 && cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z) {
+                                            if (cur.height + 1 == building.height) {
+                                                connected = 1;
+                                            } else if (cur.height - 2 == building.height) {
+                                                connected = -1;
                                             }
                                         } else if (cur.side == 2 && cur.pos.x - 1 == building.pos.x && cur.pos.z == building.pos.z) {
-                                            if ((cur.side - building.side + 4) % 4 == 1) {
-                                                connected = -1 / 3;
-                                            } else {
-                                                connected = 1 / 3;
+                                            if (cur.height + 1 == building.height) {
+                                                connected = -1;
+                                            } else if (cur.height - 2 == building.height) {
+                                                connected = 1;
                                             }
                                         } else if (cur.side == 1 && cur.pos.x == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                            if ((cur.side - building.side + 4) % 4 == 1) {
-                                                connected = 1 / 3;
-                                            } else {
-                                                connected = -1 / 3;
+                                            if (cur.height + 1 == building.height) {
+                                                connected = 1;
+                                            } else if (cur.height - 2 == building.height) {
+                                                connected = -1;
                                             }
                                         } else if (cur.side == 3 && cur.pos.x == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                            if ((cur.side - building.side + 4) % 4 == 1) {
-                                                connected = 1 / 3;
-                                            } else {
-                                                connected = -1 / 3;
+                                            if (cur.height + 1 == building.height) {
+                                                connected = -1;
+                                            } else if (cur.height - 2 == building.height) {
+                                                connected = 1;
+                                            }
+                                        }
+                                    } else {
+                                        if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
+                                            Math.abs(cur.height - building.height) == 3 && cur.side == building.side) {
+                                            connected = -1;
+                                        } else if (cur.height == building.height) {
+                                            if (cur.side == 0) {
+                                                if (building.side == 1 && cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                                    connected = -1;
+                                                } else if (building.side == 3 && cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                                    connected = 1;
+                                                }
+                                            } else if (cur.side == 2) {
+                                                if (building.side == 1 && cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                                    connected = 1;
+                                                } else if (building.side == 3 && cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                                    connected = -1;
+                                                }
+                                            } else if (cur.side == 1) {
+                                                if (building.side == 0 && cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                                    connected = -1;
+                                                } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
+                                                    connected = 1;
+                                                }
+                                            } else if (cur.side == 3) {
+                                                if (building.side == 0 && cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                                    connected = 1;
+                                                } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
+                                                    connected = -1;
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
-                    } else if (curName == "Gear 6m") {
-                        if (cur.vertical) {
-                            if ((buildingName == "Vertical Axle") &&
-                                cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                cur.height == building.height) {
-                                connected = 1;
-                            } else if (buildingName == "Gear 2m") {
-                                if (building.vertical) {
-                                    if (Math.abs(building.pos.x - cur.pos.x) + Math.abs(building.pos.z - cur.pos.z) == 1 && cur.height == building.height) {
-                                        connected = -3;
+                        } else if (curName == "Vertical Axle") {
+                            if (building.vertical) {
+                                if (buildingName == "Vertical Axle") {
+                                    if (Math.abs(cur.height - building.height) == 1 && cur.pos.x == building.pos.x && cur.pos.z == building.pos.z) {
+                                        connected = 1;
                                     }
-                                } else {
-                                    if (building.side == 0 && building.pos.x + 1 == cur.pos.x && building.pos.z == cur.pos.z) {
-                                        if (cur.height == building.height) {
-                                            connected = 3;
-                                        } else if (cur.height + 1 == building.height) {
-                                            connected = -3;
-                                        }
-                                    } else if (building.side == 2 && building.pos.x - 1 == cur.pos.x && building.pos.z == cur.pos.z) {
-                                        if (cur.height == building.height) {
-                                            connected = -3;
-                                        } else if (cur.height + 1 == building.height) {
-                                            connected = 3;
-                                        }
-                                    } else if (building.side == 1 && building.pos.x == cur.pos.x && building.pos.z + 1 == cur.pos.z) {
-                                        if (cur.height == building.height) {
-                                            connected = 3;
-                                        } else if (cur.height + 1 == building.height) {
-                                            connected = -3;
-                                        }
-                                    } else if (building.side == 3 && building.pos.x == cur.pos.x && building.pos.z - 1 == cur.pos.z) {
-                                        if (cur.height == building.height) {
-                                            connected = -3;
-                                        } else if (cur.height + 1 == building.height) {
-                                            connected = 3;
-                                        }
-                                    }
-                                }
-                            } else if (buildingName == "Gear 6m") {
-                                if (building.vertical) {
-
-                                } else {
-                                    if (building.side == 0 && building.pos.x + 1 == cur.pos.x && building.pos.z == cur.pos.z) {
-                                        if (cur.height - 1 == building.height) {
-                                            connected = 1;
-                                        } else if (cur.height + 2 == building.height) {
-                                            connected = -1;
-                                        }
-                                    } else if (building.side == 2 && building.pos.x - 1 == cur.pos.x && building.pos.z == cur.pos.z) {
-                                        if (cur.height - 1 == building.height) {
-                                            connected = -1;
-                                        } else if (cur.height + 2 == building.height) {
-                                            connected = 1;
-                                        }
-                                    } else if (building.side == 1 && building.pos.x == cur.pos.x && building.pos.z + 1 == cur.pos.z) {
-                                        if (cur.height - 1 == building.height) {
-                                            connected = 1;
-                                        } else if (cur.height + 2 == building.height) {
-                                            connected = -1;
-                                        }
-                                    } else if (building.side == 3 && building.pos.x == cur.pos.x && building.pos.z - 1 == cur.pos.z) {
-                                        if (cur.height - 1 == building.height) {
-                                            connected = -1;
-                                        } else if (cur.height + 2 == building.height) {
-                                            connected = 1;
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            if ((buildingName == "Horizontal Axle") &&
-                                cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                cur.height == building.height && cur.side % 2 == building.side % 2) {
-                                connected = 1;
-                            } else if (buildingName == "Gear 2m") {
-                                if (building.vertical) {
-                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z) {
-                                        if (cur.side == 0) {
-                                            if (cur.height + 1 == building.height) {
-                                                connected = -1;
-                                            } else if (cur.height - 2 == building.height) {
-                                                connected = 1;
-                                            }
-                                        } else if (cur.side == 2) {
-                                            if (cur.height + 1 == building.height) {
-                                                connected = 1;
-                                            } else if (cur.height - 2 == building.height) {
-                                                connected = -1;
-                                            }
-                                        } else if (cur.side == 1) {
-                                            if (cur.height + 1 == building.height) {
-                                                connected = -1;
-                                            } else if (cur.height - 2 == building.height) {
-                                                connected = 1;
-                                            }
-                                        } else if (cur.side == 3) {
-                                            if (cur.height + 1 == building.height) {
-                                                connected = 1;
-                                            } else if (cur.height - 2 == building.height) {
-                                                connected = -1;
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                        Math.abs(cur.height - building.height) == 2 && cur.side == building.side) {
-                                        connected = -3;
-                                    } else if (Math.abs(cur.pos.x - building.pos.x) == 1 && cur.pos.z == building.pos.z &&
-                                        cur.height == building.height && cur.side == building.side && cur.side % 2 == 1) {
-                                        connected = -3;
-                                    } else if (cur.pos.x == building.pos.x && Math.abs(cur.pos.z - building.pos.z) == 1 &&
-                                        cur.height == building.height && cur.side == building.side && cur.side % 2 == 0) {
-                                        connected = -3;
-                                    } else if (cur.height == building.height && Math.abs(cur.side - building.side) % 2 == 1) {
-                                        if (cur.side == 0 && cur.pos.x == building.pos.x) {
-                                            if (building.side == 1 && cur.pos.z - 1 == building.pos.z) {
-                                                connected = 3;
-                                            } else if (building.side == 3 && cur.pos.z + 1 == building.pos.z) {
-                                                connected = -3;
-                                            }
-                                        } else if (cur.side == 2 && cur.pos.x == building.pos.x) {
-                                            if (building.side == 1 && cur.pos.z - 1 == building.pos.z) {
-                                                connected = -3;
-                                            } else if (building.side == 3 && cur.pos.z + 1 == building.pos.z) {
-                                                connected = 3;
-                                            }
-                                        } else if (cur.side == 1 && cur.pos.z == building.pos.z) {
-                                            if (building.side == 0 && cur.pos.x - 1 == building.pos.x) {
-                                                connected = 3;
-                                            } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x) {
-                                                connected = -3;
-                                            }
-                                        } else if (cur.side == 3 && cur.pos.z == building.pos.z) {
-                                            if (building.side == 0 && cur.pos.x - 1 == building.pos.x) {
-                                                connected = -3;
-                                            } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x) {
-                                                connected = 3;
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if (buildingName == "Gear 6m") {
-                                if (building.vertical) {
-                                    if (cur.side == 0 && cur.pos.x + 1 == building.pos.x && cur.pos.z == building.pos.z) {
-                                        if (cur.height + 1 == building.height) {
-                                            connected = 1;
-                                        } else if (cur.height - 2 == building.height) {
-                                            connected = -1;
-                                        }
-                                    } else if (cur.side == 2 && cur.pos.x - 1 == building.pos.x && cur.pos.z == building.pos.z) {
-                                        if (cur.height + 1 == building.height) {
-                                            connected = -1;
-                                        } else if (cur.height - 2 == building.height) {
-                                            connected = 1;
-                                        }
-                                    } else if (cur.side == 1 && cur.pos.x == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                        if (cur.height + 1 == building.height) {
-                                            connected = 1;
-                                        } else if (cur.height - 2 == building.height) {
-                                            connected = -1;
-                                        }
-                                    } else if (cur.side == 3 && cur.pos.x == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                        if (cur.height + 1 == building.height) {
-                                            connected = -1;
-                                        } else if (cur.height - 2 == building.height) {
-                                            connected = 1;
-                                        }
-                                    }
-                                } else {
-                                    if (cur.pos.x == building.pos.x && cur.pos.z == building.pos.z &&
-                                        Math.abs(cur.height - building.height) == 3 && cur.side == building.side) {
-                                        connected = -1;
-                                    } else if (cur.height == building.height) {
-                                        if (cur.side == 0) {
-                                            if (building.side == 1 && cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                                connected = -1;
-                                            } else if (building.side == 3 && cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                                connected = 1;
-                                            }
-                                        } else if (cur.side == 2) {
-                                            if (building.side == 1 && cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                                connected = 1;
-                                            } else if (building.side == 3 && cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                                connected = -1;
-                                            }
-                                        } else if (cur.side == 1) {
-                                            if (building.side == 0 && cur.pos.x - 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                                connected = -1;
-                                            } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x && cur.pos.z + 1 == building.pos.z) {
-                                                connected = 1;
-                                            }
-                                        } else if (cur.side == 3) {
-                                            if (building.side == 0 && cur.pos.x - 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                                connected = 1;
-                                            } else if (building.side == 2 && cur.pos.x + 1 == building.pos.x && cur.pos.z - 1 == building.pos.z) {
-                                                connected = -1;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else if (curName == "Vertical Axle") {
-                        if (building.vertical) {
-                            if (buildingName == "Vertical Axle") {
-                                if (Math.abs(cur.height - building.height) == 1 && cur.pos.x == building.pos.x && cur.pos.z == building.pos.z) {
+                                } else if (building.vertical && (buildingName == "Gear 2m" || buildingName == "Gear 6m") &&
+                                    cur.pos.x == building.pos.x && cur.pos.z == building.pos.z && cur.height == building.height) {
                                     connected = 1;
                                 }
-                            } else if (building.vertical && (buildingName == "Gear 2m" || buildingName == "Gear 6m") &&
-                                cur.pos.x == building.pos.x && cur.pos.z == building.pos.z && cur.height == building.height) {
-                                connected = 1;
                             }
                         }
-                    }
 
-                    if (connected != 0) {
-                        if (!visited[building.idx]) {
-                            visited[building.idx] = true;
-                            building.rotationData.speed = cur.rotationData.speed * connected;
-                            let offset = 0;
-                            let offsetBase = 0;
-                            if (buildingName == "Gear 2m") {
-                                offset = Math.PI / 8;
-                                offsetBase = 1;
-                            } else if (buildingName == "Gear 6m") {
-                                offset = Math.PI / 24;
-                                offsetBase = 1;
+                        if (connected != 0) {
+                            if (!visited[building.idx]) {
+                                visited[building.idx] = true;
+                                building.rotationData.speed = cur.rotationData.speed * connected;
+                                let offset = 0;
+                                let offsetBase = 0;
+                                if (buildingName == "Gear 2m") {
+                                    offset = Math.PI / 8;
+                                    offsetBase = 1;
+                                } else if (buildingName == "Gear 6m") {
+                                    offset = Math.PI / 24;
+                                    offsetBase = 1;
+                                }
+                                if (connected < 0) {
+                                    offsetBase = -offsetBase;
+                                }
+                                building.rotationData.offsetBase = cur.rotationData.offsetBase + offsetBase;
+                                building.rotationData.offset = building.rotationData.offsetBase * offset;
+                                queue.push(building);
                             }
-                            if (connected < 0) {
-                                offsetBase = -offsetBase;
-                            }
-                            building.rotationData.offsetBase = cur.rotationData.offsetBase + offsetBase;
-                            building.rotationData.offset = building.rotationData.offsetBase * offset;
-                            queue.push(building);
-                        }
-                        if (visited[building.idx]) {
-                            if (Math.abs(building.rotationData.speed - cur.rotationData.speed * connected) > 0.00000000001) {
-                                conflict = true;
-                            } else if (Farm.BUILDINGS[building.type].mechanicalSource) {
-                                networkSources[building.idx] = true;
+                            if (visited[building.idx]) {
+                                if (Math.abs(building.rotationData.speed - cur.rotationData.speed * connected) > 0.00000000001) {
+                                    conflict = true;
+                                } else if (Farm.BUILDINGS[building.type].mechanicalSource) {
+                                    networkSources[building.idx] = true;
+                                }
                             }
                         }
                     }
